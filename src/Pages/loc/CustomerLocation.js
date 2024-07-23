@@ -4,8 +4,8 @@ import MapView, { Marker } from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 
 const CustomerLocation = () => {
-    const [mLat, setMLat] = useState(0);
-    const [mLong, setMlong] = useState(0);
+    const [mLat, setMLat] = useState(null);
+    const [mLong, setMLong] = useState(null);
 
     useEffect(() => {
         requestLocationPermission();
@@ -38,7 +38,7 @@ const CustomerLocation = () => {
             (position) => {
                 console.log(position);
                 setMLat(position.coords.latitude);
-                setMlong(position.coords.longitude);
+                setMLong(position.coords.longitude);
             },
             (error) => {
                 console.log(error.code, error.message);
@@ -57,8 +57,20 @@ const CustomerLocation = () => {
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                 }}
+                region={
+                    mLat && mLong
+                        ? {
+                              latitude: mLat,
+                              longitude: mLong,
+                              latitudeDelta: 0.01,
+                              longitudeDelta: 0.01,
+                          }
+                        : undefined
+                }
             >
-                <Marker coordinate={{ latitude: mLat, longitude: mLong }} />
+                {mLat && mLong && (
+                    <Marker coordinate={{ latitude: mLat, longitude: mLong }} />
+                )}
             </MapView>
             <TouchableOpacity
                 onPress={getLocation}
@@ -73,7 +85,7 @@ const CustomerLocation = () => {
                     alignItems: 'center',
                 }}
             >
-                <Text style={{ color: '#fff' }}>Get Current Location</Text>
+                {/* <Text style={{ color: '#fff' }}>Get Current Location</Text> */}
             </TouchableOpacity>
         </View>
     );
