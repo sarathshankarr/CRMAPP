@@ -1628,7 +1628,7 @@ const Cart = () => {
             }}>
             <View style={style.modalContainerr}>
               <View style={style.modalContentt}>
-                <Text style={style.modalTitle}>{isEnabled ? "Customer Details" : "Distributor Details"}</Text>
+                <Text style={style.modalTitle}>{isEnabled ? "Retailer Details" : "Distributor Details"}</Text>
 
                 <TextInput
                   style={[
@@ -2018,6 +2018,7 @@ const style = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
+    color:'#000'
   },
   input: {
     borderWidth: 1,

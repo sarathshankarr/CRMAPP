@@ -140,21 +140,26 @@ const styles = StyleSheet.create({
   },
   orderIdText: {
     flex: 0.8,
+    color:"#000"
   },
   customerText: {
     flex: 1.5,
+    color:"#000"
   },
   qtyText: {
     flex: 0.9,
     textAlign: 'center',
+    color:"#000"
   },
   statusText: {
     flex: 1.4,
     marginLeft: 10,
+    color:"#000"
   },
   dateText: {
     flex: 1.5,
     textAlign: 'center',
+    color:"#000"
   },
   activityIndicator: {
     flex: 1,

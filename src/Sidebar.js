@@ -19,6 +19,7 @@ const Sidebar = ({navigation, route}) => {
   const [userData, setUserData] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownVisiblee, setDropdownVisiblee] = useState(false); // Add state for second dropdown if needed
+  const [dropdownVisiblePublish, setDropdownVisiblePublish] = useState(false); // Add state for second dropdown if needed
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   useEffect(() => {
@@ -80,6 +81,10 @@ const Sidebar = ({navigation, route}) => {
     setDropdownVisiblee(!dropdownVisiblee);
   };
 
+  const toggleDropdownthird = () => {
+    setDropdownVisiblePublish(!dropdownVisiblePublish);
+  };
+
   const goToHome = () => {
     navigation.navigate('Home');
   };
@@ -110,6 +115,9 @@ const Sidebar = ({navigation, route}) => {
 
   const goToActivities = () => {
     navigation.navigate('Activities');
+  };
+  const goToPublish = () => {
+    navigation.navigate('ProductPackagePublish');
   };
   const goToCustomerLocation = () => {
     navigation.navigate('CustomerLocation');
@@ -277,6 +285,35 @@ const Sidebar = ({navigation, route}) => {
               source={require('../assets/acticityone.png')}
             />
             <Text style={styles.dropdownItem}>Activities</Text>
+          </TouchableOpacity>
+          {/* Add more dropdown items here */}
+        </View>
+      )}
+       <TouchableOpacity
+        style={styles.inventoryhead}
+        onPress={toggleDropdownthird}>
+        <Image
+          style={styles.orderimg}
+          source={require('../assets/publish.png')}
+        />
+        <Text style={styles.ordertxt}>Publish</Text>
+        <View style={{marginLeft: 'auto'}}>
+          <Image
+            source={require('../assets/dropdown.png')}
+            style={{width: 20, height: 20}}
+          />
+        </View>
+      </TouchableOpacity>
+      {dropdownVisiblePublish && (
+        <View style={styles.dropdown}>
+          <TouchableOpacity
+            style={styles.inventoryhead}
+            onPress={goToPublish}>
+            <Image
+              style={styles.prodimg}
+              source={require('../assets/publish.png')}
+            />
+            <Text style={styles.dropdownItem}>Product/Package Publish</Text>
           </TouchableOpacity>
           {/* Add more dropdown items here */}
         </View>

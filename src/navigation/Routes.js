@@ -25,6 +25,7 @@ import NewTask from '../Pages/activities/NewTask';
 import NewCall from '../Pages/activities/NewCall';
 import CustomCheckBox from '../components/CheckBox';
 import CustomerLocation from '../Pages/loc/CustomerLocation';
+import ProductPackagePublish from '../Pages/publish/ProductPackagePublish';
 
 const Stack = createNativeStackNavigator();
 
@@ -180,6 +181,11 @@ const Routes = () => {
         <Stack.Screen
         name="CustomerLocation"
         component={CustomerLocation}
+        options={{headerShown: false}}
+      />
+        <Stack.Screen
+        name="ProductPackagePublish"
+        component={ProductPackagePublish}
         options={{headerShown: false}}
       />
 
