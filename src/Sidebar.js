@@ -131,7 +131,8 @@ const Sidebar = ({navigation, route}) => {
       compressImageQuality: 0.7,
     })
       .then(image => {
-        setImage({uri: image.path});
+        console.log('Camera Image Path:', image.path);
+        setImage({ uri: image.path });
         setModalVisible(false);
       })
       .catch(error => {
@@ -139,7 +140,7 @@ const Sidebar = ({navigation, route}) => {
         setModalVisible(false);
       });
   };
-
+  
   const choosePhotoFromLibrary = () => {
     ImagePicker.openPicker({
       width: 300,
@@ -148,7 +149,8 @@ const Sidebar = ({navigation, route}) => {
       compressImageQuality: 0.7,
     })
       .then(image => {
-        setImage({uri: image.path});
+        console.log('Library Image Path:', image.path);
+        setImage({ uri: image.path });
         setModalVisible(false);
       })
       .catch(error => {
@@ -156,6 +158,7 @@ const Sidebar = ({navigation, route}) => {
         setModalVisible(false);
       });
   };
+  
 
   const handleLogout = async () => {
     try {
@@ -180,7 +183,7 @@ const Sidebar = ({navigation, route}) => {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Image
-              style={[styles.img, {borderRadius: 30, tintColor: '#fff'}]}
+              style={[styles.img, {borderRadius: 30,}]}
               source={image}
             />
           </TouchableOpacity>
@@ -501,7 +504,7 @@ const styles = StyleSheet.create({
   prodimg: {
     height: 30,
     width: 30,
-    marginLeft: 2,
+    marginLeft: 40,
     tintColor: '#5177c0',
   },
   distributorimg: {

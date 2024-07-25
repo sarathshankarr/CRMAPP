@@ -15,6 +15,7 @@ import ModalComponent from '../../components/ModelComponent';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { RefreshControl } from 'react-native';
 
 
 class ProductItem extends PureComponent {
@@ -47,7 +48,6 @@ class ProductItem extends PureComponent {
         </View>
 
         <View style={styles.additionalDetailsContainer}>
-          <Text style={{color:'#000'}}>Price: {item.mrp}</Text>
           <Text style={{color:'#000'}} numberOfLines={1} ellipsizeMode="tail">
             Color Name: {item.colorName}
           </Text>
@@ -55,6 +55,7 @@ class ProductItem extends PureComponent {
             <Text style={{color:'#000'}} numberOfLines={1} ellipsizeMode="tail">
               Description: {item.styleDesc}
             </Text>
+            <Text style={{color:'#000'}}>Price: {item.mrp}</Text>
             <TouchableOpacity onPress={() => openModal(item)} style={styles.buttonqty}>
               <Text style={{color:'#ffffff'}}>ADD QTY</Text>
             </TouchableOpacity>
@@ -82,6 +83,7 @@ const HomeAllProducts = ({ navigation }) => {
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
 
   const selectedCompany = useSelector((state) => state.selectedCompany);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -107,6 +109,14 @@ const HomeAllProducts = ({ navigation }) => {
       getAllProducts(companyId);
     }
   }, [companyId]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setPageNo(1); // Reset the page number to 1
+    await getAllProducts(companyId); // Refetch the first page of data
+    setRefreshing(false);
+  };
+  
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -265,6 +275,13 @@ const HomeAllProducts = ({ navigation }) => {
               flatListRef.current.scrollToOffset({ offset: scrollPosition, animated: false });
             }
           }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#000', '#689F38']}
+            />
+          }
         />
       )}
 
@@ -355,7 +372,6 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   notesContainer: {
-    paddingVertical: 5,
   },
   buttonqty: {
     marginHorizontal:3,

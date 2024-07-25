@@ -331,10 +331,9 @@ const ProductPackagePublish = () => {
         console.log(
           'Distributors response:',
           response?.data?.response?.distributorList,
-          
         );
       })
-      
+
       .catch(error => {
         console.error('Error:', error);
         setIsLoading(false);
@@ -502,7 +501,7 @@ const ProductPackagePublish = () => {
     setSearchQueryStylesData(''); // Clear search query for styles data
     setModalVisible(false);
   };
-  
+
   const handleSelectAllToggleModal = () => {
     setSelectAllModel(prevState => {
       const newState = !prevState; // Toggle selectAllModel
@@ -586,22 +585,25 @@ const ProductPackagePublish = () => {
         }
         renderItem={({item}) => (
           <View style={styles.modalItem}>
-            <CustomCheckBox
-              isChecked={checkedModalIds.includes(
-                selectedId === '1' ? item.id : item.customerId,
-              )}
-              onToggle={() =>
-                handleCheckBoxToggleModal(
+            <View style={{marginLeft: 10}}>
+              <CustomCheckBox
+                isChecked={checkedModalIds.includes(
                   selectedId === '1' ? item.id : item.customerId,
-                  item,
-                )
-              }
-            />
-
+                )}
+                onToggle={() =>
+                  handleCheckBoxToggleModal(
+                    selectedId === '1' ? item.id : item.customerId,
+                    item,
+                  )
+                }
+              />
+            </View>
             <Text style={{flex: 1, color: '#000', marginLeft: 5}}>
               {selectedId === '1' ? item.distributorName : item.firstName}
             </Text>
-            <Text style={{flex: 0.8, color: '#000'}}>{item.emailId}</Text>
+            <Text style={{flex: 0.8, color: '#000', marginRight: 3}}>
+              {item.emailId}
+            </Text>
             <Text style={{flex: 0.9, color: '#000'}}>{item.whatsappId}</Text>
           </View>
         )}
@@ -673,10 +675,10 @@ const ProductPackagePublish = () => {
             onChangeText={setSearchQueryStylesData}
             placeholderTextColor={colorScheme === 'dark' ? '#000' : '#000'} // Adjust placeholder color based on theme
           />
-          <Image
+          {/* <Image
             style={styles.image}
             source={require('../../../assets/search.png')}
-          />
+          /> */}
         </View>
         <RadioGroup
           radioButtons={radioButtons}
@@ -686,11 +688,11 @@ const ProductPackagePublish = () => {
         />
       </View>
       <View style={styles.topheader}>
-        <View style={{marginLeft:10}}>
-        <CustomCheckBox
-          isChecked={selectAll}
-          onToggle={handleSelectAllToggle}
-        />
+        <View style={{marginLeft: 10}}>
+          <CustomCheckBox
+            isChecked={selectAll}
+            onToggle={handleSelectAllToggle}
+          />
         </View>
         <Text style={styles.txt4}>Style Name</Text>
         <Text style={styles.txt5}>Color</Text>
@@ -721,12 +723,29 @@ const ProductPackagePublish = () => {
         onRequestClose={() => handleCloseModal}>
         <View style={styles.modalContainer1}>
           <View style={styles.modalContent1}>
-            <View style={{backgroundColor:"#1F74BA",paddingVertical:8,borderRadius:10}}>
+            <View
+              style={{alignSelf: 'flex-end', marginRight: 10, marginTop: 10}}>
+              <TouchableOpacity onPress={handleCloseModal}>
+                <Image
+                  style={{height: 30, width: 30}}
+                  source={require('../../../assets/close.png')}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View
+              style={{
+                backgroundColor: '#1F74BA',
+                paddingVertical: 8,
+                borderRadius: 10,
+                marginHorizontal: 10,
+                marginTop: 10,
+              }}>
               {selectedId === '1' && (
-                <Text style={styles.txt3}>Select Distributors</Text>
+                <Text style={styles.txt3}>All Distributors</Text>
               )}
               {selectedId === '2' && (
-                <Text style={styles.txt3}>Select Retailer</Text>
+                <Text style={styles.txt3}>All Retailer</Text>
               )}
             </View>
             <View style={styles.searchContainerone}>
@@ -740,12 +759,25 @@ const ProductPackagePublish = () => {
                 placeholderTextColor={colorScheme === 'dark' ? '#000' : '#000'} // Adjust placeholder color based on theme
               />
             </View>
-            <View style={{flexDirection: 'row'}}>
-              <CustomCheckBox
-                isChecked={selectAllModel}
-                onToggle={handleSelectAllToggleModal}
-              />
-              <Text style={{flex: 1, color: '#000', marginLeft: 30}}>Name</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                backgroundColor: '#f0f0f0',
+                paddingVertical: 10, // Add padding if needed
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderRadius: 10,
+              }}>
+              <View style={{marginLeft: 10}}>
+                <CustomCheckBox
+                  isChecked={selectAllModel}
+                  onToggle={handleSelectAllToggleModal}
+                />
+              </View>
+
+              <Text style={{flex: 0.9, color: '#000', marginLeft: 3}}>
+                Name
+              </Text>
               <Text style={{flex: 0.7, color: '#000'}}>Email</Text>
               <Text style={{flex: 0.7, color: '#000'}}>Whatsapp Number</Text>
             </View>
@@ -930,7 +962,7 @@ const styles = StyleSheet.create({
   txt3: {
     color: '#000',
     fontWeight: '500',
-    alignSelf:"center"
+    alignSelf: 'center',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -947,9 +979,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 1,
   },
-  searchInput:{
-
-  },
+  searchInput: {},
   image: {
     height: 20,
     width: 20,
@@ -966,18 +996,18 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   txt4: {
-    fontWeight:"bold",
+    fontWeight: 'bold',
     color: '#000',
     flex: 1,
     marginLeft: 30,
   },
   txt5: {
-    fontWeight:"bold",
+    fontWeight: 'bold',
     color: '#000',
     flex: 0.8,
   },
   txt6: {
-    fontWeight:"bold",
+    fontWeight: 'bold',
     color: '#000',
     flex: 0.4,
   },
@@ -1010,7 +1040,6 @@ const styles = StyleSheet.create({
   modalContent1: {
     backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 20,
     width: '90%',
     maxHeight: '80%',
   },
@@ -1019,11 +1048,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   closeButton: {
-    marginTop: 20,
     alignItems: 'center',
-    padding: 10,
     backgroundColor: '#1F74BA',
     borderRadius: 5,
+    marginHorizontal: 10,
+    marginVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   closeButtonText: {
     color: '#000',
@@ -1033,6 +1064,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     marginVertical: 8,
+    marginHorizontal: 10,
   },
   noDataText: {
     textAlign: 'center',

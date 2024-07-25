@@ -18,7 +18,7 @@ import {addItemToCart, updateCartItem} from '../redux/actions/Actions';
 import axios from 'axios';
 import {API} from '../config/apiConfig';
 
-const dynamicPart = 0; 
+const dynamicPart = 0;
 
 const ModalComponent = ({
   modalVisible,
@@ -32,7 +32,7 @@ const ModalComponent = ({
   const [keyboardSpace, setKeyboardSpace] = useState(0);
   const [stylesData, setStylesData] = useState([]);
   const [inputValues, setInputValues] = useState({});
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cartItems);
 
@@ -42,6 +42,7 @@ const ModalComponent = ({
     borderRadius: 5,
     flex: 0.4,
     color: isDarkTheme ? '#fff' : '#000',
+    marginTop:4
   };
 
   useEffect(() => {
@@ -82,7 +83,7 @@ const ModalComponent = ({
       }
     });
     setSelectedItem(updatedItem);
-    setInputValues({}); 
+    setInputValues({});
   };
   const handleSaveItem = () => {
     let itemsToUpdate = [];
@@ -181,7 +182,7 @@ const ModalComponent = ({
   };
 
   const getQuantityStyles = () => {
-    setLoading(true); 
+    setLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.STYLE_QUNTITY_DATA}/${selectedItem.styleId}/${dynamicPart}`;
     axios
       .get(apiUrl, {
@@ -265,7 +266,7 @@ const ModalComponent = ({
       <ScrollView
         contentContainerStyle={[
           styles.modalContainer,
-          {marginBottom: keyboardSpace},
+          // {marginBottom: keyboardSpace},
         ]}
         keyboardShouldPersistTaps="handled">
         <View style={styles.modalContent}>
@@ -280,7 +281,7 @@ const ModalComponent = ({
           </View>
 
           <View style={styles.sizehead}>
-            <Text style={styles.sizetxt}>Size/Color</Text>
+            <Text style={styles.sizetxt}>Size</Text>
             <Text style={styles.quantityqty}>Quantity</Text>
             <Text style={styles.quantitytxt}>Price</Text>
             <TouchableOpacity
@@ -306,15 +307,15 @@ const ModalComponent = ({
                   <View key={index} style={{marginBottom: 10}}>
                     <View
                       style={{
-                        flexDirection: 'row',
                         justifyContent: 'space-between',
                         marginHorizontal: 5,
-                        marginTop: 5,
                       }}>
                       <View>
-                        <Text style={{color:"#000"}}>
-                          ColorName -{' '}
-                          {selectedItem ? selectedItem.colorName : ''}
+                        <Text style={{color: '#000', fontWeight: 'bold',fontSize:14}}>
+                          {style.styleDesc}
+                        </Text>
+                        <Text style={{color: '#000', fontWeight: 'bold'}}>
+                          ColorName - {selectedItem ? selectedItem.colorName : ''}
                         </Text>
                       </View>
                     </View>
@@ -325,11 +326,16 @@ const ModalComponent = ({
                           key={sizeIndex}
                           style={{flexDirection: 'row', marginRight: 10}}>
                           <View style={{flex: 0.7}}>
-                            <Text style={{marginTop: 15, marginHorizontal: 5,color:"#000"}}>
+                            {/* <Text style={{marginTop: 15, marginHorizontal: 5,color:"#000"}}>
                               {style.styleDesc}
-                            </Text>
-                            <Text style={{marginTop: 2, marginHorizontal: 5,color:"#000"}}>
-                              Size - {size.sizeDesc}
+                            </Text> */}
+                            <Text
+                              style={{
+                                marginTop: 20,
+                                marginHorizontal: 5,
+                                color: '#000',
+                              }}>
+                              {size.sizeDesc}
                             </Text>
                             {/* <Text>colorId{style.colorId}</Text> */}
                           </View>
@@ -359,12 +365,13 @@ const ModalComponent = ({
                                 inputValues[size.sizeDesc].trim() !== ''
                                   ? inputValues[size.sizeDesc].toString()
                                   : ''
-                              } 
+                              }
                               onChangeText={text => {
+                                const filteredText = text.replace(/[^0-9]/g, '');
                                 const updatedInputValues = {...inputValues};
                                 updatedInputValues[size.sizeDesc] = text;
                                 setInputValues(updatedInputValues);
-                                handleQuantityChange(text, index, sizeIndex); // Pass index and sizeIndex
+                                handleQuantityChange(filteredText, index, sizeIndex); // Pass index and sizeIndex
                               }}
                             />
 
@@ -379,7 +386,7 @@ const ModalComponent = ({
                             </TouchableOpacity>
 
                             <View style={{flex: 0.4, marginLeft: 40}}>
-                              <Text style={{color:"#000"}}>{style.price}</Text>
+                              <Text style={{color: '#000'}}>{style.price}</Text>
                             </View>
                           </View>
                         </View>

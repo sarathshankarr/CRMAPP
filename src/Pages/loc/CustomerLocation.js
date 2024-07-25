@@ -72,7 +72,7 @@ const CustomerLocation = () => {
                     <Marker coordinate={{ latitude: mLat, longitude: mLong }} />
                 )}
             </MapView>
-            <TouchableOpacity
+            {/* <TouchableOpacity
                 onPress={getLocation}
                 style={{
                     width: '90%',
@@ -85,8 +85,8 @@ const CustomerLocation = () => {
                     alignItems: 'center',
                 }}
             >
-                {/* <Text style={{ color: '#fff' }}>Get Current Location</Text> */}
-            </TouchableOpacity>
+                <Text style={{ color: '#fff' }}>Get Current Location</Text>
+            </TouchableOpacity> */}
         </View>
     );
 };

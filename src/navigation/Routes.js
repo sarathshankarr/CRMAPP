@@ -54,7 +54,7 @@ const Routes = () => {
           header: () => (
             <CommonHeader
               navigation={navigation}
-              title="All Details"
+              title="Product Details"
               showMessageIcon={true}
               showCartIcon={true}
               showLocationIcon={true}

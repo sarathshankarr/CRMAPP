@@ -826,15 +826,20 @@ const Cart = () => {
 
   const handleDateConfirm = date => {
     console.warn('A date has been picked: ', date);
-    const formattedDate = date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+    
+    // Extract day, month, and year
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
+    const year = date.getFullYear();
+  
+    // Format date as DD-MM-YYYY
+    const formattedDate = `${day}-${month}-${year}`;
+  
     setSelectedDate('Expected Delivery Date: ' + formattedDate);
     hideDatePicker();
     setShipDate(date.toISOString().split('T')[0]);
   };
+  
 
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...cartItems];
@@ -1499,7 +1504,7 @@ const Cart = () => {
                       <View style={{ flex: 0.3, marginLeft: 20 }}>
                         <Text style={{color:"#000"}}>{item.price}</Text>
                       </View>
-                      <View style={{ flex: 0.3, marginLeft: 20 }}>
+                      <View style={{ flex: 0.3, marginLeft: 10 }}>
                         <Text style={{color:"#000"}}>{(Number(item.price) * Number(item.quantity)).toString()}</Text>
                       </View>
                       <TouchableOpacity onPress={() => handleRemoveItem(index)}>
@@ -1513,15 +1518,15 @@ const Cart = () => {
                   </View>
                   {(index === cartItems.length - 1 || (item.styleId !== cartItems[index + 1]?.styleId || item.colorId !== cartItems[index + 1]?.colorId)) && (
                     <>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 15 }}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{color:"#000"}}>Total Qty: {calculateTotalQty(item.styleId, item.colorId)}</Text>
+                      <View style={{flexDirection: 'row', alignItems: 'center',}}>
+                        <View style={{}}>
+                          <Text style={{color:"#000",marginHorizontal:130}}> {calculateTotalQty(item.styleId, item.colorId)}</Text>
                         </View>
-                        <View style={{ flex: 1 }}>
+                        {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{color:"#000"}}>Total Amt: {calculateTotalPrice(item.styleId, item.colorId)}</Text>
+                        </View> */}
+                        <View style={{ }}>
+                          <Text style={{color:"#000",marginLeft:25}}>{calculateTotalPrice(item.styleId, item.colorId)}</Text>
                         </View>
                       </View>
                       <View style={style.separatorr} />
@@ -1580,13 +1585,13 @@ const Cart = () => {
 
         <View style={{}}>
           <View style={style.bottomContainer}>
-            <View style={{ flex: 1 }}>
+            <View style={{ }}>
               <Text style={{ fontWeight: 'bold', marginLeft: 10,color:"#000" }}>Total Qty: {totalQty}</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: 'bold', marginLeft: 10,color:"#000"  }}>Total Set: {totalItems}</Text>
+            <View style={{  }}>
+              <Text style={{ fontWeight: 'bold', marginLeft: 10,color:"#000"  }}>Total Items: {totalItems}</Text>
             </View>
-            <View style={{ flex: 2 }}>
+            <View style={{ }}>
               <Text style={{ fontWeight: 'bold', marginLeft: 15,color:"#000" }}>Total Amt: {totalPrice}</Text>
             </View>
           </View>
@@ -1944,6 +1949,7 @@ const style = StyleSheet.create({
     marginLeft: 10,
   },
   bottomContainer: {
+    justifyContent:"space-around",
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,

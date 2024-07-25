@@ -90,21 +90,21 @@ const Login = () => {
   useEffect(() => {
     const loadStoredCredentials = async () => {
       try {
-        const storedUsername = await AsyncStorage.getItem('username');
-        const storedPassword = await AsyncStorage.getItem('password');
-        const storedCode = await AsyncStorage.getItem('code');
-
-        if (storedUsername && storedPassword && storedCode) {
-          setUsername(storedUsername);
-          setPassword(storedPassword);
-          setCode(storedCode);
-          setIsChecked(true);
+        const storedCredentials = await AsyncStorage.getItem('credentials');
+        if (storedCredentials) {
+          const credentials = JSON.parse(storedCredentials);
+          const lastCredential = credentials[credentials.length - 1]; // Get the most recent credential
+          if (lastCredential) {
+            setUsername(lastCredential.username);
+            setPassword(lastCredential.password);
+            setCode(lastCredential.code);
+            setIsChecked(true); // Check the remember me checkbox
+          }
         }
       } catch (error) {
         console.error('Error loading stored credentials:', error);
       }
     };
-
     loadStoredCredentials();
   }, []);
 
@@ -276,12 +276,13 @@ const Login = () => {
         }
         if (roleName && roleId) {
           await saveRoleToStorage({roleName, roleId});
-        } else {
-          Alert.alert(
-            'Unauthorized role',
-            'You do not have access to this application.',
-          );
-        }
+        } 
+        // else {
+        //   Alert.alert(
+        //     'Unauthorized role',
+        //     'You do not have access to this application.',
+        //   );
+        // }
       } else {
         Alert.alert('No user data found', 'Failed to fetch user data.');
       }

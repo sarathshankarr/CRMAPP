@@ -41,14 +41,11 @@ const AllCategoriesListed = ({ navigation, route }) => {
   useEffect(() => {
     if (companyId) {
       getAllCategories(companyId);
+    } else if (categoryId) {
+      getAllCategories();
     }
-  }, [companyId]);
-
-  // useEffect(() => {
-  //   if (categoryId) {
-  //     getAllCategories();
-  //   }
-  // }, [categoryId]);
+  }, [companyId, categoryId]);
+  
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
@@ -75,7 +72,7 @@ const AllCategoriesListed = ({ navigation, route }) => {
       const requestData = {
         pageNo: "1",
         pageSize: "20",
-        categoryId: "",
+        categoryId: categoryId,
         companyId:companyId
       };
 
@@ -125,12 +122,12 @@ const AllCategoriesListed = ({ navigation, route }) => {
         <View style={styles.detailsContainer}></View>
       </View>
       <View style={styles.additionalDetailsContainer}>
-        <Text style={{color:'#000'}}>Price: {item.mrp}</Text>
         <Text style={{color:'#000'}} numberOfLines={1} ellipsizeMode="tail">Color Name: {item.colorName}</Text>
         <View style={styles.notesContainer}>
           <Text  numberOfLines={1} ellipsizeMode="tail" style={styles.descriptionText}>
             Description: {item.styleDesc}
           </Text>
+          <Text style={{color:'#000'}}>Price: {item.mrp}</Text>
           <TouchableOpacity onPress={() => openModal(item)} style={styles.buttonqty}>
             {/* <Image style={styles.addqtyimg} source={require('../../../assets/qty.png')} /> */}
             <Text style={{color:'#fff'}}>ADD QTY</Text>

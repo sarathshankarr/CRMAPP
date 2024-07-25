@@ -218,7 +218,7 @@ const PackingOrders = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>ID</Text>
-        <Text style={styles.headerText1}>Total Qty</Text>
+        <Text style={styles.headerText1}>Packed Qty</Text>
         <Text style={{  textAlign: 'center',flex: 0.5,    color:"#000"}}>ship Qty</Text>
         <Text style={styles.headerText5}>Total Amnt</Text>
         <Text style={styles.headerText2}>Packing Slip No</Text>
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   headerText1: {
     textAlign: 'center',
-    flex: 0.5,
+    flex: 0.6,
     color:"#000"
   },
   headerText5: {
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   text1: {
     textAlign: 'center',
-    flex: 0.7,
+    flex: 0.8,
     color:"#000"
   },
   text2: {

@@ -113,7 +113,7 @@ const Order = () => {
     if (item.packedStts === 'YET TO PACK') {
       setSelectedOrder(item);
     } else {
-      navigation.navigate('PackingOrders', {orderId: item.orderId});
+      navigation.navigate('PackingOrders', {orderId: item.orderNum});
     }
   };
 
@@ -145,12 +145,13 @@ const Order = () => {
               <Text style={{flex: 0.9,color:"#000"}}>
                 Customer Name : {item.customerName}
               </Text>
-              <Text style={{color:"#000"}}>Total Amount : {item.totalAmount}</Text>
+              <Text style={{color:"#000"}}>Customer Type: {item.customerType}</Text>
             </View>
             <View style={style.PackedStatus}>
-              <Text style={{fontWeight: 'bold',color:"#000"}}>
+              <Text style={{fontWeight: 'bold',color:"#000",flex: 0.9}}>
                 Packing status : {item.packedStts}
               </Text>
+              <Text style={{color:"#000"}}>Total Amount : {item.totalAmount}</Text>
             </View>
             <View>
               <Text
@@ -165,7 +166,7 @@ const Order = () => {
                   borderRadius: 5,
                   marginHorizontal: 10,
                 }}>
-                Status - {item.orderStatus}
+                Order Status - {item.orderStatus}
               </Text>
             </View>
           </View>
@@ -247,7 +248,7 @@ const Order = () => {
           <View style={style.modalContainer}>
             <View style={style.modalContent}>
               <View style={style.custtlheader}>
-                <Text style={{color:"#000"}}>OrderId : {selectedOrder.orderId}</Text>
+                <Text style={{color:"#000"}}>OrderId : {selectedOrder.orderNum}</Text>
                 <Text style={{color:"#000"}}>TotalQty :{selectedOrder.totalQty}</Text>
               </View>
               <View style={style.modelordshpheader}>
@@ -302,6 +303,8 @@ const style = StyleSheet.create({
     marginHorizontal: 10,
   },
   PackedStatus: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginHorizontal: 10,
     marginVertical: 5,
   },

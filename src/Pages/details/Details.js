@@ -53,12 +53,12 @@ const Details = ({ route }) => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <ImageSlider imageUrls={item && item.imageUrls ? item.imageUrls : []} />
-        <View style={styles.priceContainer}>
-          <Text style={styles.priceText}>Price: {item.mrp}</Text>
-        </View>
         <View style={styles.tagsContainer}>
           <Text style={styles.detailLabel}>Style Name</Text>
           <Text style={styles.detailValue}>{item.styleName}</Text>
+        </View>
+        <View style={styles.priceContainer}>
+          <Text style={styles.priceText}>Price: {item.mrp}</Text>
         </View>
         <View style={styles.setContainer}>
           <Text style={styles.detailLabel}>Color Name:</Text>

@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
@@ -39,7 +40,9 @@ const DistributorOrder = () => {
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
-        const initialCompanyData = await AsyncStorage.getItem('initialSelectedCompany');
+        const initialCompanyData = await AsyncStorage.getItem(
+          'initialSelectedCompany',
+        );
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
@@ -53,7 +56,9 @@ const DistributorOrder = () => {
     fetchInitialSelectedCompany();
   }, []);
 
-  const companyId = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
+  const companyId = selectedCompany
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
 
   useEffect(() => {
     if (companyId && orderId) {
@@ -112,8 +117,8 @@ const DistributorOrder = () => {
 
     setTotals({
       totalQty: Math.floor(totalQty),
-      totalGst: Math.floor(totalGst),
-      totalCost: Math.floor(totalCost),
+      totalGst: totalGst.toFixed(2),
+      totalCost: totalCost.toFixed(2),
     });
   };
 
@@ -126,9 +131,14 @@ const DistributorOrder = () => {
     });
   };
 
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
   const handleQtyChange = (text, itemId) => {
     const qty = parseInt(text);
-    const orderLineItem = order.orderLineItems.find(item => item.orderLineitemId === itemId);
+    const orderLineItem = order.orderLineItems.find(
+      item => item.orderLineitemId === itemId,
+    );
     const remainingQty = orderLineItem.shipQty - orderLineItem.grnQty;
 
     if (qty > remainingQty) {
@@ -144,7 +154,11 @@ const DistributorOrder = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" style={styles.activityIndicator} />
+        <ActivityIndicator
+          size="large"
+          color="#0000ff"
+          style={styles.activityIndicator}
+        />
       </View>
     );
   }
@@ -179,7 +193,8 @@ const DistributorOrder = () => {
           : parseInt(inputValues[item.orderLineitemId] || 0);
         const grnQty = isChecked
           ? item.shipQty
-          : parseInt(item.grnQty || 0) + parseInt(inputValues[item.orderLineitemId] || 0);
+          : parseInt(item.grnQty || 0) +
+            parseInt(inputValues[item.orderLineitemId] || 0);
         return {
           qty: item.qty,
           orderLineitemId: item.orderLineitemId,
@@ -248,12 +263,12 @@ const DistributorOrder = () => {
     const gst = parseFloat(item.gst);
 
     const grnGross = qty * unitPrice + (qty * unitPrice * gst) / 100;
-    const grossWithoutDecimals = Math.floor(grnGross);
+    const grossWithoutDecimals = grnGross.toFixed(2);
     console.log('Size:', item.size);
 
     return (
       <View style={styles.orderItem}>
-        <Text style={{marginRight: 1}}>{item.styleId}</Text>
+        <Text style={{marginRight: 1, color: '#000'}}>{item.styleNum}</Text>
         <Text style={[styles.orderText, {flex: 2.2}]}>{item.styleName}</Text>
         <Text style={[styles.orderText, {flex: 1.6}]}>{item.colorName}</Text>
         <Text style={[styles.orderText, {flex: 1}]}>{item.size}</Text>
@@ -279,7 +294,9 @@ const DistributorOrder = () => {
         />
         <Text style={[styles.orderText, {flex: 1}]}>{item.unitPrice}</Text>
         <Text style={[styles.orderText, {flex: 1}]}>{item.gst}</Text>
-        <Text style={[styles.orderText, {flex: 1}]}>{grossWithoutDecimals}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>
+          {grossWithoutDecimals}
+        </Text>
       </View>
     );
   };
@@ -288,6 +305,12 @@ const DistributorOrder = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={{flexDirection: 'row'}}>
+          <TouchableOpacity onPress={handleGoBack}>
+            <Image
+              style={{height: 25, width: 25, marginLeft: 2}}
+              source={require('../../../assets/back_arrow.png')}
+            />
+          </TouchableOpacity>
           <Text style={[styles.headerText, {flex: 1}]}>
             Order ID: {order.orderId}
           </Text>
@@ -296,18 +319,18 @@ const DistributorOrder = () => {
             style={{borderWidth: 1, paddingHorizontal: 10, borderRadius: 5}}
             disabled={isButtonDisabled} // Disable button based on state
           >
-            <Text style={styles.headerText}>Add</Text>
+            <Text style={styles.headerText1}>Add</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.headerText}>
-          Distributor Location: {order.customerName}
+        <Text style={styles.headerText2}>
+          Distributor Name : {order.customerName}
         </Text>
-        <Text style={styles.headerText}>
-          Company Location {order.companyName}
+        <Text style={styles.headerText3}>
+          Company Location : {order.companyName}
         </Text>
       </View>
       <View style={styles.orderDetailsHeader}>
-        <Text style={{flex: 0.5}}>No</Text>
+        <Text style={{flex: 0.5, color: '#000'}}>No</Text>
         <Text style={[styles.orderDetailsText, {flex: 2}]}>Name</Text>
         <Text style={[styles.orderDetailsText, {flex: 1.5}]}>Color</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Size</Text>
@@ -319,10 +342,14 @@ const DistributorOrder = () => {
               textAlign: 'center',
               fontWeight: 'bold',
               marginBottom: 5,
+              color: '#000',
             }}>
             Qty
           </Text>
-          <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
+          <CustomCheckBox
+            isChecked={isChecked}
+            onToggle={handleCheckBoxToggle}
+          />
           {/* <CheckBox onClick={handleCheckBoxToggle} isChecked={isChecked} /> */}
         </View>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Price</Text>
@@ -355,6 +382,24 @@ const styles = StyleSheet.create({
   headerText: {
     fontWeight: 'bold',
     marginVertical: 2,
+    color: '#000',
+    marginLeft: 15,
+  },
+  headerText1: {
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  headerText2: {
+    fontWeight: 'bold',
+    marginVertical: 2,
+    color: '#000',
+    marginLeft: 40,
+  },
+  headerText3: {
+    fontWeight: 'bold',
+    marginVertical: 2,
+    color: '#000',
+    marginLeft: 40,
   },
   orderDetailsHeader: {
     flexDirection: 'row',
@@ -367,6 +412,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontWeight: 'bold',
+    color: '#000',
     marginBottom: 15,
   },
   orderItem: {
@@ -381,6 +427,7 @@ const styles = StyleSheet.create({
   orderText: {
     flex: 1,
     textAlign: 'center',
+    color: '#000',
   },
   summary: {
     padding: 10,
@@ -390,7 +437,8 @@ const styles = StyleSheet.create({
   summaryText: {
     fontWeight: 'bold',
     marginVertical: 2,
-    textAlign: 'right',
+    color: '#000',
+    textAlign: "center"
   },
   activityIndicator: {
     flex: 1,

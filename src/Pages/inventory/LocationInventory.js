@@ -133,7 +133,7 @@ const LocationInventory = () => {
           <TextInput
           style={[styles.searchInput, { color: '#000' }]}
             onChangeText={onChangeText}
-            placeholder="Location Inventory "
+            placeholder="Location Wise Inventory "
             placeholderTextColor="#000"
           />
           <TouchableOpacity style={styles.searchIconContainer}>
