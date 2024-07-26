@@ -244,7 +244,7 @@ const Cart = () => {
       }
     }
 
-    isEnabled ? addCustomerDetails() : addDistributorDetails();
+    isEnabled ? getisValidCustomer() : getisValidDistributors();
     toggleModal();
   };
 
@@ -283,6 +283,27 @@ const Cart = () => {
     }
   };
 
+  const getisValidCustomer = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONCUSTOMER}/${inputValues.firstName}/${companyId}`;
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      // Check if the response indicates the distributor is valid
+      if (response.data === true) {
+        addCustomerDetails();
+        // Proceed to save distributor details
+      } else {
+        // Show an alert if the distributor name is already used
+        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+    }
+  };
   const addCustomerDetails = () => {
     const requestData = {
       firstName: inputValues.firstName,
@@ -342,6 +363,27 @@ const Cart = () => {
       });
   };
 
+  const getisValidDistributors = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONDISTRIBUTOR}/${inputValues.firstName}/${companyId}`;
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      // Check if the response indicates the distributor is valid
+      if (response.data === true) {
+        addDistributorDetails();
+        // Proceed to save distributor details
+      } else {
+        // Show an alert if the distributor name is already used
+        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+    }
+  };
   const addDistributorDetails = () => {
     const requestData = {
       id: null,
@@ -1009,10 +1051,33 @@ const Cart = () => {
       return;
     }
 
-    addCustomerLocationDetails();
+    getisValidLocation();
     toggleLocationModal();
   };
-
+  const getisValidLocation = async () => {
+    const cusDisID= isEnabled ? selectedCustomerId : selectedDistributorId
+    const cusrDisType = isEnabled ? 1 : 3
+    const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONLOACTION}/${locationInputValues.locationName}/${cusDisID}/${cusrDisType}/${companyId}`;
+    console.log("apiUrl==>",apiUrl)
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      // Check if the response indicates the distributor is valid
+      if (response.data === true) {
+        addCustomerLocationDetails();
+        // Proceed to save distributor details
+      } else {
+        // Show an alert if the distributor name is already used
+        Alert.alert('crm.codeverse.co says', 'This name has been used. Enter a new name.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+    }
+  };
   const addCustomerLocationDetails = () => {
     const requestLocationData = {
       createBy: 1,

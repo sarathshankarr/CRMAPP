@@ -111,8 +111,29 @@ const ProductPackagePublish = () => {
       }
     }
 
-    selectedId === '1' ? addDistributorDetails() : addCustomerDetails();
+    selectedId === '1' ? getisValidDistributors() : getisValidCustomer();
     toggleModal();
+  };
+  const getisValidCustomer = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONCUSTOMER}/${inputValues.firstName}/${companyId}`;
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      // Check if the response indicates the distributor is valid
+      if (response.data === true) {
+        addCustomerDetails();
+        // Proceed to save distributor details
+      } else {
+        // Show an alert if the distributor name is already used
+        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+    }
   };
   const addCustomerDetails = () => {
     const requestData = {
@@ -169,6 +190,28 @@ const ProductPackagePublish = () => {
         console.error('Error adding customer:', error);
       });
   };
+  const getisValidDistributors = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONDISTRIBUTOR}/${inputValues.firstName}/${companyId}`;
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      // Check if the response indicates the distributor is valid
+      if (response.data === true) {
+        addDistributorDetails();
+        // Proceed to save distributor details
+      } else {
+        // Show an alert if the distributor name is already used
+        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+    }
+  };
+  
 
   const addDistributorDetails = () => {
     const requestData = {

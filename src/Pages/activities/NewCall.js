@@ -640,11 +640,13 @@ const NewCall = () => {
           ? selectedDateUntil
           : callData?.startDate,
       startTime: selectedDropdownOptionTime || callData?.startTime,
-      remTime: showDropdownRow ? selectedDropdownOption.value || callData?.remTime : null,
+      remTime: showDropdownRow
+        ? selectedDropdownOption.value || callData?.remTime
+        : null,
       callType: selectedDropdownOptionCallType.value || callData?.callType,
       relatedTo: relatedTo || callData?.relatedTo,
       agenda: agenda || callData?.agenda,
-      t_company_id:companyId,
+      t_company_id: companyId,
       customer: customeroption || callData?.customer,
       duration: callData?.duration || '',
       assignTo: selectedUserId || callData?.assignTo,
@@ -677,11 +679,15 @@ const NewCall = () => {
   };
   const renderCustomerDetails = () => (
     <View style={{}}>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Retailer</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
+        Retailer
+      </Text>
       <TouchableOpacity
         onPress={handleShipDropdownClickCustomer}
         style={styles.dropdownButton}>
-        <Text style={{color:"#000"}}>{selectedCustomerOption || 'Select '}</Text>
+        <Text style={{color: '#000'}}>
+          {selectedCustomerOption || 'Select '}
+        </Text>
         <Image
           source={require('../../../assets/dropdown.png')}
           style={{width: 20, height: 20}}
@@ -710,7 +716,7 @@ const NewCall = () => {
                     key={index}
                     onPress={() => handleDropdownSelectCustomer(customer)}
                     style={styles.dropdownOption}>
-                    <Text style={{color:"#000"}}>{customer.firstName}</Text>
+                    <Text style={{color: '#000'}}>{customer.firstName}</Text>
                   </TouchableOpacity>
                 ))
               )}
@@ -723,11 +729,15 @@ const NewCall = () => {
 
   const renderDistributorDetails = () => (
     <View style={{}}>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Distributor</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
+        Distributor
+      </Text>
       <TouchableOpacity
         onPress={handleShipDropdownClickDistributor}
         style={styles.dropdownButton}>
-        <Text style={{color:"#000"}}>{selectedDistributorOption || 'Select'}</Text>
+        <Text style={{color: '#000'}}>
+          {selectedDistributorOption || 'Select'}
+        </Text>
         <Image
           source={require('../../../assets/dropdown.png')}
           style={{width: 20, height: 20}}
@@ -753,7 +763,7 @@ const NewCall = () => {
                   key={index}
                   onPress={() => handleDropdownSelectDistributor(distributor)}
                   style={styles.dropdownOption}>
-                  <Text style={{color:"#000"}}>{distributor.firstName}</Text>
+                  <Text style={{color: '#000'}}>{distributor.firstName}</Text>
                 </TouchableOpacity>
               ))
             )}
@@ -792,17 +802,19 @@ const NewCall = () => {
           onValueChange={toggleSwitch}
           value={isEnabled}
         />
-        <Text style={{fontWeight: 'bold', fontSize: 15,color:"#000"}}>
+        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#000'}}>
           Slide For Retailer
         </Text>
       </View>
 
       {isEnabled ? renderCustomerDetails() : renderDistributorDetails()}
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Location</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
+        Location
+      </Text>
       <TouchableOpacity
         onPress={handleFromDropdownClick}
         style={styles.dropdownButton}>
-        <Text style={{color:"#000"}}>
+        <Text style={{color: '#000'}}>
           {selectedLocation.length > 0 ? `${selectedLocation}` : 'Location'}
         </Text>
         <Image
@@ -823,14 +835,16 @@ const NewCall = () => {
                   style={styles.dropdownOption}
                   key={location.locationId}
                   onPress={() => handleLocationSelection(location)}>
-                  <Text style={{color:"#000"}}>{location.locationName}</Text>
+                  <Text style={{color: '#000'}}>{location.locationName}</Text>
                 </TouchableOpacity>
               ))
             )}
           </ScrollView>
         </View>
       )}
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Users</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
+        Users
+      </Text>
 
       <TouchableOpacity
         onPress={handleShipDropdownClickUser}
@@ -845,7 +859,7 @@ const NewCall = () => {
           paddingRight: 15,
           marginHorizontal: 10,
         }}>
-        <Text style={{color:"#000"}}>{selectedUserOption || 'Users'}</Text>
+        <Text style={{color: '#000'}}>{selectedUserOption || 'Users'}</Text>
         <Image
           source={require('../../../assets/dropdown.png')}
           style={{width: 20, height: 20}}
@@ -871,14 +885,14 @@ const NewCall = () => {
                   key={index}
                   style={styles.dropdownOption}
                   onPress={() => handleDropdownSelectUser(user)}>
-                  <Text style={{color:"#000"}}>{user.firstName}</Text>
+                  <Text style={{color: '#000'}}>{user.firstName}</Text>
                 </TouchableOpacity>
               ))
             )}
           </ScrollView>
         </View>
       )}
-      <Text style={{marginHorizontal: 10, marginVertical: 5,color:"#000"}}>
+      <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
         Related To *
       </Text>
 
@@ -891,7 +905,9 @@ const NewCall = () => {
           onChangeText={setRelatedTo}
         />
       </View>
-      <Text style={{marginHorizontal: 10, marginVertical: 5,color:"#000"}}>Call Agenda</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
+        Call Agenda
+      </Text>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -913,7 +929,7 @@ const NewCall = () => {
             marginVertical: 5,
             flex: 1,
             textAlign: 'left',
-            color:"#000"
+            color: '#000',
           }}>
           Call Start Date
         </Text>
@@ -923,7 +939,7 @@ const NewCall = () => {
             marginVertical: 5,
             flex: 1,
             textAlign: 'right',
-            color:"#000"
+            color: '#000',
           }}>
           Call Start Time
         </Text>
@@ -948,7 +964,7 @@ const NewCall = () => {
             paddingRight: 15,
             marginHorizontal: 10,
           }}>
-          <Text style={{color:"#000"}}>
+          <Text style={{color: '#000'}}>
             {selectedDateUntil === 'Call Start Date'
               ? selectedDateUntil
               : formatDateIntoDMY(selectedDateUntil)}
@@ -972,7 +988,9 @@ const NewCall = () => {
             paddingRight: 15,
             marginHorizontal: 10,
           }}>
-          <Text style={{color:"#000"}}>{selectedDropdownOptionTime || 'Call Start Time'}</Text>
+          <Text style={{color: '#000'}}>
+            {selectedDropdownOptionTime || 'Call Start Time'}
+          </Text>
           <Image
             source={require('../../../assets/dropdown.png')}
             style={{width: 20, height: 20}}
@@ -988,7 +1006,7 @@ const NewCall = () => {
                 key={index}
                 style={styles.dropdownOption}
                 onPress={() => handleDropdownSelectTime(option)}>
-                <Text style={{color:"#000"}}>{option}</Text>
+                <Text style={{color: '#000'}}>{option}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -1003,39 +1021,47 @@ const NewCall = () => {
           alignItems: 'center',
           marginLeft: 10,
         }}>
-       <CustomCheckBox isChecked={showDropdownRow} onToggle={handleCheckboxChange} />
+        <CustomCheckBox
+          isChecked={showDropdownRow}
+          onToggle={handleCheckboxChange}
+        />
         {/* <CheckBox isChecked={showDropdownRow} onClick={handleCheckboxChange} /> */}
-        <Text style={{marginLeft: 5,color:"#000"}}>Remainder</Text>
+        <Text style={{marginLeft: 5, color: '#000'}}>Remainder</Text>
       </View>
-      <Text style={{marginHorizontal: 10, marginVertical: 5,color:"#000"}}>
-        before start time
-      </Text>
       {showDropdownRow && (
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginHorizontal: 10,
-          }}>
-          <TouchableOpacity
-            onPress={handleShipDropdownClickk}
+        <View>
+          <Text
+            style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
+            before start time
+          </Text>
+          <View
             style={{
-              flex: 1,
-              height: 35,
-              borderRadius: 10,
-              borderWidth: 0.5,
               flexDirection: 'row',
               justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingLeft: 15,
-              paddingRight: 15,
+              marginHorizontal: 10,
             }}>
-            <Text>{selectedDropdownOption?.label || 'before start time'}</Text>
-            <Image
-              source={require('../../../assets/dropdown.png')}
-              style={{width: 20, height: 20}}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleShipDropdownClickk}
+              style={{
+                flex: 1,
+                height: 35,
+                borderRadius: 10,
+                borderWidth: 0.5,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingLeft: 15,
+                paddingRight: 15,
+              }}>
+              <Text style={{color:"#000"}}>
+                {selectedDropdownOption?.label || 'before start time'}
+              </Text>
+              <Image
+                source={require('../../../assets/dropdown.png')}
+                style={{width: 20, height: 20}}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -1047,13 +1073,15 @@ const NewCall = () => {
                 key={option.label}
                 style={styles.dropdownOption}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text>{option.label}</Text>
+                <Text style={{color:'#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </ScrollView>
       )}
-      <Text style={{marginHorizontal: 10, marginVertical: 5,color:"#000"}}>Call Type</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
+        Call Type
+      </Text>
       <TouchableOpacity
         onPress={handleShipDropdownClickCallType}
         style={{
@@ -1067,7 +1095,9 @@ const NewCall = () => {
           paddingRight: 15,
           marginHorizontal: 10,
         }}>
-        <Text style={{color:"#000"}}>{selectedDropdownOptionCallType.label || 'Call Type'}</Text>
+        <Text style={{color: '#000'}}>
+          {selectedDropdownOptionCallType.label || 'Call Type'}
+        </Text>
         <Image
           source={require('../../../assets/dropdown.png')}
           style={{width: 20, height: 20}}
@@ -1081,13 +1111,15 @@ const NewCall = () => {
                 key={option.value}
                 style={styles.dropdownOption}
                 onPress={() => handleDropdownSelectCallType(option)}>
-                <Text style={{color:"#000"}}>{option.label}</Text>
+                <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </ScrollView>
       )}
-      <Text style={{marginHorizontal: 10, marginVertical: 5,color:"#000"}}>Status</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
+        Status
+      </Text>
       <TouchableOpacity
         onPress={handleShipDropdownClickStatus}
         style={{
@@ -1101,7 +1133,7 @@ const NewCall = () => {
           paddingRight: 15,
           marginHorizontal: 10,
         }}>
-        <Text style={{color:"#000"}}>{selectedStatusOption || 'Status'}</Text>
+        <Text style={{color: '#000'}}>{selectedStatusOption || 'Status'}</Text>
         <Image
           source={require('../../../assets/dropdown.png')}
           style={{width: 20, height: 20}}
@@ -1116,7 +1148,7 @@ const NewCall = () => {
                 key={index}
                 style={styles.dropdownOption}
                 onPress={() => handleDropdownSelectStatus(option)}>
-                <Text style={{color:"#000"}}>{option}</Text>
+                <Text style={{color: '#000'}}>{option}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -1147,7 +1179,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color:"#000"
+    color: '#000',
   },
   addButton: {
     // backgroundColor: '#390050',
@@ -1168,7 +1200,7 @@ const styles = StyleSheet.create({
   sectionText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color:"#000"
+    color: '#000',
   },
   switchContainer: {
     marginHorizontal: 6,

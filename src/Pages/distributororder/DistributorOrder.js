@@ -312,7 +312,7 @@ const DistributorOrder = () => {
             />
           </TouchableOpacity>
           <Text style={[styles.headerText, {flex: 1}]}>
-            Order ID: {order.orderId}
+            Order ID: {order.orderNum}
           </Text>
           <TouchableOpacity
             onPress={addGrnOrder}

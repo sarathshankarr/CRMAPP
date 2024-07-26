@@ -151,7 +151,7 @@ const Call = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Customer</Text>
+        <Text style={styles.headerText}>Retailer/Distributor</Text>
         <Text style={styles.headerText1}>Related To</Text>
         <Text style={styles.headerText2}>Status</Text>
         <Text style={styles.headerText1}> Date</Text>
@@ -233,18 +233,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginLeft: 10,
-    color:"#000"
+    color:"#000",
+    flex:0.8
   },
   headerText1: {
     fontWeight: 'bold',
     fontSize: 16,
     marginRight:10,
-    color:"#000"
+    color:"#000",
+    flex:0.7
+
   },
   headerText2: {
     fontWeight: 'bold',
     fontSize: 16,
-    color:"#000"
+    color:"#000",
+    flex:0.7
+
   
   },
   callItem: {

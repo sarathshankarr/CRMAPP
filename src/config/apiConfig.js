@@ -34,7 +34,10 @@ export const API = {
   ADD_NEW_CALL:'erpportal/api/master/addCall',
   GET_DISTRIBUTORS_DETAILS:'erpportal/api/distributors',
   GET_USER_IN_ACTIVE:'erpportal/api/users/updateUserInActive',
-  GENERATE_CATE_LOG:'erpportal/api/ordermgmt/generateCatelog'
+  GENERATE_CATE_LOG:'erpportal/api/ordermgmt/generateCatelog',
+  VALIDATIONDISTRIBUTOR:"erpportal/api/distributors/isValiddistributor",
+  VALIDATIONCUSTOMER:"erpportal/api/customers/isValidCustomer",
+  VALIDATIONLOACTION:"erpportal/api/location/isValid",
 };
 
 export const USER_ID = 'adminClientId';
