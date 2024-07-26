@@ -67,25 +67,25 @@ const Categories = ({navigation}) => {
     setRefreshing(false);
   }, [companyId]);
 
-  const fetchCategories = async companyId => {
+  const fetchCategories = () => {
     setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ALL_CATEGORIES_DATA}`;
-    try {
-      const response = await axios.get(apiUrl, {
+    const apiUrl = `${global?.userData?.productURL}${API.ALL_CATEGORIES_DATA}/${companyId}`;
+    axios
+      .get(apiUrl, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
+      })
+      .then(response => {
+        setSelectedDetails(response?.data || []);
+        console.log('Styles List:', response.data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
-      const filteredCategories = response.data.filter(
-        category => category.companyId === companyId,
-      );
-      setSelectedDetails(filteredCategories);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const toggleSearchInput = () => {

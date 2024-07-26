@@ -33,6 +33,15 @@ const ModalComponent = ({
   const [stylesData, setStylesData] = useState([]);
   const [inputValues, setInputValues] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isSaveDisabled, setIsSaveDisabled] = useState(true);
+
+  useEffect(() => {
+    const hasNonZeroQuantity = Object.values(inputValues).some(
+      value => parseInt(value, 10) > 0,
+    );
+    setIsSaveDisabled(!hasNonZeroQuantity);
+  }, [inputValues]);
+
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cartItems);
 
@@ -42,7 +51,7 @@ const ModalComponent = ({
     borderRadius: 5,
     flex: 0.4,
     color: isDarkTheme ? '#fff' : '#000',
-    marginTop:4
+    marginTop: 4,
   };
 
   useEffect(() => {
@@ -86,6 +95,8 @@ const ModalComponent = ({
     setInputValues({});
   };
   const handleSaveItem = () => {
+    if (isSaveDisabled) return; // Prevent save action if button is disabled
+
     let itemsToUpdate = [];
 
     stylesData.forEach(style => {
@@ -144,6 +155,7 @@ const ModalComponent = ({
     clearAllInputs();
     closeModal();
   };
+
 
   useEffect(() => {
     if (modalVisible && stylesData.length > 0) {
@@ -311,11 +323,17 @@ const ModalComponent = ({
                         marginHorizontal: 5,
                       }}>
                       <View>
-                        <Text style={{color: '#000', fontWeight: 'bold',fontSize:14}}>
+                        <Text
+                          style={{
+                            color: '#000',
+                            fontWeight: 'bold',
+                            fontSize: 14,
+                          }}>
                           {style.styleDesc}
                         </Text>
                         <Text style={{color: '#000', fontWeight: 'bold'}}>
-                          ColorName - {selectedItem ? selectedItem.colorName : ''}
+                          ColorName -{' '}
+                          {selectedItem ? selectedItem.colorName : ''}
                         </Text>
                       </View>
                     </View>
@@ -367,11 +385,18 @@ const ModalComponent = ({
                                   : ''
                               }
                               onChangeText={text => {
-                                const filteredText = text.replace(/[^0-9]/g, '');
+                                const filteredText = text.replace(
+                                  /[^0-9]/g,
+                                  '',
+                                );
                                 const updatedInputValues = {...inputValues};
                                 updatedInputValues[size.sizeDesc] = text;
                                 setInputValues(updatedInputValues);
-                                handleQuantityChange(filteredText, index, sizeIndex); // Pass index and sizeIndex
+                                handleQuantityChange(
+                                  filteredText,
+                                  index,
+                                  sizeIndex,
+                                ); // Pass index and sizeIndex
                               }}
                             />
 
@@ -420,16 +445,19 @@ const ModalComponent = ({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleSaveItem}
-              style={{
-                borderWidth: 1,
-                borderColor: '#000',
-                // backgroundColor: '#f55951',
-                backgroundColor: '#F09120',
-                marginLeft: 10,
-                paddingVertical: 10,
-                paddingHorizontal: 35,
-                borderRadius: 5,
-              }}>
+              style={[
+                styles.saveButton,
+                {
+                  backgroundColor: isSaveDisabled ? 'gray' : '#F09120',
+                  borderWidth: 1,
+                  borderColor: '#000',
+                  // backgroundColor: '#f55951',
+                  marginLeft: 10,
+                  paddingVertical: 10,
+                  paddingHorizontal: 35,
+                  borderRadius: 5,
+                },
+              ]}>
               <Text style={{color: 'white', fontWeight: 'bold'}}>SAVE</Text>
             </TouchableOpacity>
           </View>

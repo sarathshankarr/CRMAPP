@@ -138,6 +138,9 @@ const ProductPackagePublish = () => {
       creditLimit: 0,
       paymentReminderId: 0,
       companyId: companyId,
+      locationName:'',
+      locationCode:'',
+      locationDescription:'',
     };
 
     axios
@@ -199,6 +202,9 @@ const ProductPackagePublish = () => {
       mop: '',
       markupDisc: 0,
       companyId: '1',
+      locationName:'',
+      locationCode:'',
+      locationDescription:'',
     };
 
     axios

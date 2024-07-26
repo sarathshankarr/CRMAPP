@@ -316,7 +316,7 @@ const Sidebar = ({navigation, route}) => {
               style={styles.prodimg}
               source={require('../assets/publish.png')}
             />
-            <Text style={styles.dropdownItem}>Product/Package Publish</Text>
+            <Text style={styles.dropdownItem}>Product Publish</Text>
           </TouchableOpacity>
           {/* Add more dropdown items here */}
         </View>

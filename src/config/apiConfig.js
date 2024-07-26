@@ -6,7 +6,7 @@ export const API = {
   LOGIN: 'erpportal/oauth/token',
   LOCATION: 'erpportal/api/style/cedge/getLocationInventory',
   ALL_PRODUCTS_DATA: 'erpportal/api/style/findallstyles',
-  ALL_CATEGORIES_DATA: 'erpportal/api/category',
+  ALL_CATEGORIES_DATA: 'erpportal/api/category/getcategoriesByCompanyId',
   STYLE_QUNTITY_DATA: 'erpportal/api/style',
   ADD_ORDER_DATA: 'erpportal/api/ordermgmt/adddistributororder',
   ADD_CUSTOMER_LIST: 'erpportal/api/customers',
