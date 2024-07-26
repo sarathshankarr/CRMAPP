@@ -134,24 +134,28 @@ const Order = () => {
           onPress={() => handleOrderPress(item)}>
           <View style={style.ordheader}>
             <View style={style.orderidd}>
-              <Text style={{color:"#000"}}>OrderId : {item.orderNum}</Text>
-              <Text style={{color:"#000"}}>ShipQty : {item.shipQty}</Text>
+              <Text style={{color: '#000'}}>OrderId : {item.orderNum}</Text>
+              <Text style={{color: '#000'}}>ShipQty : {item.shipQty}</Text>
             </View>
             <View style={style.ordshpheader}>
-              <Text style={{color:"#000"}}>Order Date : {item.orderDate}</Text>
-              <Text style={{color:"#000"}}>Ship Date : {item.shipDate}</Text>
+              <Text style={{color: '#000'}}>Order Date : {item.orderDate}</Text>
+              <Text style={{color: '#000'}}>Ship Date : {item.shipDate}</Text>
             </View>
             <View style={style.custtlheader}>
-              <Text style={{flex: 0.9,color:"#000"}}>
+              <Text style={{flex: 0.9, color: '#000'}}>
                 Customer Name : {item.customerName}
               </Text>
-              <Text style={{color:"#000"}}>Customer Type: {item.customerType}</Text>
+              <Text style={{color: '#000'}}>
+                Customer Type: {item.customerType}
+              </Text>
             </View>
             <View style={style.PackedStatus}>
-              <Text style={{fontWeight: 'bold',color:"#000",flex: 0.9}}>
+              <Text style={{fontWeight: 'bold', color: '#000', flex: 0.9}}>
                 Packing status : {item.packedStts}
               </Text>
-              <Text style={{color:"#000"}}>Total Amount : {item.totalAmount}</Text>
+              <Text style={{color: '#000'}}>
+                Total Amount : {item.totalAmount}
+              </Text>
             </View>
             <View>
               <Text
@@ -248,25 +252,40 @@ const Order = () => {
           <View style={style.modalContainer}>
             <View style={style.modalContent}>
               <View style={style.custtlheader}>
-                <Text style={{color:"#000"}}>OrderId : {selectedOrder.orderNum}</Text>
-                <Text style={{color:"#000"}}>TotalQty :{selectedOrder.totalQty}</Text>
+                <Text style={{color: '#000'}}>
+                  OrderId : {selectedOrder.orderNum}
+                </Text>
+                <Text style={{color: '#000'}}>
+                  TotalQty :{selectedOrder.totalQty}
+                </Text>
               </View>
               <View style={style.modelordshpheader}>
-                <Text style={{color:"#000"}}>Order Date : {selectedOrder.orderDate}</Text>
-                <Text style={{color:"#000"}}>Ship Date : {selectedOrder.shipDate}</Text>
+                <Text style={{color: '#000'}}>
+                  Order Date : {selectedOrder.orderDate}
+                </Text>
+                <Text style={{color: '#000'}}>
+                  Ship Date : {selectedOrder.shipDate}
+                </Text>
               </View>
               <View style={style.custtlheader}>
-                <Text style={{flex: 0.9,color:"#000"}}>
+                <Text style={{flex: 0.9, color: '#000'}}>
                   Customer Name : {selectedOrder.customerName}
                 </Text>
-                <Text style={{color:"#000"}}>Total Amount : {selectedOrder.totalAmount}</Text>
+                <Text style={{color: '#000'}}>
+                  Customer Type: {selectedOrder.customerType}
+                </Text>
               </View>
-              <View style={{marginLeft: 10}}>
-                <Text style={{color:"#000"}}>
+              <View style={style.custtlheader}>
+                <Text style={{flex: 0.9, color: '#000'}}>
                   Packing status : {selectedOrder.packedStts}
                 </Text>
-                <Text style={{marginTop: 5,color:"#000"}}>
-                  Status : {selectedOrder.orderStatus}{' '}
+                <Text style={{color: '#000'}}>
+                  Total Amount : {selectedOrder.totalAmount}
+                </Text>
+              </View>
+              <View style={{marginLeft: 10}}>
+                <Text style={{marginTop: 5, color: '#000'}}>
+                  Order Status : {selectedOrder.orderStatus}{' '}
                 </Text>
               </View>
               <TouchableOpacity
@@ -286,7 +305,7 @@ const style = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
-    elevation:5,
+    elevation: 5,
   },
   header: {
     marginBottom: 10,
@@ -353,11 +372,11 @@ const style = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
     // borderWidth:1,
-    borderRadius:30,
-    marginHorizontal:10,
+    borderRadius: 30,
+    marginHorizontal: 10,
     // backgroundColor:'#f1e8e6',
-    backgroundColor:'white',
-    elevation:5
+    backgroundColor: 'white',
+    elevation: 5,
   },
   searchInput: {
     flex: 1,

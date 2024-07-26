@@ -62,6 +62,9 @@ const Cart = () => {
   const [selectedDistributorId, setSelectedDistributorId] = useState(null);
   const [shipFromToClicked, setShipFromToClicked] = useState(false);
   const [selectedShipLocation, setSelectedShipLocation] = useState('');
+  const [selectedLocationId, setSelectedLocationId] = useState('');
+  const [selectedShipLocationId, setSelectedShipLocationId] = useState('');
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedCustomerDetails, setSelectedCustomerDetails] = useState(null);
   const [selectedDistributorDetails, setSelectedDistributorDetails] = useState(null);
@@ -70,6 +73,7 @@ const Cart = () => {
   const [keyboardSpace, setKeyboardSpace] = useState(0);
   const [modalItems, setModalItems] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
+
 
   const textInputStyle = {
     borderWidth: 1,
@@ -553,11 +557,15 @@ const Cart = () => {
   };
 
   const handleLocationSelection = location => {
+    console.log('Selected Location:', location);
     setSelectedLocation(location.locationName);
+    setSelectedLocationId(location.locationId);
     setFromToClicked(false);
   };
   const handleShipLocation = location => {
+    console.log('Selected Ship Location:', location); 
     setSelectedShipLocation(location.locationName);
+    setSelectedShipLocationId(location.locationId);
     setShipFromToClicked(false);
   };
 
@@ -567,7 +575,6 @@ const Cart = () => {
   const PlaceAddOrder = () => {
     let customerType;
 
-    // Toggle logic based on switch status
     const switchStatus = isEnabled; // Assuming isEnabled controls the switch
 
     if (switchStatus) {
@@ -667,13 +674,7 @@ const Cart = () => {
 
     const selectedShipDate = shipDate || currentDate;
 
-    console.log('selectedBillingLocation:', selectedLocation);
-    console.log('selectedShippingLocation:', selectedShipLocation);
-    console.log('billingAddressId:', billingAddressId);
-    console.log('shippingAddressId:', shippingAddressId);
-    console.log('customerId', customerId);
-    console.log('cartItems', cartItems);
-    console.log('customerType',customerType)
+    
     const requestData = {
       totalAmount: totalPrice.toString(),
       totalDiscount: '0',
@@ -684,8 +685,8 @@ const Cart = () => {
       orderStatus: 'Open',
       comments: comments,
       customerId: isEnabled ? selectedCustomerId : selectedDistributorId,
-      billingAddressId: billingAddressId,
-      shippingAddressId: shippingAddressId,
+      billingAddressId: selectedLocationId,
+      shippingAddressId: selectedShipLocationId,
       shipDate: selectedShipDate,
       orderDate: currentDate,
       companyLocId: '0',
@@ -741,6 +742,7 @@ const Cart = () => {
       gOtherExp: 0,
       companyId: companyId,
     };
+    console.log("requestData",requestData)
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
         headers: {
@@ -1514,22 +1516,25 @@ const Cart = () => {
                         />
                       </TouchableOpacity>
                     </View>
-                    <View style={style.separator} />
+                    {/* <View style={style.separator} /> */}
                   </View>
                   {(index === cartItems.length - 1 || (item.styleId !== cartItems[index + 1]?.styleId || item.colorId !== cartItems[index + 1]?.colorId)) && (
                     <>
-                      <View style={{flexDirection: 'row', alignItems: 'center',}}>
-                        <View style={{}}>
-                          <Text style={{color:"#000",marginHorizontal:130}}> {calculateTotalQty(item.styleId, item.colorId)}</Text>
+                      <View style={{flexDirection: 'row', alignItems: 'center',backgroundColor:"lightgray",paddingVertical:10,borderRadius:20}}>
+                         <View style={{ flex: 1 ,marginLeft:20}}>
+                          <Text style={{color:"#000"}}>Total</Text>
+                        </View>
+                        <View style={{flex: 1.3 }}>
+                          <Text style={{color:"#000"}}> {calculateTotalQty(item.styleId, item.colorId)}</Text>
                         </View>
                         {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                        <View style={{ }}>
-                          <Text style={{color:"#000",marginLeft:25}}>{calculateTotalPrice(item.styleId, item.colorId)}</Text>
+                        <View style={{flex: 0.8  }}>
+                          <Text style={{color:"#000"}}>{calculateTotalPrice(item.styleId, item.colorId)}</Text>
                         </View>
                       </View>
-                      <View style={style.separatorr} />
+                      {/* <View style={style.separatorr} /> */}
                       <View />
                     </>
 
