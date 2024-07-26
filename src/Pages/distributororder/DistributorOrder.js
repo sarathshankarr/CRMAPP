@@ -78,7 +78,7 @@ const DistributorOrder = () => {
       });
       if (response.data.status.success) {
         setOrder(response.data.response.ordersList[0]);
-        console.log('Order:', response.data.response.ordersList[0]);
+        // console.log('Order:', response.data.response.ordersList[0]);
       } else {
         console.error('Failed to fetch order:', response.data.status);
       }
@@ -174,7 +174,7 @@ const DistributorOrder = () => {
       totalGst: totals.totalGst,
       totalQty: totals.totalQty,
       orderStatus: 'PENDING',
-      orderId: order.orderId,
+      orderId: order.orderNum,
       shippingAddressId: order.shippingAddressId,
       customerLocation: order.customerLocation,
       customerId: order.customerId,
