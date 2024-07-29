@@ -129,11 +129,17 @@ const ProductPackagePublish = () => {
         // Proceed to save distributor details
       } else {
         // Show an alert if the distributor name is already used
-        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
+        Alert.alert(
+          'crm.codeverse.co says',
+          'A Customer/Retailer already exist with this name',
+        );
       }
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+      Alert.alert(
+        'Error',
+        'There was a problem checking the distributor validity. Please try again.',
+      );
     }
   };
   const addCustomerDetails = () => {
@@ -142,7 +148,7 @@ const ProductPackagePublish = () => {
       lastName: '',
       phoneNumber: inputValues.phoneNumber,
       whatsappId: inputValues.whatsappId,
-      emailId: 'supervisor381user@codeverse.in',
+      emailId: '',
       action: 'ADD',
       createBy: 1,
       createOn: new Date().toISOString(),
@@ -160,9 +166,9 @@ const ProductPackagePublish = () => {
       creditLimit: 0,
       paymentReminderId: 0,
       companyId: companyId,
-      locationName:'',
-      locationCode:'',
-      locationDescription:'',
+      locationName: '',
+      locationCode: '',
+      locationDescription: '',
     };
 
     axios
@@ -205,14 +211,19 @@ const ProductPackagePublish = () => {
         // Proceed to save distributor details
       } else {
         // Show an alert if the distributor name is already used
-        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
+        Alert.alert(
+          'crm.codeverse.co says',
+          'A Customer/Distributor already exist with this name',
+        );
       }
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+      Alert.alert(
+        'Error',
+        'There was a problem checking the distributor validity. Please try again.',
+      );
     }
   };
-  
 
   const addDistributorDetails = () => {
     const requestData = {
@@ -425,12 +436,11 @@ const ProductPackagePublish = () => {
     const getWhatsappId = (id, isCustomer) => {
       if (isCustomer) {
         const customer = customers.find(cust => cust.customerId === id);
-        return customer ? customer.whatsappId || customer.phoneNumber : '';
+        return customer ? customer.whatsappId : '';
       } else {
         const distributor = distributors.find(dist => dist.id === id);
         return distributor
-          ? distributor.whatsappId || distributor.phoneNumber
-          : '';
+          ? distributor.whatsappId  : '';
       }
     };
 
@@ -553,12 +563,11 @@ const ProductPackagePublish = () => {
     setModalVisible(false);
   };
 
- const handleCloseModalDisRet = () => {
-  setIsModalVisible(false);
-  setInputValues([]); // Assuming inputValues should be an array too
-  setErrorFields([]); // Reset errorFields to an empty array
-};
-
+  const handleCloseModalDisRet = () => {
+    setIsModalVisible(false);
+    setInputValues([]); // Assuming inputValues should be an array too
+    setErrorFields([]); // Reset errorFields to an empty array
+  };
 
   const handleSelectAllToggleModal = () => {
     setSelectAllModel(prevState => {
@@ -603,20 +612,30 @@ const ProductPackagePublish = () => {
 
   const filteredStylesData = () => {
     if (!searchQueryStylesData) return stylesData;
-    return stylesData.filter(item =>
-      item.styleName
-        .toLowerCase()
-        .includes(searchQueryStylesData.toLowerCase()),
+    return stylesData.filter(
+      item =>
+        item.styleName
+          .toLowerCase()
+          .includes(searchQueryStylesData.toLowerCase()) ||
+        item.colorName
+          .toLowerCase()
+          .includes(searchQueryStylesData.toLowerCase()),
     );
   };
+
   const filteredModalData = data => {
     if (!searchQuery) return data;
-    return data.filter(item =>
-      (selectedId === '1' ? item.distributorName : item.firstName)
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()),
-    );
+    return data.filter(item => {
+      const searchString = searchQuery.toLowerCase();
+      const nameField = selectedId === '1' ? item.distributorName : item.firstName;
+      return (
+        nameField.toLowerCase().includes(searchString) ||
+        (item.whatsappId && item.whatsappId.toLowerCase().includes(searchString)) ||
+        (item.emailId && item.emailId.toLowerCase().includes(searchString))
+      );
+    });
   };
+  
   const renderItem = ({item}) => (
     <View style={styles.row}>
       <CustomCheckBox
@@ -733,10 +752,6 @@ const ProductPackagePublish = () => {
             onChangeText={setSearchQueryStylesData}
             placeholderTextColor={colorScheme === 'dark' ? '#000' : '#000'} // Adjust placeholder color based on theme
           />
-          {/* <Image
-            style={styles.image}
-            source={require('../../../assets/search.png')}
-          /> */}
         </View>
         <RadioGroup
           radioButtons={radioButtons}
@@ -789,15 +804,25 @@ const ProductPackagePublish = () => {
                 flexDirection: 'row',
                 alignItems: 'center', // Ensure vertical alignment
                 justifyContent: 'space-between', // Space between text and close button
+                flexDirection: 'row',
+                alignItems: 'center', // Ensure vertical alignment
+                justifyContent: 'space-between', // Space between text and close button
                 marginTop: 10,
+                paddingVertical: 5,
                 paddingVertical: 5,
               }}>
               {selectedId === '1' && (
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
                   All Distributors
                 </Text>
+                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
+                  All Distributors
+                </Text>
               )}
               {selectedId === '2' && (
+                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
+                  All Retailer
+                </Text>
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
                   All Retailer
                 </Text>
@@ -810,7 +835,16 @@ const ProductPackagePublish = () => {
                   source={require('../../../assets/close.png')}
                 />
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleCloseModal}
+                style={{paddingHorizontal: 10}}>
+                <Image
+                  style={{height: 30, width: 30}}
+                  source={require('../../../assets/close.png')}
+                />
+              </TouchableOpacity>
             </View>
+
             <View style={styles.searchContainerone}>
               <TextInput
                 style={[
@@ -899,7 +933,6 @@ const ProductPackagePublish = () => {
                   style={{height: 30, width: 30}}
                   source={require('../../../assets/close.png')}
                 />
-                
               </TouchableOpacity>
               </View>
             </View> */}

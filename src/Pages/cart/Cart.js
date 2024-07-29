@@ -73,7 +73,7 @@ const Cart = () => {
   const [keyboardSpace, setKeyboardSpace] = useState(0);
   const [modalItems, setModalItems] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
-
+const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   const textInputStyle = {
     borderWidth: 1,
@@ -298,8 +298,11 @@ const Cart = () => {
         // Proceed to save distributor details
       } else {
         // Show an alert if the distributor name is already used
-        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
-      }
+        Alert.alert(
+          'crm.codeverse.co says',
+          'A Customer/Retailer already exist with this name',
+        );
+            }
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
@@ -311,7 +314,7 @@ const Cart = () => {
       lastName: '',
       phoneNumber: inputValues.phoneNumber,
       whatsappId: inputValues.whatsappId,
-      emailId: 'supervisor381user@codeverse.in',
+      emailId: '',
       action: 'ADD',
       createBy: 1,
       createOn: new Date().toISOString(),
@@ -378,8 +381,11 @@ const Cart = () => {
         // Proceed to save distributor details
       } else {
         // Show an alert if the distributor name is already used
-        Alert.alert('crm.codeverse.co says', 'This distributor name has already been used');
-      }
+        Alert.alert(
+          'crm.codeverse.co says',
+          'A Customer/Distributor already exist with this name',
+        );
+            }
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
@@ -722,14 +728,19 @@ const Cart = () => {
         : '';
 
     const selectedShipDate = shipDate || currentDate;
-
-    
+    const gstRate = 5; // GST rate in percentage
+    const totalGst = cartItems.reduce((acc, item) => {
+      const itemTotalPrice = parseFloat(item.price) * parseInt(item.quantity);
+      const itemGst = (itemTotalPrice * gstRate) / 100;
+      return acc + itemGst;
+    }, 0);
+    const totalAmount = parseFloat(totalPrice) + totalGst;
     const requestData = {
-      totalAmount: totalPrice.toString(),
+      totalAmount: totalAmount.toFixed(2),
       totalDiscount: '0',
       totalDiscountSec: '0',
       totalDiscountThird: '0',
-      totalGst: '0',
+      totalGst:  totalGst.toFixed(2),
       totalQty: totalQty.toString(),
       orderStatus: 'Open',
       comments: comments,
@@ -762,8 +773,8 @@ const Cart = () => {
         packageId: 0,
         cedgeFlag: '0',
         cedgeStyleId: 0,
-        discountPercentageSec: 0.0,
-        discountPercentageThird: 200.0,
+        discountPercentageSec: 0,
+        discountPercentageThird: 0,
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
@@ -1655,13 +1666,17 @@ const Cart = () => {
               marginTop: 10,
             }}></View>
           <View>
-            <TextInput
-              style={{ marginLeft: 10 }}
-              placeholder="Enter comments"
-              value={comments}
-              onChangeText={handleCommentsChange}
-              placeholderTextColor="#000"
-            />
+          <TextInput
+        style={{
+          marginLeft: 10,
+          color: isDarkTheme ? '#fff' : 'black', // Change text color based on theme
+        }}
+        placeholder="Enter comments"
+        value={comments}
+        onChangeText={handleCommentsChange}
+        placeholderTextColor={isDarkTheme ? '#fff' : '#000'} // Placeholder color
+      />
+
           </View>
           <View
             style={{

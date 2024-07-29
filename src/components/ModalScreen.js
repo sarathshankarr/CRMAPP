@@ -14,6 +14,31 @@ import {updateCartItem} from '../redux/actions/Actions';
 
 const ModalScreen = ({modalVisible, closeModal, selectedItem, modalItems}) => {
   const dispatch = useDispatch();
+  const selectedCompany = useSelector(state => state.selectedCompany);
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+
+  useEffect(() => {
+    const fetchInitialSelectedCompany = async () => {
+      try {
+        const initialCompanyData = await AsyncStorage.getItem(
+          'initialSelectedCompany',
+        );
+        if (initialCompanyData) {
+          const initialCompany = JSON.parse(initialCompanyData);
+          setInitialSelectedCompany(initialCompany);
+          console.log('Initial Selected Company:', initialCompany);
+        }
+      } catch (error) {
+        console.error('Error fetching initial selected company:', error);
+      }
+    };
+
+    fetchInitialSelectedCompany();
+  }, []);
+
+  const companyId = selectedCompany
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
 
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...modalItems];
@@ -27,10 +52,12 @@ const ModalScreen = ({modalVisible, closeModal, selectedItem, modalItems}) => {
   const handleSaveItem = () => {
     console.log('Saving changes:', modalItems);
     modalItems.forEach(item => {
-      dispatch(updateCartItem(item));
+      const updatedItem = { ...item, companyId };
+      dispatch(updateCartItem(updatedItem));
     });
     closeModal();
   };
+  
 
   return (
     <Modal

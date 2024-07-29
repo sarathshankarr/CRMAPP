@@ -127,6 +127,13 @@ const Order = () => {
   const renderItem = ({item}) => {
     if (!item) return null;
 
+    const customerTypeText =
+      item.customerType === 1
+        ? 'Retailer'
+        : item.customerType === 2
+        ? 'Distributor'
+        : 'UNKNOWN';
+
     return (
       <View style={style.container}>
         <TouchableOpacity
@@ -145,9 +152,7 @@ const Order = () => {
               <Text style={{flex: 0.9, color: '#000'}}>
                 Customer Name : {item.customerName}
               </Text>
-              <Text style={{color: '#000'}}>
-                Customer Type: {item.customerType}
-              </Text>
+               <Text style={{ color: '#000' }}>Customer Type: {customerTypeText}</Text>
             </View>
             <View style={style.PackedStatus}>
               <Text style={{fontWeight: 'bold', color: '#000', flex: 0.9}}>
@@ -272,8 +277,12 @@ const Order = () => {
                   Customer Name : {selectedOrder.customerName}
                 </Text>
                 <Text style={{color: '#000'}}>
-                  Customer Type: {selectedOrder.customerType}
-                </Text>
+            Customer Type: {selectedOrder.customerType === 1
+              ? 'Retailer'
+              : selectedOrder.customerType === 2
+              ? 'Distributor'
+              : 'UNKNOWN'}
+          </Text>
               </View>
               <View style={style.custtlheader}>
                 <Text style={{flex: 0.9, color: '#000'}}>

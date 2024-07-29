@@ -790,6 +790,61 @@ useEffect(() => {
       });
   };
 
+  const renderOrderLineItem = ({item}) => {
+    const shippedQty = parseInt(item.shipQty);
+    const receivedQty = parseInt(item.grnQty);
+
+    let inputQty = '0';
+
+    if (isChecked) {
+      inputQty = (shippedQty - receivedQty).toString();
+    } else {
+      if (inputValues[item.orderLineitemId] !== undefined) {
+        inputQty = inputValues[item.orderLineitemId].toString();
+      }
+    }
+
+    const qty = isChecked ? shippedQty : receivedQty + parseInt(inputQty || 0);
+    const unitPrice = parseFloat(item.unitPrice);
+    const gst = parseFloat(item.gst);
+
+    const grnGross = qty * unitPrice + (qty * unitPrice * gst) / 100;
+    const grossWithoutDecimals = grnGross.toFixed(2);
+    console.log('Size:', item.size);
+
+    return (
+      <View style={styles.orderItem}>
+        <Text style={[styles.orderText, {flex: 1.6}]}>{item.styleName}</Text>
+        <Text style={[styles.orderText, {flex: 1.5}]}>{item.colorName}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>{item.size}</Text>
+        <Text style={[styles.orderText1, {flex: 1}]}>{item.shipQty}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>{item.grnQty}</Text>
+        <TextInput
+          style={[
+            styles.orderText,
+            {
+              flex: 1,
+              alignSelf: 'center',
+              borderBottomWidth: 1,
+              borderColor: 'gray',
+              textAlign: 'center',
+              color: '#000',
+              justifyContent: 'center',
+            },
+          ]}
+          value={inputQty}
+          onChangeText={text => handleQtyChange(text, item.orderLineitemId)}
+          keyboardType="numeric"
+          onBlur={() => setInputValues({...inputValues})}
+        />
+        <Text style={[styles.orderText, {flex: 1}]}>{item.unitPrice}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>{item.gst}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>
+          {grossWithoutDecimals}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -813,15 +868,14 @@ useEffect(() => {
           </TouchableOpacity>
         </View>
         <Text style={styles.headerText2}>
-          Distributor Name : {order.customerName}
+          Distributor Name    : {order.customerName}
         </Text>
         <Text style={styles.headerText3}>
           Company Location : {order.companyName}
         </Text>
       </View>
       <View style={styles.orderDetailsHeader}>
-        <Text style={{flex: 0.5, color: '#000'}}>No</Text>
-        <Text style={[styles.orderDetailsText, {flex: 2}]}>Name</Text>
+        <Text style={[styles.orderDetailsText, {flex: 1.6}]}>Name</Text>
         <Text style={[styles.orderDetailsText, {flex: 1.5}]}>Color</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Size</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Ship Qty</Text>
@@ -897,10 +951,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: '#dcdcdc',
+    alignSelf:"center"
   },
   orderDetailsText: {
     flex: 1,
-    textAlign: 'center',
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 15,
@@ -915,9 +969,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   orderText: {
-    flex: 1,
-    textAlign: 'center',
     color: '#000',
+    marginLeft:5
+  },
+  orderText1: {
+    color: '#000',
+    marginLeft:20
   },
   summary: {
     padding: 10,
