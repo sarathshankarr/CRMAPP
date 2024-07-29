@@ -451,6 +451,7 @@ const ProductPackagePublish = () => {
     console.log('customerIdOrDistributorId', customerIdOrDistributorId);
     console.log('checkedModalIds:', checkedModalIds);
     console.log('requestData:', requestData);
+    // console.log("phoneNo",phoneNo)
 
     try {
       const apiUrl = `${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
@@ -550,6 +551,13 @@ const ProductPackagePublish = () => {
     setSearchQueryStylesData(''); // Clear search query for styles data
     setModalVisible(false);
   };
+
+ const handleCloseModalDisRet = () => {
+  setIsModalVisible(false);
+  setInputValues([]); // Assuming inputValues should be an array too
+  setErrorFields([]); // Reset errorFields to an empty array
+};
+
 
   const handleSelectAllToggleModal = () => {
     setSelectAllModel(prevState => {
@@ -862,6 +870,17 @@ const ProductPackagePublish = () => {
         }}>
         <View style={styles.modalContainerr}>
           <View style={styles.modalContentt}>
+          <View
+              style={{alignSelf: 'flex-end', marginRight: 10}}>
+
+          <TouchableOpacity onPress={handleCloseModalDisRet}>
+                <Image
+                  style={{height: 30, width: 30}}
+                  source={require('../../../assets/close.png')}
+                />
+                
+              </TouchableOpacity>
+              </View>
             <Text style={styles.modalTitle}>
               {selectedId === '1' ? 'Distributor Details' : ' Retailer Details'}
             </Text>
@@ -1125,12 +1144,12 @@ const styles = StyleSheet.create({
   modalContainerr: {
     flex: 1,
     alignItems: 'center',
-    marginTop: 50,
+    marginTop: 40,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContentt: {
     backgroundColor: '#fff',
-    padding: 20,
+    padding: 10,
     borderRadius: 10,
     width: '80%',
     alignItems: 'center',

@@ -180,11 +180,21 @@ const NewTask = () => {
       getCustomerLocations();
     }
   };
-  const handleLocationSelection = location => {
-    setSelectedLocation(location.locationName);
-    setSelectedLocationiD(location.locationId);
+  const handleLocationSelection = (location) => {
+    // Check if the same location is selected again
+    if (selectedLocationId === location.locationId) {
+      // Reset selections if the same location is selected
+      setSelectedLocation(''); // Reset location name
+      setSelectedLocationiD(null); // Reset location ID
+    } else {
+      // Set selections for a new location
+      setSelectedLocation(location.locationName); // Set location name
+      setSelectedLocationiD(location.locationId); // Set location ID
+    }
+    // Optionally close the dropdown after selection
     setFromToClicked(false);
   };
+  
 
   const handleShipDropdownClick = () => {
     setShipFromToClicked(!shipFromToClicked);
@@ -232,10 +242,16 @@ const NewTask = () => {
   };
 
   const handleDropdownSelectCustomer = customer => {
-    setSelectedCustomerOption(customer.firstName);
-    setSelectedCustomerId(customer.customerId); // Set selected customer's ID
-    setShipFromToClickedCustomer(false);
+    if (selectedCustomerId === customer.customerId) {
+      setSelectedCustomerOption(''); // Reset customer option
+      setSelectedCustomerId(null); // Reset customer ID
+    } else {
+      setSelectedCustomerOption(customer.firstName); // Set customer option
+      setSelectedCustomerId(customer.customerId); // Set customer ID
+    }
+    setShipFromToClickedCustomer(false); // Close Customer dropdown after selection (optional)
   };
+  
 
   const handleShipDropdownClickDistributor = () => {
     if (!shipFromToClickedDistributor) {
@@ -251,11 +267,17 @@ const NewTask = () => {
     );
     setFilterdDistributor(filtered);
   };
-  const handleDropdownSelectDistributor = Distributor => {
-    setSelectedDistributorOption(Distributor.firstName);
-    setSelectedDistributorId(Distributor.id); // Set selected customer's ID
-    setShipFromToClickedDistributor(false);
+  const handleDropdownSelectDistributor = distributor => {
+    if (selectedDistributorId === distributor.id) {
+      setSelectedDistributorOption(''); // Reset distributor option
+      setSelectedDistributorId(null); // Reset distributor ID
+    } else {
+      setSelectedDistributorOption(distributor.firstName); // Set distributor option
+      setSelectedDistributorId(distributor.id); // Set distributor ID
+    }
+    setShipFromToClickedDistributor(false); // Close Distributor dropdown after selection (optional)
   };
+  
 
   useEffect(() => {
     console.log('task', task);
@@ -458,10 +480,17 @@ const NewTask = () => {
   };
 
   const handleDropdownSelectUser = user => {
-    setSelectedUserOption(user.firstName);
-    setSelectedUserId(user.userId); // Set selected user's userId
-    setSelectedUserName(user.firstName); // Set selected user's userName
-    console.log('Selected UserName:', user.firstName); // Add this line for debugging
+    if (selectedUserId === user.userId) {
+      setSelectedUserOption(''); // Reset user option
+      setSelectedUserId(null); // Reset user ID
+      setSelectedUserName(''); // Reset user name
+      setSelectedStatusOption(''); // Reset status option
+    } else {
+      setSelectedUserOption(user.firstName); // Set user option
+      setSelectedUserId(user.userId); // Set user ID
+      setSelectedUserName(user.firstName); // Set user name
+      setSelectedStatusOption('Assigned'); // Set status to Assigned
+    }
     setShipFromToClickedUser(false); // Close User dropdown after selection (optional)
   };
 
@@ -470,10 +499,16 @@ const NewTask = () => {
     setShipFromToClickedUser(false); // Close User dropdown if open
     setShipFromToClickedStatus(false); // Close Status dropdown if open
   };
-  const handleDropdownSelectStatus = option => {
-    setSelectedStatusOption(option);
-    setShipFromToClickedStatus(false); // Close Status dropdown after selection (optional)
+
+  const handleDropdownSelectStatus = (option) => {
+    if (selectedStatusOption === option) {
+      setSelectedStatusOption(''); // Reset status option
+    } else {
+      setSelectedStatusOption(option); // Set status option
+    }
+    setShipFromToClickedStatus(false);
   };
+  
   const showDatePickerUntil = () => {
     setDatePickerVisibilityUntil(true);
   };

@@ -102,6 +102,7 @@ const Call = () => {
         },
       })
       .then(response => {
+        console.log("call==>",response.data)
         navigation.navigate('NewCall', {call: response.data, callId: callId});
       })
       .catch(error => {

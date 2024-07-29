@@ -130,7 +130,7 @@ const NewCall = () => {
       })
       .then(response => {
         setCustomerLocations(response.data);
-        console.log('location response', response.data);
+        // console.log('location response', response.data);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -145,11 +145,21 @@ const NewCall = () => {
       getCustomerLocations();
     }
   };
-  const handleLocationSelection = location => {
-    setSelectedLocation(location.locationName);
-    setSelectedLocationiD(location.locationId);
+  const handleLocationSelection = (location) => {
+    // Check if the same location is selected again
+    if (selectedLocationId === location.locationId) {
+      // Reset selections if the same location is selected
+      setSelectedLocation(''); // Reset location name
+      setSelectedLocationiD(null); // Reset location ID
+    } else {
+      // Set selections for a new location
+      setSelectedLocation(location.locationName); // Set location name
+      setSelectedLocationiD(location.locationId); // Set location ID
+    }
+    // Optionally close the dropdown after selection
     setFromToClicked(false);
   };
+  
 
   const handleShipDropdownClick = () => {
     setShipFromToClicked(!shipFromToClicked);
@@ -161,7 +171,9 @@ const NewCall = () => {
     if (route.params && route.params.call) {
       const {call} = route.params;
       console.log('call===>   ', call);
+      console.log('call.userId===>   ', call.userId); // Add this log
       setRelatedTo(call.relatedTo || '');
+      setSelectedUserId(call.userId);
       setAgenda(call.agenda || '');
       // setSelectedUserOption(call.userName);
       setSelectedStatusOption(call.status);
@@ -261,11 +273,14 @@ const NewCall = () => {
         call.customerId,
         call.locId,
         call.locationName,
+        call.userId,
+        call.userName
       );
       console.log(
         'inside useEffect ',
         selectedCustomerId,
         selectedDistributorId,
+        selectedUserId
       );
     }
   }, [route.params, users, customers, distributor]);
@@ -315,14 +330,16 @@ const NewCall = () => {
   };
 
   const handleDropdownSelectCustomer = customer => {
-    setSelectedCustomerOption(customer.firstName);
-    setSelectedCustomerId(customer.customerId);
-
-    setShipFromToClickedCustomer(false);
-
-    console.log('Selected Customer OptionDropdown:', selectedCustomerOption);
-    console.log('Selected Customer IDDropdown:', selectedCustomerId);
+    if (selectedCustomerId === customer.customerId) {
+      setSelectedCustomerOption(''); // Reset customer option
+      setSelectedCustomerId(null); // Reset customer ID
+    } else {
+      setSelectedCustomerOption(customer.firstName); // Set customer option
+      setSelectedCustomerId(customer.customerId); // Set customer ID
+    }
+    setShipFromToClickedCustomer(false); // Close Customer dropdown after selection (optional)
   };
+  
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -387,10 +404,16 @@ const NewCall = () => {
     // setShipFromToClickedDistributor(filtered);
     setFilterdDistributor(filtered);
   };
-  const handleDropdownSelectDistributor = Distributor => {
-    setSelectedDistributorOption(Distributor.firstName);
-    setSelectedDistributorId(Distributor.id); // Set selected distributor's ID
-    setShipFromToClickedDistributor(false);
+
+  const handleDropdownSelectDistributor = distributor => {
+    if (selectedDistributorId === distributor.id) {
+      setSelectedDistributorOption(''); // Reset distributor option
+      setSelectedDistributorId(null); // Reset distributor ID
+    } else {
+      setSelectedDistributorOption(distributor.firstName); // Set distributor option
+      setSelectedDistributorId(distributor.id); // Set distributor ID
+    }
+    setShipFromToClickedDistributor(false); // Close Distributor dropdown after selection (optional)
   };
 
   const getDistributorsDetails = () => {
@@ -486,16 +509,43 @@ const NewCall = () => {
       });
   };
 
-  const handleDropdownSelectUser = user => {
-    setSelectedUserOption(user.firstName);
-    setSelectedUserId(user.userId); // Set selected user's userId
-    setSelectedUserName(user.firstName); // Set selected user's userName
-    setShipFromToClickedUser(false); // Close User dropdown after selection (optional)
+  const handleDropdownSelectUser = (user) => {
+    // If a user is already assigned and the same user is selected again
+    if (selectedUserId === user.userId) {
+      // Reset selections if the same user is selected
+      setSelectedUserOption(''); // Reset user option
+      setSelectedUserId(null); // Reset user ID
+      setSelectedUserName(''); // Reset user name
+      setSelectedStatusOption(''); // Reset status option
+    } else {
+      // Set selections for a new user
+      setSelectedUserOption(user.firstName); // Set user option
+      setSelectedUserId(user.userId); // Set user ID
+      setSelectedUserName(user.firstName); // Set user name
+      setSelectedStatusOption('Assigned'); // Set status to Assigned
+    }
+    // Optionally close the dropdown after selection
+    setShipFromToClickedUser(false);
   };
+  
+  
+  // Initializing state to avoid undefined values
+  useEffect(() => {
+    if (callData) {
+      // Ensure state reflects the initial assignment
+      setSelectedUserId(callData.assignTo || null);
+      // Add additional state setup if needed
+    }
+  }, [callData]);
+  
 
-  const handleDropdownSelectStatus = option => {
-    setSelectedStatusOption(option);
-    setShipFromToClickedStatus(false); // Close Status dropdown after selection (optional)
+  const handleDropdownSelectStatus = (option) => {
+    if (selectedStatusOption === option) {
+      setSelectedStatusOption(''); // Reset status option
+    } else {
+      setSelectedStatusOption(option); // Set status option
+    }
+    setShipFromToClickedStatus(false);
   };
 
   const handleShipDropdownClickTime = () => {
