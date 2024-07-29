@@ -815,17 +815,13 @@ const ProductPackagePublish = () => {
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
                   All Distributors
                 </Text>
-                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
-                  All Distributors
-                </Text>
+              
               )}
               {selectedId === '2' && (
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
                   All Retailer
                 </Text>
-                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
-                  All Retailer
-                </Text>
+            
               )}
               <TouchableOpacity
                 onPress={handleCloseModal}
@@ -835,14 +831,7 @@ const ProductPackagePublish = () => {
                   source={require('../../../assets/close.png')}
                 />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleCloseModal}
-                style={{paddingHorizontal: 10}}>
-                <Image
-                  style={{height: 30, width: 30}}
-                  source={require('../../../assets/close.png')}
-                />
-              </TouchableOpacity>
+
             </View>
 
             <View style={styles.searchContainerone}>
