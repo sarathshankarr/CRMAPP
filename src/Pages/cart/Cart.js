@@ -218,6 +218,7 @@ const Cart = () => {
     const mandatoryFields = [
       'firstName',
       'phoneNumber',
+      'whatsappId',
       'cityOrTown',
       'state',
       'country',
@@ -415,7 +416,7 @@ const Cart = () => {
       transport: 0,
       mop: "",
       markupDisc: 0,
-      companyId: "1",
+      companyId: companyId,
       locationName:'',
       locationCode:'',
       locationDescription:'',
@@ -1139,6 +1140,17 @@ const Cart = () => {
         console.error('Error adding customer:', error);
       });
   };
+  const handleCloseModalDisRet=()=>{
+    setIsModalVisible(false);
+    setInputValues([]); // Assuming inputValues should be an array too
+    setErrorFields([]);
+  }
+
+  const handleCloseModalLocation=()=>{
+    setIsLocationModalVisible(false);
+    setLocationInputValues([]); // Assuming inputValues should be an array too
+    setLocationErrorFields([]);
+  }
 
   useEffect(() => {
     console.log('User Roleeeeee:', userRole);
@@ -1709,6 +1721,17 @@ const Cart = () => {
             }}>
             <View style={style.modalContainerr}>
               <View style={style.modalContentt}>
+              <View
+              style={{alignSelf: 'flex-end', marginRight: 10}}>
+
+          <TouchableOpacity onPress={handleCloseModalDisRet}>
+                <Image
+                  style={{height: 30, width: 30}}
+                  source={require('../../../assets/close.png')}
+                />
+                
+              </TouchableOpacity>
+              </View>
                 <Text style={style.modalTitle}>{isEnabled ? "Retailer Details" : "Distributor Details"}</Text>
 
                 <TextInput
@@ -1752,12 +1775,15 @@ const Cart = () => {
 
                 <TextInput
                   style={[style.input, { color: '#000' }]}
-                  placeholder="Whatsapp Number"
+                  placeholder="Whatsapp Number *"
                   placeholderTextColor="#000"
                   onChangeText={text =>
                     setInputValues({ ...inputValues, whatsappId: text })
                   }
                 />
+                {errorFields.includes('whatsappId') && (
+                  <Text style={style.errorText}>Please Enter Whatsapp Number</Text>
+                )}
                 <TextInput
                   style={[
                     style.input,
@@ -1830,6 +1856,18 @@ const Cart = () => {
               }}>
               <View style={style.modalContainerr}>
                 <View style={style.modalContentt}>
+                <View
+              style={{alignSelf: 'flex-end', marginRight: 10}}>
+
+          <TouchableOpacity onPress={handleCloseModalLocation}>
+                <Image
+                  style={{height: 30, width: 30}}
+                  source={require('../../../assets/close.png')}
+                />
+                
+              </TouchableOpacity>
+              </View>
+
                   <Text style={style.modalTitle}>Location Details</Text>
 
                   <TextInput

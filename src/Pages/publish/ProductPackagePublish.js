@@ -85,6 +85,7 @@ const ProductPackagePublish = () => {
     const mandatoryFields = [
       'firstName',
       'phoneNumber',
+      'whatsappId',
       'cityOrTown',
       'state',
       'country',
@@ -244,7 +245,7 @@ const ProductPackagePublish = () => {
       transport: 0,
       mop: '',
       markupDisc: 0,
-      companyId: '1',
+      companyId:companyId ,
       locationName:'',
       locationCode:'',
       locationDescription:'',
@@ -622,9 +623,9 @@ const ProductPackagePublish = () => {
         isChecked={checkedStyleIds.includes(item.styleId)}
         onToggle={() => handleCheckBoxToggleStyle(item.styleId)}
       />
-      <Text style={styles.cell1}>{item.styleName}</Text>
-      <Text style={styles.cell2}>{item.colorName}</Text>
-      <Text style={styles.cell3}>{item.mrp}</Text>
+      <Text style={styles.cell1}>{item?.styleName}</Text>
+      <Text style={styles.cell2}>{item?.colorName}</Text>
+      <Text style={styles.cell3}>{item?.mrp}</Text>
     </View>
   );
 
@@ -638,30 +639,30 @@ const ProductPackagePublish = () => {
       <FlatList
         data={modalData}
         keyExtractor={item =>
-          item.id ? item.id.toString() : Math.random().toString()
+          item?.id ? item?.id.toString() : Math.random().toString()
         }
         renderItem={({item}) => (
           <View style={styles.modalItem}>
             <View style={{marginLeft: 10}}>
               <CustomCheckBox
                 isChecked={checkedModalIds.includes(
-                  selectedId === '1' ? item.id : item.customerId,
+                  selectedId === '1' ? item?.id : item?.customerId,
                 )}
                 onToggle={() =>
                   handleCheckBoxToggleModal(
-                    selectedId === '1' ? item.id : item.customerId,
+                    selectedId === '1' ? item?.id : item?.customerId,
                     item,
                   )
                 }
               />
             </View>
             <Text style={{flex: 1, color: '#000', marginLeft: 5}}>
-              {selectedId === '1' ? item.distributorName : item.firstName}
+              {selectedId === '1' ? item?.distributorName : item?.firstName}
             </Text>
             <Text style={{flex: 0.8, color: '#000', marginRight: 3}}>
-              {item.emailId}
+              {item?.emailId}
             </Text>
-            <Text style={{flex: 0.9, color: '#000'}}>{item.whatsappId}</Text>
+            <Text style={{flex: 0.9, color: '#000'}}>{item?.whatsappId}</Text>
           </View>
         )}
         ListEmptyComponent={
@@ -781,29 +782,34 @@ const ProductPackagePublish = () => {
         <View style={styles.modalContainer1}>
           <View style={styles.modalContent1}>
             <View
-              style={{alignSelf: 'flex-end', marginRight: 10, marginTop: 10}}>
-              <TouchableOpacity onPress={handleCloseModal}>
+              style={{
+                backgroundColor: '#1F74BA',
+                borderRadius: 10,
+                marginHorizontal: 10,
+                flexDirection: 'row',
+                alignItems: 'center', // Ensure vertical alignment
+                justifyContent: 'space-between', // Space between text and close button
+                marginTop: 10,
+                paddingVertical: 5,
+              }}>
+              {selectedId === '1' && (
+                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
+                  All Distributors
+                </Text>
+              )}
+              {selectedId === '2' && (
+                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
+                  All Retailer
+                </Text>
+              )}
+              <TouchableOpacity
+                onPress={handleCloseModal}
+                style={{paddingHorizontal: 10}}>
                 <Image
                   style={{height: 30, width: 30}}
                   source={require('../../../assets/close.png')}
                 />
               </TouchableOpacity>
-            </View>
-
-            <View
-              style={{
-                backgroundColor: '#1F74BA',
-                paddingVertical: 8,
-                borderRadius: 10,
-                marginHorizontal: 10,
-                marginTop: 10,
-              }}>
-              {selectedId === '1' && (
-                <Text style={styles.txt3}>All Distributors</Text>
-              )}
-              {selectedId === '2' && (
-                <Text style={styles.txt3}>All Retailer</Text>
-              )}
             </View>
             <View style={styles.searchContainerone}>
               <TextInput
@@ -870,8 +876,23 @@ const ProductPackagePublish = () => {
         }}>
         <View style={styles.modalContainerr}>
           <View style={styles.modalContentt}>
-          <View
-              style={{alignSelf: 'flex-end', marginRight: 10}}>
+            {/* <View style={{backgroundColor: '#1F74BA',
+                borderRadius: 10,
+                marginHorizontal: 10,
+                marginTop: 10,
+                flexDirection:'row',
+                // justifyContent:'space-between',
+                // alignItems:'center',
+                width:'100%',
+                marginBottom:10
+                }}>
+              <View>
+            <Text style={[styles.txt3, {marginLeft:10, paddingVertical:5, fontSize:16, alignSelf:'center'}]}>
+              {selectedId === '1' ? 'Distributor Details' : ' Retailer Details'}
+            </Text>
+              </View>
+            <View
+              style={{ marginRight: 10, alignSelf:'flex-end'}}>
 
           <TouchableOpacity onPress={handleCloseModalDisRet}>
                 <Image
@@ -881,9 +902,38 @@ const ProductPackagePublish = () => {
                 
               </TouchableOpacity>
               </View>
-            <Text style={styles.modalTitle}>
-              {selectedId === '1' ? 'Distributor Details' : ' Retailer Details'}
-            </Text>
+            </View> */}
+            <View
+              style={{
+                backgroundColor: '#1F74BA',
+                borderRadius: 10,
+                // marginHorizontal: 10,
+                flexDirection: 'row',
+                alignItems: 'center', // Ensure vertical alignment
+                justifyContent: 'space-between', // Space between text and close button
+                marginTop: 10,
+                paddingVertical: 5,
+                marginBottom:10,
+              }}>
+              {selectedId === '1' && (
+                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
+                  Distributors Details
+                </Text>
+              )}
+              {selectedId === '2' && (
+                <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
+                  Retailer Details
+                </Text>
+              )}
+              <TouchableOpacity
+                onPress={handleCloseModalDisRet}
+                style={{paddingHorizontal: 10}}>
+                <Image
+                  style={{height: 30, width: 30}}
+                  source={require('../../../assets/close.png')}
+                />
+              </TouchableOpacity>
+            </View>
 
             <TextInput
               style={[
@@ -926,12 +976,15 @@ const ProductPackagePublish = () => {
 
             <TextInput
               style={[styles.input, {color: '#000'}]}
-              placeholder="Whatsapp Number"
+              placeholder="Whatsapp Number *"
               placeholderTextColor="#000"
               onChangeText={text =>
                 setInputValues({...inputValues, whatsappId: text})
               }
             />
+            {errorFields.includes('whatsappId') && (
+              <Text style={styles.errorText}>Please Enter Whatsapp Number</Text>
+            )}
             <TextInput
               style={[
                 styles.input,
