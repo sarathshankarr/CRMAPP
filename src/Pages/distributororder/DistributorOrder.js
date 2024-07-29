@@ -268,11 +268,10 @@ const DistributorOrder = () => {
 
     return (
       <View style={styles.orderItem}>
-        <Text style={{marginRight: 1, color: '#000'}}>{item.styleNum}</Text>
-        <Text style={[styles.orderText, {flex: 2.2}]}>{item.styleName}</Text>
-        <Text style={[styles.orderText, {flex: 1.6}]}>{item.colorName}</Text>
+        <Text style={[styles.orderText, {flex: 1.6}]}>{item.styleName}</Text>
+        <Text style={[styles.orderText, {flex: 1.5}]}>{item.colorName}</Text>
         <Text style={[styles.orderText, {flex: 1}]}>{item.size}</Text>
-        <Text style={[styles.orderText, {flex: 1}]}>{item.shipQty}</Text>
+        <Text style={[styles.orderText1, {flex: 1}]}>{item.shipQty}</Text>
         <Text style={[styles.orderText, {flex: 1}]}>{item.grnQty}</Text>
         <TextInput
           style={[
@@ -323,15 +322,14 @@ const DistributorOrder = () => {
           </TouchableOpacity>
         </View>
         <Text style={styles.headerText2}>
-          Distributor Name : {order.customerName}
+          Distributor Name    : {order.customerName}
         </Text>
         <Text style={styles.headerText3}>
           Company Location : {order.companyName}
         </Text>
       </View>
       <View style={styles.orderDetailsHeader}>
-        <Text style={{flex: 0.5, color: '#000'}}>No</Text>
-        <Text style={[styles.orderDetailsText, {flex: 2}]}>Name</Text>
+        <Text style={[styles.orderDetailsText, {flex: 1.6}]}>Name</Text>
         <Text style={[styles.orderDetailsText, {flex: 1.5}]}>Color</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Size</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Ship Qty</Text>
@@ -407,10 +405,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: '#dcdcdc',
+    alignSelf:"center"
   },
   orderDetailsText: {
     flex: 1,
-    textAlign: 'center',
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 15,
@@ -425,9 +423,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   orderText: {
-    flex: 1,
-    textAlign: 'center',
     color: '#000',
+    marginLeft:5
+  },
+  orderText1: {
+    color: '#000',
+    marginLeft:20
   },
   summary: {
     padding: 10,

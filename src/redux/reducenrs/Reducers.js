@@ -79,11 +79,12 @@ const reducers = (state = initialState, action) => {
           case UPDATE_CART_ITEM:
             return {
               ...state,
-              cartItems: state.cartItems.map((item, index) =>
-                index === action.payload.index ? action.payload.updatedItem : item
+              cartItems: state.cartItems.map((item, index) => 
+                index === action.payload.index ? 
+                { ...item, ...action.payload.updatedItem, companyId: action.payload.updatedItem.companyId } 
+                : item
               ),
             };
-          
 
     case ADD_SELECTED_IMAGE:
       return {

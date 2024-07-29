@@ -106,7 +106,7 @@ const CustomTabBar = ({ state, descriptors, route }) => {
   };
 
   return (
-    <View style={{ backgroundColor: '#fff', zIndex: 10 }}>
+    <View style={{ backgroundColor: '#fff',zIndex:1 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image
@@ -146,7 +146,7 @@ const CustomTabBar = ({ state, descriptors, route }) => {
           loggedInUser.compList &&
           loggedInUser.compList.length > 1 && (
             <View style={styles.dropdownContainer}>
-              <ScrollView>
+              <ScrollView nestedScrollEnabled={true}>
                 {loggedInUser.compList.map((company, index) => (
                   <TouchableOpacity
                     key={index}
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     position: 'absolute',
     top: 45,
-    left: 30,
+    left: 70,
     right: 0,
     backgroundColor: '#fff',
     elevation: 5,
