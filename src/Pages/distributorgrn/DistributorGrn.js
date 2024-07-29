@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Image, TextInput } from 'react-native';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -12,6 +12,10 @@ const DistributorGrn = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchInput, setShowSearchInput] = useState(false);
+
+
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -91,8 +95,54 @@ const DistributorGrn = () => {
     );
   };
 
+  const toggleSearchInput = () => {
+    setShowSearchInput(!showSearchInput);
+    if (showSearchInput) {
+      setSearchQuery('');
+    }
+  };
+
+  const filteredOrdersList=orders.filter(item => {
+    if (!item) return false;
+    const customerName = item.customerName
+      ? item.customerName.toLowerCase()
+      : '';
+    const orderNum = item.orderNum
+      ? item.orderNum.toString().toLowerCase()
+      : '';
+    const query = searchQuery.toLowerCase();
+    return customerName.includes(query) || orderNum.includes(query);
+  });
+
   return (
     <View style={styles.container}>
+       <View style={styles.searchContainer}>
+        <TextInput
+          style={[
+            styles.searchInput,
+            searchQuery.length > 0 && styles.searchInputActive,
+          ]}
+          autoFocus={false}
+          value={searchQuery}
+          onChangeText={text => setSearchQuery(text)}
+          placeholder="Search"
+          placeholderTextColor="#000"
+        />
+
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={toggleSearchInput}>
+          <Image
+            style={styles.image}
+            source={
+              showSearchInput
+                ? require('../../../assets/close.png')
+                : require('../../../assets/search.png')
+            }
+          />
+        </TouchableOpacity>
+      </View>
+     
       <View style={styles.header}>
         <Text style={styles.orderIdText}>Id</Text>
         <Text style={styles.customerText}>Customer</Text>
@@ -102,11 +152,11 @@ const DistributorGrn = () => {
       </View>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" style={styles.activityIndicator} />
-      ) : orders.length === 0 ? (
+      ) : filteredOrdersList.length === 0 ? (
         <Text style={styles.noResultsText}>Sorry, no results found!</Text>
       ) : (
         <FlatList
-          data={orders}
+          data={filteredOrdersList}
           renderItem={renderOrderItem}
           keyExtractor={(item, index) => item ? item.orderId.toString() : index.toString()}
           refreshControl={
@@ -172,6 +222,36 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 5,
+    marginBottom: 10,
+    // borderWidth:1,
+    borderRadius: 30,
+    marginHorizontal: 10,
+    // backgroundColor:'#f1e8e6',
+    backgroundColor: 'white',
+    elevation: 5,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    borderColor: 'gray',
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  searchInputActive: {
+    color: '#000',
+  },
+  searchButton: {
+    marginLeft: 'auto',
+  },
+  image: {
+    height: 30,
+    width: 30,
   },
 });
 

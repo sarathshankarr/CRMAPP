@@ -207,7 +207,7 @@ const NewCall = () => {
     console.log('users, role ==> ', users[0], role);
     if (foundItem) {
       console.log('founded user role ==> ', foundItem);
-      setSelectedUserOption(foundItem.firstName);
+      setSelectedUserOption(foundItem?.firstName);
     }
   };
 
@@ -228,10 +228,10 @@ const NewCall = () => {
           await getCustomersDetails();
         }
         let foundItem = customers?.find(
-          item => item.customerId === call_customerId,
+          item => item?.customerId === call_customerId,
         );
         if (foundItem) {
-          setSelectedCustomerOption(foundItem.firstName);
+          setSelectedCustomerOption(foundItem?.firstName);
         }
       } else {
         setIsEnabled(false);
@@ -242,7 +242,7 @@ const NewCall = () => {
         if (distributor.length === 0) {
           await getDistributorsDetails();
         }
-        let foundItem = distributor?.find(item => item.id === call_customerId);
+        let foundItem = distributor?.find(item => item?.id === call_customerId);
         if (foundItem) {
           setSelectedDistributorOption(foundItem.firstName);
         }
@@ -315,7 +315,7 @@ const NewCall = () => {
 
   const handleSearchCustomer = text => {
     const filtered = customers.filter(customer =>
-      customer.firstName.toLowerCase().includes(text.toLowerCase()),
+      customer?.firstName.toLowerCase().includes(text.toLowerCase()),
     );
     setFilteredCustomer(filtered);
   };
@@ -399,7 +399,7 @@ const NewCall = () => {
   };
   const handleSearchDistributor = text => {
     const filtered = distributor.filter(distributor =>
-      distributor.firstName.toLowerCase().includes(text.toLowerCase()),
+      distributor?.firstName.toLowerCase().includes(text.toLowerCase()),
     );
     // setShipFromToClickedDistributor(filtered);
     setFilterdDistributor(filtered);
@@ -756,17 +756,17 @@ const NewCall = () => {
               placeholderTextColor="#000"
             />
             <ScrollView style={styles.scrollView}>
-              {filteredCustomer.length === 0 ? (
+              {(filteredCustomer.length === 0 || (filteredCustomer.length===1 && !filteredCustomer[0])) ? (
                 <Text style={styles.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
               ) : (
-                filteredCustomer.map((customer, index) => (
+                filteredCustomer?.map((customer, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleDropdownSelectCustomer(customer)}
                     style={styles.dropdownOption}>
-                    <Text style={{color: '#000'}}>{customer.firstName}</Text>
+                    <Text style={{color: '#000'}}>{customer?.firstName}</Text>
                   </TouchableOpacity>
                 ))
               )}
@@ -803,17 +803,17 @@ const NewCall = () => {
             placeholderTextColor="#000"
           />
           <ScrollView style={styles.scrollView}>
-            {filteredDistributor.length === 0 ? (
+            {(filteredDistributor.length === 0 || (filteredDistributor.length===1 && !filteredDistributor[0])) ? (
               <Text style={styles.noCategoriesText}>
                 Sorry, no results found!
               </Text>
             ) : (
-              filteredDistributor.map((distributor, index) => (
+              filteredDistributor?.map((distributor, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => handleDropdownSelectDistributor(distributor)}
                   style={styles.dropdownOption}>
-                  <Text style={{color: '#000'}}>{distributor.firstName}</Text>
+                  <Text style={{color: '#000'}}>{distributor?.firstName}</Text>
                 </TouchableOpacity>
               ))
             )}

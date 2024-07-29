@@ -157,7 +157,7 @@ const HomeCategories = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        {showSearchInput ? (
+        
           <TextInput
             style={[
               styles.searchInput,
@@ -166,30 +166,28 @@ const HomeCategories = ({navigation}) => {
             autoFocus={true}
             value={searchQuery} // Set value to the search query
             onChangeText={onChangeText}
-            placeholder="Search"
+            placeholder={searchQuery
+              ? searchQuery
+              : selectedDetails
+              ? selectedDetails.length + ' Categories Listed'
+              : ''}
             placeholderTextColor="#000"
           />
-        ) : (
-          <Text style={styles.text}>
+        
+          {/* <Text style={styles.text}>
             {searchQuery
               ? searchQuery
               : selectedDetails
               ? selectedDetails.length + ' Categories Listed'
               : ''}
-          </Text>
-        )}
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={toggleSearchInput}>
+          </Text> */}
+       
+        <View style={styles.searchButton}>
           <Image
             style={styles.image}
-            source={
-              showSearchInput
-                ? require('../../../assets/close.png')
-                : require('../../../assets/search.png')
-            }
+            source={require('../../../assets/search.png')}
           />
-        </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
@@ -231,16 +229,29 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 20,
     // marginTop: 5,
     // borderWidth:1,
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    // paddingHorizontal: 20,
+    // paddingVertical:4,
+    // marginTop: 10,
+    // borderRadius:30,
+    // marginHorizontal:10,
+    // // backgroundColor:'#f1e8e6',
+    // backgroundColor:'white',
+    // elevation:5
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical:7,
     marginTop: 10,
-    borderRadius:30,
-    marginHorizontal:10,
+    // marginBottom: 10,
+    // borderWidth:1,
+    borderRadius: 30,
+    marginHorizontal: 10,
     // backgroundColor:'#f1e8e6',
-    backgroundColor:'white',
-    elevation:5
+    backgroundColor: 'white',
+    elevation: 5,
+    
+
   },
   searchInput: {
     flex: 1,

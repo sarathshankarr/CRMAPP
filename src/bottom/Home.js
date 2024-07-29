@@ -146,7 +146,7 @@ const CustomTabBar = ({ state, descriptors, route }) => {
           loggedInUser.compList &&
           loggedInUser.compList.length > 1 && (
             <View style={styles.dropdownContainer}>
-              <ScrollView nestedScrollEnabled={true}>
+              <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={true} persistentScrollbar={true}>
                 {loggedInUser.compList.map((company, index) => (
                   <TouchableOpacity
                     key={index}

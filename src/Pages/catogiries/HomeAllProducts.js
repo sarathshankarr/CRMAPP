@@ -218,30 +218,20 @@ const HomeAllProducts = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        {showSearchInput ? (
           <TextInput
             style={[styles.searchInput, searchQuery.length > 0 && styles.searchInputActive]}
             autoFocus={true}
             value={searchQuery}
             onChangeText={text => setSearchQuery(text)}
-            placeholder="Search"
+            placeholder={searchQuery ? searchQuery : (totalItems ? totalItems + ' Products Listed' : '')}
             placeholderTextColor="#000"
           />
-        ) : (
-          <Text style={styles.text}>
-            {searchQuery ? searchQuery : (totalItems ? totalItems + ' Products Listed' : '')}
-          </Text>
-        )}
-        <TouchableOpacity style={styles.searchButton} onPress={toggleSearchInput}>
+        <View style={styles.searchButton} onPress={toggleSearchInput}>
           <Image
             style={styles.image}
-            source={
-              showSearchInput
-                ? require('../../../assets/close.png')
-                : require('../../../assets/search.png')
-            }
+            source={require('../../../assets/search.png')}
           />
-        </TouchableOpacity>
+        </View>
       </View>
 
       {isLoading ? (
@@ -307,7 +297,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical:7,
     marginTop: 10,
     borderRadius:30,
     marginHorizontal:10,
