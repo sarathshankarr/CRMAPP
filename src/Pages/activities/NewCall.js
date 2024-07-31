@@ -193,10 +193,10 @@ const NewCall = () => {
     setSelectedDateUntil(formattedDate);
   };
   const getRemainder = time => {
-    console.log("rem==>",dropdownOptions,time)
+    console.log("rem==>",dropdownOptions[time-1],time)
     if (!time) return;
     setShowDropdownRow(true);
-    setSelectedDropdownOption(dropdownOptions);
+    setSelectedDropdownOption(dropdownOptions[time-1]);
   };
 
   const getUserRole = async role => {
@@ -644,12 +644,12 @@ const NewCall = () => {
   };
 
   const dropdownOptions = [
-    {label: '5 Mins', value: 5},
-    {label: '10 Mins', value: 10},
-    {label: '15 Mins', value: 15},
-    {label: '30 Mins', value: 30},
-    {label: '1 Hr', value: 1},
-    {label: '2 Hr', value: 2},
+    {id:1 , label: '5 Mins', value: 5},
+    {id:2 , label: '10 Mins', value: 10},
+    {id:3 , label: '15 Mins', value: 15},
+    {id:4 , label: '30 Mins', value: 30},
+    {id:5 , label: '1 Hr', value: 1},
+    {id:6 , label: '2 Hr', value: 2},
   ];
   const handleDropdownSelect = option => {
     setSelectedDropdownOption(option);
@@ -673,7 +673,7 @@ const NewCall = () => {
     setIsButtonDisabled(true);
 
     const switchStatus = isEnabled; // Assuming isEnabled controls the switch
-    const customerType = switchStatus ? 1 : 3; // 1 for Retailer, 3 for Distributor
+    const customerType = switchStatus ? 1 : 0; // 1 for Retailer, 3 for Distributor
     const customerId = switchStatus
       ? selectedCustomerId
       : selectedDistributorId;
@@ -682,7 +682,7 @@ const NewCall = () => {
     const customeroption = switchStatus
       ? selectedCustomerOption
       : selectedDistributorOption;
-    console.log('customeroption:', customeroption);
+    console.log('customeroption: inside API CALL ==============================================>', customeroption);
 
     const requestData = {
       id: callData ? callData.id : 0,
@@ -693,7 +693,7 @@ const NewCall = () => {
           : callData?.startDate,
       startTime: selectedDropdownOptionTime || callData?.startTime,
       remTime: showDropdownRow
-        ? selectedDropdownOption.value || callData?.remTime
+        ? selectedDropdownOption.id || callData?.remTime
         : null,
       callType: selectedDropdownOptionCallType.value || callData?.callType,
       relatedTo: relatedTo || callData?.relatedTo,
