@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Image,
   ScrollView,
+  FlatList,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -106,7 +107,7 @@ const CustomTabBar = ({ state, descriptors, route }) => {
   };
 
   return (
-    <View style={{ backgroundColor: '#fff',zIndex:1 }}>
+    <View style={{ backgroundColor: '#fff',zIndex:1}}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image
@@ -146,14 +147,15 @@ const CustomTabBar = ({ state, descriptors, route }) => {
           loggedInUser.compList &&
           loggedInUser.compList.length > 1 && (
             <View style={styles.dropdownContainer}>
-              <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={true} persistentScrollbar={true}>
-                {loggedInUser.compList.map((company, index) => (
+             <FlatList
+                data={loggedInUser.compList}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
                   <TouchableOpacity
-                    key={index}
-                    onPress={() => handleCompanySelect(company)}
+                    onPress={() => handleCompanySelect(item)}
                     style={{
                       width: '100%',
-                      height: 50,
+                      height: 35,
                       justifyContent: 'center',
                       borderBottomWidth: 0.5,
                       borderColor: '#8e8e8e',
@@ -162,13 +164,13 @@ const CustomTabBar = ({ state, descriptors, route }) => {
                       style={{
                         fontWeight: '600',
                         marginHorizontal: 15,
-                        color:"#000"
+                        color: "#000"
                       }}>
-                      {company.companyName}
+                      {item.companyName}
                     </Text>
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
+                )}
+              />
             </View>
           )}
         <CommenHeaderHomeScreen
@@ -237,12 +239,12 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: 'absolute',
-    top: 45,
+    top: 40,
     left: 70,
     right: 0,
     backgroundColor: '#fff',
     elevation: 5,
-    maxHeight: 150,
+    maxHeight: 100,
     width: '50%',
     borderRadius: 10,
     zIndex: 1000,

@@ -157,7 +157,7 @@ const Categories = ({navigation}) => {
               styles.searchInput,
               searchQuery.length > 0 && styles.searchInputActive,
             ]}
-            autoFocus={true}
+            autoFocus={false}
             value={searchQuery}
             onChangeText={onChangeText}
             placeholder={searchQuery

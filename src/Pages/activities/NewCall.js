@@ -193,9 +193,10 @@ const NewCall = () => {
     setSelectedDateUntil(formattedDate);
   };
   const getRemainder = time => {
+    console.log("rem==>",dropdownOptions,time)
     if (!time) return;
     setShowDropdownRow(true);
-    setSelectedDropdownOption(dropdownOptions[time - 1]);
+    setSelectedDropdownOption(dropdownOptions);
   };
 
   const getUserRole = async role => {
@@ -274,7 +275,8 @@ const NewCall = () => {
         call.locId,
         call.locationName,
         call.userId,
-        call.userName
+        call.userName,
+        call.remTime
       );
       console.log(
         'inside useEffect ',
