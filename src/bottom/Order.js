@@ -134,6 +134,25 @@ const Order = () => {
         ? 'Distributor'
         : 'UNKNOWN';
 
+        const getStatusColor = (status) => {
+          switch (status.toLowerCase()) {
+            case 'open':
+              return 'yellow';
+            case 'partially confirmed':
+              return 'lightgreen';
+            case 'confirmed':
+              return 'darkgreen';
+            case 'partially cancelled':
+              return 'lightred';
+            case 'cancelled':
+              return 'red';
+            case 'partially confirmed and partially cancelled':
+              return 'orange';
+            default:
+              return 'grey'; // default color for unknown statuses
+          }
+        };
+      
     return (
       <View style={style.container}>
         <TouchableOpacity
@@ -166,14 +185,12 @@ const Order = () => {
               <Text
                 style={{
                   textAlign: 'center',
-                  backgroundColor:
-                    item.orderStatus.toLowerCase() === 'open'
-                      ? '#FF3333'
-                      : 'green',
+                  backgroundColor: getStatusColor(item.orderStatus),
                   padding: 5,
-                  color: '#fff',
+                  color: '#000',
                   borderRadius: 5,
                   marginHorizontal: 10,
+                  fontWeight:"bold"
                 }}>
                 Order Status - {item.orderStatus}
               </Text>
