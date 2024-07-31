@@ -569,7 +569,7 @@ const NewTask = () => {
     if (isButtonDisabled) return;
     setIsButtonDisabled(true);
     const switchStatus = isEnabled; // Assuming isEnabled controls the switch
-    const customerType = switchStatus ? 1 : 0; // 1 for Retailer, 3 for Distributor
+    const customerType = switchStatus ? 1 : 3; // 1 for Retailer, 3 for Distributor
 
     const customerId = switchStatus
       ? selectedCustomerId
