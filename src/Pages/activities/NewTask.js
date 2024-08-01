@@ -307,7 +307,7 @@ const NewTask = () => {
       getuntilDate(task.untilDate);
       getTaskRepeatRem(task.repeatRem);
       task.priority && setMarkHighPriority(true);
-      // task?.customerType && task?.customerType ===1 ? setIsEnabled(true):setIsEnabled(false);
+      task?.customerType && task?.customerType ===1 ? setIsEnabled(true):setIsEnabled(false);
     }
   }, [route.params]);
 

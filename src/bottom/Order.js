@@ -134,25 +134,33 @@ const Order = () => {
         ? 'Distributor'
         : 'UNKNOWN';
 
-        const getStatusColor = (status) => {
-          switch (status.toLowerCase()) {
-            case 'open':
-              return 'yellow';
-            case 'partially confirmed':
-              return 'lightgreen';
-            case 'confirmed':
-              return 'darkgreen';
-            case 'partially cancelled':
-              return 'lightred';
-            case 'cancelled':
-              return 'red';
-            case 'partially confirmed and partially cancelled':
-              return 'orange';
-            default:
-              return 'grey'; // default color for unknown statuses
-          }
-        };
-      
+    const getStatusColor = status => {
+      switch (status.toLowerCase()) {
+        case 'open':
+          return 'yellow';
+        case 'partially confirmed':
+          return 'lightgreen';
+        case 'confirmed':
+          return 'darkgreen';
+        case 'partially cancelled':
+          return 'lightred';
+        case 'cancelled':
+          return 'red';
+        case 'partially confirmed and partially cancelled':
+          return 'orange';
+        case 'fully returned':
+          return '#FFC0CB';
+        case 'partially returned':
+          return '#FFD1DF';
+        case 'delivered':
+          return '#B026FF';
+        case 'partially delivered':
+          return '#CBC3E3';
+        default:
+          return 'grey'; // default color for unknown statuses
+      }
+    };
+
     return (
       <View style={style.container}>
         <TouchableOpacity
@@ -171,7 +179,9 @@ const Order = () => {
               <Text style={{flex: 0.9, color: '#000'}}>
                 Customer Name : {item.customerName}
               </Text>
-               <Text style={{ color: '#000' }}>Customer Type: {customerTypeText}</Text>
+              <Text style={{color: '#000'}}>
+                Customer Type: {customerTypeText}
+              </Text>
             </View>
             <View style={style.PackedStatus}>
               <Text style={{fontWeight: 'bold', color: '#000', flex: 0.9}}>
@@ -190,7 +200,7 @@ const Order = () => {
                   color: '#000',
                   borderRadius: 5,
                   marginHorizontal: 10,
-                  fontWeight:"bold"
+                  fontWeight: 'bold',
                 }}>
                 Order Status - {item.orderStatus}
               </Text>
@@ -294,12 +304,13 @@ const Order = () => {
                   Customer Name : {selectedOrder.customerName}
                 </Text>
                 <Text style={{color: '#000'}}>
-            Customer Type: {selectedOrder.customerType === 1
-              ? 'Retailer'
-              : selectedOrder.customerType === 2
-              ? 'Distributor'
-              : 'UNKNOWN'}
-          </Text>
+                  Customer Type:{' '}
+                  {selectedOrder.customerType === 1
+                    ? 'Retailer'
+                    : selectedOrder.customerType === 2
+                    ? 'Distributor'
+                    : 'UNKNOWN'}
+                </Text>
               </View>
               <View style={style.custtlheader}>
                 <Text style={{flex: 0.9, color: '#000'}}>

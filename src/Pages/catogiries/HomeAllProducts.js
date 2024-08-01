@@ -220,7 +220,7 @@ const HomeAllProducts = ({ navigation }) => {
       <View style={styles.searchContainer}>
           <TextInput
             style={[styles.searchInput, searchQuery.length > 0 && styles.searchInputActive]}
-            autoFocus={true}
+            autoFocus={false}
             value={searchQuery}
             onChangeText={text => setSearchQuery(text)}
             placeholder={searchQuery ? searchQuery : (totalItems ? totalItems + ' Products Listed' : '')}
