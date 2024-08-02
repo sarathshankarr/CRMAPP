@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {formatDateIntoDMY} from '../../Helper/Helper';
 import CustomCheckBox from '../../components/CheckBox';
 
+
 const NewCall = () => {
   const route = useRoute();
   const userData = useSelector(state => state.loggedInUser);
@@ -28,7 +29,7 @@ const NewCall = () => {
   const callData = route.params?.call;
   const {call} = route.params;
   const callId = route.params?.callId;
-  const [isDatePickerVisibleUntil, setDatePickerVisibilityUntil] =
+  const [isDatePickerVisibleUntil, setIsDatePickerVisibleUntil] =
     useState(false);
   const [selectedDateUntil, setSelectedDateUntil] = useState('Call Start Date');
   const [shipFromToClicked, setShipFromToClicked] = useState(false);
@@ -87,6 +88,18 @@ const NewCall = () => {
   const [fromToClicked, setFromToClicked] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedLocationId, setSelectedLocationiD] = useState('');
+  const [showRemainder, setshowRemainder]=useState(true);
+  const [filteredDropdownOptions, setFilteredDropdownOptions]=useState([
+    {id:1 , label: '5 Mins', value: 5},
+    {id:2 , label: '10 Mins', value: 10},
+    {id:3 , label: '15 Mins', value: 15},
+    {id:4 , label: '30 Mins', value: 30},
+    {id:5 , label: '1 Hr', value: 60},
+    {id:6 , label: '2 Hr', value: 120},
+    {id:7 , label: '1 Day', value: 1440},
+    {id:8 , label: '2 Day', value: 2880},
+  ]);
+  
 
   useEffect(() => {
     setSelectedLocation('Select');
@@ -178,10 +191,15 @@ const NewCall = () => {
       // setSelectedUserOption(call.userName);
       setSelectedStatusOption(call.status);
       // setSelectedUserName(call.userName);
-      setSelectedDropdownOptionTime(call.startTime);
+      call.startTime && setSelectedDropdownOptionTime(call?.startTime);
       setMarkHighPriority(call.markHighPriority);
       getDateFromCall(call.startDate);
       getRemainder(call.remTime);
+
+      if(call?.startDate && call?.startTime){
+        getTimeDiffandRemainder(call?.startDate, call?.startTime);
+      }
+
       call.callType &&
         setSelectedDropdownOptionCallType(CallType[call.callType - 1]);
     }
@@ -192,10 +210,17 @@ const NewCall = () => {
     const formattedDate = date.split('T')[0];
     setSelectedDateUntil(formattedDate);
   };
+
+  const getTimeDiffandRemainder=(date, time)=>{
+    console.log("DATE AND TIME ========================================================> ", date.split('T')[0], time);
+    minutesBetweenDates(date.split('T')[0], time);
+  }
+
   const getRemainder = time => {
     console.log("rem==>",dropdownOptions[time-1],time)
     if (!time) return;
     setShowDropdownRow(true);
+    // setshowRemainder(true);
     setSelectedDropdownOption(dropdownOptions[time-1]);
   };
 
@@ -287,26 +312,26 @@ const NewCall = () => {
     }
   }, [route.params, users, customers, distributor]);
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      event => {
-        setKeyboardSpace(event.endCoordinates.height);
-      },
-    );
+  // useEffect(() => {
+  //   const keyboardDidShowListener = Keyboard.addListener(
+  //     'keyboardDidShow',
+  //     event => {
+  //       setKeyboardSpace(event.endCoordinates.height);
+  //     },
+  //   );
 
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setKeyboardSpace(0);
-      },
-    );
+  //   const keyboardDidHideListener = Keyboard.addListener(
+  //     'keyboardDidHide',
+  //     () => {
+  //       setKeyboardSpace(0);
+  //     },
+  //   );
 
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
+  //   return () => {
+  //     keyboardDidShowListener.remove();
+  //     keyboardDidHideListener.remove();
+  //   };
+  // }, []);
 
   const handleShipDropdownClickCallType = () => {
     setShipFromToClickedCallType(!shipFromToClickedCallType);
@@ -558,13 +583,18 @@ const NewCall = () => {
   };
 
   const showDatePickerUntil = () => {
-    setDatePickerVisibilityUntil(true);
+    setIsDatePickerVisibleUntil(true);
   };
 
   const hideDatePickerUntil = () => {
-    setDatePickerVisibilityUntil(false);
+    setIsDatePickerVisibleUntil(false);
   };
+
+
   const handleDropdownSelectTime = option => {
+    if(selectedDateUntil!=='Call Start Date'){
+      minutesBetweenDates (selectedDateUntil ,option)
+    }
     setSelectedDropdownOptionTime(option);
     setShipFromToClickedTime(false);
   };
@@ -573,7 +603,21 @@ const NewCall = () => {
     const formattedDate = date.toISOString().split('T')[0]; // Formats date to "YYYY-MM-DD"
     setSelectedDateUntil(formattedDate); // Set the state without additional text
     hideDatePickerUntil();
+    
+    console.log("outside if of select date", selectedDropdownOptionTime.length) ;
+
+    if(selectedDropdownOptionTime!=='Call Start Time' &&  selectedDropdownOptionTime?.length>0){
+      minutesBetweenDates (formattedDate, selectedDropdownOptionTime);
+      console.log("INside if of select date") 
+    }else{
+      const defaultTime='11:59 PM'
+      minutesBetweenDates (formattedDate, defaultTime);
+      console.log("INside else of select date") 
+    }
+
   };
+
+
   const handleSearch = text => {
     if (text.trim().length > 0) {
       const filtered = users.filter(user =>
@@ -587,6 +631,7 @@ const NewCall = () => {
 
   const dropdownOptionsTime = [
     '12:00 PM',
+    '12:30 PM',
     '01:00 PM',
     '01:30 PM',
     '02:00 PM',
@@ -648,8 +693,10 @@ const NewCall = () => {
     {id:2 , label: '10 Mins', value: 10},
     {id:3 , label: '15 Mins', value: 15},
     {id:4 , label: '30 Mins', value: 30},
-    {id:5 , label: '1 Hr', value: 1},
-    {id:6 , label: '2 Hr', value: 2},
+    {id:5 , label: '1 Hr', value: 60},
+    {id:6 , label: '2 Hr', value: 120},
+    {id:7 , label: '1 Day', value: 1440},
+    {id:8 , label: '2 Day', value: 2880},
   ];
   const handleDropdownSelect = option => {
     setSelectedDropdownOption(option);
@@ -666,6 +713,11 @@ const NewCall = () => {
   const handleSave = () => {
     if (!relatedTo.trim()) {
       Alert.alert('Alert', 'Please fill in all mandatory fields');
+      return; // Exit the function early if any mandatory field is empty
+    }
+
+    if(showDropdownRow && (selectedDropdownOption?.label.length===0 || !selectedDropdownOption) ){
+      Alert.alert('Alert', 'Please select before start time as u checked reminder');
       return; // Exit the function early if any mandatory field is empty
     }
 
@@ -692,7 +744,7 @@ const NewCall = () => {
           ? selectedDateUntil
           : callData?.startDate,
       startTime: selectedDropdownOptionTime || callData?.startTime,
-      remTime: showDropdownRow
+      remTime: showDropdownRow && showRemainder
         ? selectedDropdownOption.id || callData?.remTime
         : null,
       callType: selectedDropdownOptionCallType.value || callData?.callType,
@@ -729,9 +781,10 @@ const NewCall = () => {
         setIsButtonDisabled(false); // Re-enable button after the process completes
       });
   };
+
   const renderCustomerDetails = () => (
     <View style={{}}>
-      <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
+      <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
         Retailer
       </Text>
       <TouchableOpacity
@@ -757,7 +810,7 @@ const NewCall = () => {
               onChangeText={handleSearchCustomer}
               placeholderTextColor="#000"
             />
-            <ScrollView style={styles.scrollView}>
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
               {(filteredCustomer.length === 0 || (filteredCustomer.length===1 && !filteredCustomer[0])) ? (
                 <Text style={styles.noCategoriesText}>
                   Sorry, no results found!
@@ -804,7 +857,7 @@ const NewCall = () => {
             onChangeText={handleSearchDistributor}
             placeholderTextColor="#000"
           />
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {(filteredDistributor.length === 0 || (filteredDistributor.length===1 && !filteredDistributor[0])) ? (
               <Text style={styles.noCategoriesText}>
                 Sorry, no results found!
@@ -825,7 +878,68 @@ const NewCall = () => {
     </View>
   );
 
+
+    function minutesBetweenDates(currentDate, selectedTime) {
+  // Helper function to parse time in HH:MM AM/PM format
+  function parseTime(timeStr) {
+      const [time, period] = timeStr.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+
+      return { hours, minutes };
+  }
+
+  // Function to get the current time in IST
+  function getISTDate() {
+      const utcNow = new Date();
+      const offset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30 in milliseconds
+      return new Date(utcNow.getTime() + offset);
+  }
+
+  // Get the current date and time in IST
+  const now = getISTDate();
+
+  // Parse the current date
+  const [year, month, day] = currentDate.split('-').map(Number);
+
+  // Parse the selected time
+  const { hours: selectedHours, minutes: selectedMinutes } = parseTime(selectedTime);
+
+  // Create a Date object for the selected time with the provided date in IST
+  const selectedDateTime = new Date(year, month - 1, day, selectedHours, selectedMinutes);
+
+  // Convert both now and selectedDateTime to UTC for accurate comparison
+  const nowUTC = new Date(now.toISOString());
+  const selectedDateTimeUTC = new Date(Date.UTC(year, month - 1, day, selectedHours, selectedMinutes));
+
+  // Calculate the difference in milliseconds
+  const diffInMs = selectedDateTimeUTC - nowUTC;
+
+  // Convert the difference to minutes
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+
+  // console.log("Difference in minutes:", diffInMinutes);
+
+
+    const filteredOptions = dropdownOptions.filter(o => o.value <= diffInMinutes);
+
+        // Update the state or data source for the dropdown options
+        setFilteredDropdownOptions(filteredOptions);
+
+        if (diffInMinutes < 5) {
+            setshowRemainder(false);
+        } else {
+          setshowRemainder(true);
+        }
+        console.log("difference :", diffInMinutes)
+        console.log("filteredDropdownOptions", filteredOptions)
+        console.log("showRemainder", showRemainder);
+    }
   return (
+    <ScrollView  style={{flex:1, backgroundColor:'#ffffff'}}>
+
     <View style={{flex: 1, backgroundColor: '#fff'}}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack}>
@@ -860,7 +974,7 @@ const NewCall = () => {
       </View>
 
       {isEnabled ? renderCustomerDetails() : renderDistributorDetails()}
-      <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
+      <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
         Location
       </Text>
       <TouchableOpacity
@@ -876,7 +990,7 @@ const NewCall = () => {
       </TouchableOpacity>
       {fromToClicked && (
         <View style={styles.dropdownContent1}>
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {customerLocations.length === 0 ? (
               <Text style={styles.noCategoriesText}>
                 Sorry, no results found!
@@ -894,7 +1008,7 @@ const NewCall = () => {
           </ScrollView>
         </View>
       )}
-      <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
+      <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
         Users
       </Text>
 
@@ -926,7 +1040,7 @@ const NewCall = () => {
             onChangeText={handleSearch}
             placeholderTextColor="#000"
           />
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {filteredUsers.length === 0 ? (
               <Text style={styles.noCategoriesText}>
                 Sorry, no results found!
@@ -1051,8 +1165,8 @@ const NewCall = () => {
       </View>
 
       {shipFromToClickedTime && (
-        <ScrollView style={styles.scrollView}>
           <View style={styles.dropdownContent1}>
+        <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {dropdownOptionsTime.map((option, index) => (
               <TouchableOpacity
                 key={index}
@@ -1061,10 +1175,11 @@ const NewCall = () => {
                 <Text style={{color: '#000'}}>{option}</Text>
               </TouchableOpacity>
             ))}
-          </View>
         </ScrollView>
+          </View>
       )}
-
+      
+     { showRemainder &&
       <View
         style={{
           marginHorizontal: 10,
@@ -1080,7 +1195,8 @@ const NewCall = () => {
         {/* <CheckBox isChecked={showDropdownRow} onClick={handleCheckboxChange} /> */}
         <Text style={{marginLeft: 5, color: '#000'}}>Remainder</Text>
       </View>
-      {showDropdownRow && (
+       } 
+      {showDropdownRow  && showRemainder && (
         <View>
           <Text
             style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
@@ -1118,18 +1234,18 @@ const NewCall = () => {
       )}
 
       {shipFromToClicked && (
-        <ScrollView style={styles.scrollView}>
           <View style={styles.dropdownContent1}>
-            {dropdownOptions.map((option, index) => (
+        <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+            {filteredDropdownOptions.map((option, index) => (
               <TouchableOpacity
                 key={option.label}
                 style={styles.dropdownOption}
-                onPress={() => handleDropdownSelect(option)}>
+                onPress={() => handleDropdownSelect(option) }>
                 <Text style={{color:'#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
-          </View>
         </ScrollView>
+          </View>
       )}
       <Text style={{marginHorizontal: 10, marginVertical: 5, color: '#000'}}>
         Call Type
@@ -1156,8 +1272,13 @@ const NewCall = () => {
         />
       </TouchableOpacity>
       {shipFromToClickedCallType && (
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.dropdownContent1}>
+        <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+          <View style={{ elevation: 5,
+                     // maxHeight: 450,
+                     alignSelf: 'center',
+                     width: '90%',
+                     backgroundColor: '#fff',
+                     borderRadius: 10,}}>
             {CallType.map((option, index) => (
               <TouchableOpacity
                 key={option.value}
@@ -1193,19 +1314,22 @@ const NewCall = () => {
       </TouchableOpacity>
 
       {shipFromToClickedStatus && (
-        <View style={[styles.dropdownContent, {bottom: 80}]}>
-          <ScrollView style={styles.scrollView}>
+            <View style={styles.dropdownContent1}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+
             {statusOptions.map((option, index) => (
               <TouchableOpacity
-                key={index}
-                style={styles.dropdownOption}
-                onPress={() => handleDropdownSelectStatus(option)}>
+              key={index}
+              style={styles.dropdownOption}
+              onPress={() => handleDropdownSelectStatus(option)}>
                 <Text style={{color: '#000'}}>{option}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </View>
+            </View>
       )}
+
+      <View style={{marginBottom:50}}/>
 
       <DateTimePickerModal
         isVisible={isDatePickerVisibleUntil}
@@ -1214,6 +1338,7 @@ const NewCall = () => {
         onCancel={hideDatePickerUntil}
       />
     </View>
+    </ScrollView>
   );
 };
 
@@ -1247,7 +1372,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginHorizontal: 10,
-    marginVertical: 3,
+    marginVertical: 5,
   },
   sectionText: {
     fontSize: 18,
@@ -1257,7 +1382,7 @@ const styles = StyleSheet.create({
   switchContainer: {
     marginHorizontal: 6,
     flexDirection: 'row',
-    marginVertical: 3,
+    marginVertical: 5,
     alignItems: 'center',
   },
   inputContainer: {
@@ -1308,8 +1433,12 @@ const styles = StyleSheet.create({
   //   borderBottomColor: '#ccc',
   // },
   scrollView: {
-    maxHeight: 150,
+  // height:150,
+  minHeight:70,
+  maxHeight:150
+
   },
+  
   dropdownOption: {
     paddingHorizontal: 10,
     paddingVertical: 12,
@@ -1336,7 +1465,7 @@ const styles = StyleSheet.create({
     // borderColor: '#ccc',
     //----------------
     elevation: 5,
-    height: 220,
+    // maxHeight: 450,
     alignSelf: 'center',
     width: '90%',
     backgroundColor: '#fff',
