@@ -178,19 +178,24 @@ const CustomerLocation = () => {
 
   return (
     <View style={styles.dropdownContainer}>
-      <View style={styles.dropdownContent}>
-        {filteredTasks.map(task => (
+    <View style={styles.dropdownContent}>
+      {filteredTasks.length === 0 ? (
+        <Text style={styles.noResultsText}>Sorry, no results found!</Text>
+      ) : (
+        filteredTasks.map(task => (
           <TouchableOpacity
             key={task.value}
             style={styles.dropdownItem}
             onPress={() => handleTaskSelect(task)}>
-              <View style={{borderWidth:1,marginHorizontal:1,paddingVertical:20,marginVertical:3,borderRadius:10}}>
+            <View style={{borderWidth: 1, marginHorizontal: 1, paddingVertical: 20, marginVertical: 3, borderRadius: 10}}>
               <Text style={styles.dropdownItemText}>{task.label}</Text>
-              </View>
+            </View>
           </TouchableOpacity>
-        ))}
-      </View>
+        ))
+      )}
     </View>
+  </View>
+  
   );
 };
 
@@ -239,6 +244,15 @@ const styles = StyleSheet.create({
     marginLeft:10,
     color: '#000',
   },
+  noResultsText:{
+    top: 40,
+    textAlign: 'center',
+    color: '#000000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    padding: 5,
+  }
+ 
 });
 
 export default CustomerLocation;
