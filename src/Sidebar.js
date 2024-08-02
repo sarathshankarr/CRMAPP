@@ -323,7 +323,12 @@ const Sidebar = ({navigation, route}) => {
       )}
       <TouchableOpacity
         onPress={goToCustomerLocation}
+        
         style={styles.inventoryhead}>
+        <Image
+          style={styles.locimg}
+          source={require('../assets/location-pin.png')}
+        />
         <Text style={styles.ordertxt}>Location</Text>
       </TouchableOpacity>
       <Modal
@@ -510,6 +515,11 @@ const styles = StyleSheet.create({
   distributorimg: {
     height: 35,
     width: 35,
+    tintColor: '#5177c0',
+  },
+  locimg: {
+    height: 30,
+    width: 30,
     tintColor: '#5177c0',
   },
   ordertxt: {

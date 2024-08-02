@@ -1,36 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View, PermissionsAndroid, StyleSheet, TextInput, ScrollView, Image, Alert } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  PermissionsAndroid,
+  StyleSheet,
+  Alert,
+  Linking,
+  Platform,
+} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const decodePolyline = encoded => {
-  const points = [];
-  let index = 0, lat = 0, lng = 0;
-  while (index < encoded.length) {
-    let b, shift = 0, result = 0;
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-    lat += dlat;
-    shift = 0;
-    result = 0;
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-    lng += dlng;
-    points.push([lat / 1e5, lng / 1e5]);
-  }
-  return points;
-};
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../config/apiConfig';
 
 const CustomerLocation = () => {
   const userData = useSelector(state => state.loggedInUser);
@@ -41,29 +25,62 @@ const CustomerLocation = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTask, setSelectedTask] = useState(null);
   const [clicked, setClicked] = useState(false);
-  const [routePath, setRoutePath] = useState([]);
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const selectedCompany = useSelector(state => state.selectedCompany);
 
-  const customerLocation = {
-    latitude:  11.400407297515569,
-    longitude: 76.68483706930725
-  };
-  useEffect(() => {
-    requestLocationPermission();
-    getLocation();
-    getTasksAccUser();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      requestLocationPermission();
+      getLocation();
+      getTasksAccUser();
+    }, [])
+  );
 
   useEffect(() => {
-    if (searchQuery) {
-      const filtered = tasks.filter(task =>
-        task.label.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredTasks(filtered);
-    } else {
-      setFilteredTasks(tasks);
+    const fetchInitialSelectedCompany = async () => {
+      try {
+        const initialCompanyData = await AsyncStorage.getItem('initialSelectedCompany');
+        if (initialCompanyData) {
+          const initialCompany = JSON.parse(initialCompanyData);
+          setInitialSelectedCompany(initialCompany);
+          console.log('Initial Selected Company:', initialCompany);
+        }
+      } catch (error) {
+        console.error('Error fetching initial selected company:', error);
+      }
+    };
+
+    fetchInitialSelectedCompany();
+  }, []);
+
+  const companyId = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
+
+  const getTasksAccUser = () => {
+    if (!userData) {
+      console.error('User data is null');
+      return;
     }
-  }, [searchQuery, tasks]);
+    const apiUrl = `${global?.userData?.productURL}${API.GET_TASKS_ACC_USER}/${userData.userId}/${companyId}`;
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        console.log('API Response:', response.data);
+        const taskOptions = response.data.map(task => ({
+          label: task.taskName,
+          value: task.id,
+          locationName: task.locationName || '', // Default to empty string if not available
+        }));
+        setTasks(taskOptions);
+        setFilteredTasks(taskOptions);
+      })
+      .catch(error => {
+        console.error('Error fetching tasks:', error.response ? error.response.data : error.message);
+      });
+  };
 
   const requestLocationPermission = async () => {
     try {
@@ -75,21 +92,19 @@ const CustomerLocation = () => {
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
-        }
+        },
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('Location permission granted');
       } else {
         console.log('Location permission denied');
-        Alert.alert('Location permission denied');
       }
     } catch (err) {
       console.warn(err);
-      Alert.alert('Error requesting location permission', err.message);
     }
   };
 
-  const getLocation = () => {
+  const getLocation = (retryCount = 0) => {
     Geolocation.getCurrentPosition(
       position => {
         setMLat(position.coords.latitude);
@@ -98,222 +113,133 @@ const CustomerLocation = () => {
       },
       error => {
         console.error('Error getting location:', error);
-        Alert.alert('Error getting location', error.message);
+        if (retryCount < 3) { // Retry up to 3 times
+          setTimeout(() => getLocation(retryCount + 1), 1000); // Wait 1 second before retrying
+        } else {
+          Alert.alert('Error', 'Current location not available');
+        }
       },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 } // Increase timeout to 30 seconds
     );
   };
 
-  const getTasksAccUser = () => {
-    const apiUrl = `https://crm.codeverse.co/erpportal/api/master/getTasksAccUser/${userData.userId}/${selectedCompany?.id}`;
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        }
-      })
-      .then(response => {
-        const taskOptions = response.data.map(task => ({
-          label: task.taskName,
-          value: task.id,
-          latitude: task.latitude || null,
-          longitude: task.longitude || null,
-        }));
-        setTasks(taskOptions);
-        setFilteredTasks(taskOptions);
-      })
-      .catch(error => {
-        console.error('Error fetching tasks:', error);
-        Alert.alert('Error fetching tasks', error.message);
-      });
+  const handleDropdownClick = () => {
+    setClicked(!clicked);
   };
 
-  const getRoute = async (startCoords, endCoords) => {
-    if (!startCoords || !endCoords) {
-      console.error('Start or end coordinates are missing');
+  const createAddressString = task => {
+    console.log('Full Task Object:', task);
+
+    const {
+      locationName = ''
+    } = task;
+
+    const addressParts = [
+      locationName,
+    ];
+    const address = addressParts.filter(part => part.trim()).join(', ');
+
+    console.log('Constructed Address:', address);
+    return address;
+  };
+
+  const handleTaskSelect = task => {
+    console.log('Selected Task:', task);
+    setSelectedTask(task);
+    setSearchQuery(task.label);
+    setClicked(false);
+
+    if (!mLat || !mLong) {
+      console.error('Current location not available');
+      Alert.alert('Error', 'Current location not available');
       return;
     }
 
-    const routeUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${startCoords.latitude},${startCoords.longitude}&destination=${endCoords.latitude},${endCoords.longitude}&key=AIzaSyABAt-YLOZXJGPN-6X33p_NkH1NiFCGVx8`;
-
-    try {
-      const response = await axios.get(routeUrl);
-      const { status, routes } = response.data;
-
-      if (status === 'OK' && routes.length > 0) {
-        const encodedPolyline = routes[0].overview_polyline.points;
-        const decodedPath = decodePolyline(encodedPolyline);
-        setRoutePath(decodedPath);
-      } else {
-        console.error('Directions API Error:', status, response.data.error_message);
-        Alert.alert('Directions API Error', response.data.error_message);
-      }
-    } catch (error) {
-      console.error('Error fetching route:', error);
-      Alert.alert('Error fetching route', error.message);
-    }
+    const address = createAddressString(task);
+    openGoogleMaps(mLat, mLong, address);
   };
 
-  const handleTaskSelection = async task => {
-    if (!task) return;
+  const openGoogleMaps = (startLat, startLong, destinationAddress) => {
+    const url = Platform.select({
+      ios: `maps://app?saddr=${startLat},${startLong}&daddr=${destinationAddress}`,
+      android: `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLong}&destination=${encodeURIComponent(destinationAddress)}&travelmode=driving`,
+    });
 
-    setSelectedTask(task);
-    setClicked(false);
-
-    const taskCoords = {
-      latitude: task.latitude,
-      longitude: task.longitude,
-    };
-
-    if (mLat && mLong) {
-      await getRoute({ latitude: mLat, longitude: mLong }, taskCoords);
-    } else {
-      console.error('Current location coordinates are not available');
-      Alert.alert('Current location coordinates are not available');
-    }
+    Linking.canOpenURL(url)
+      .then(supported => {
+        if (!supported) {
+          Alert.alert('Error', 'Google Maps is not installed');
+        } else {
+          return Linking.openURL(url);
+        }
+      })
+      .catch(err => console.error('An error occurred', err));
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={styles.dropdownContainer}>
-        <TouchableOpacity
-          style={styles.dropdownButton}
-          onPress={() => setClicked(!clicked)}
-        >
-          <Text style={styles.dropdownText}>
-            {selectedTask ? selectedTask.label : 'Select Task'}
-          </Text>
-          <Image
-            source={require('../../../assets/dropdown.png')}
-            style={styles.dropdownIcon}
-          />
-        </TouchableOpacity>
+    <View style={styles.dropdownContainer}>
+      <View style={styles.dropdownContent}>
+        {filteredTasks.map(task => (
+          <TouchableOpacity
+            key={task.value}
+            style={styles.dropdownItem}
+            onPress={() => handleTaskSelect(task)}>
+              <View style={{borderWidth:1,marginHorizontal:1,paddingVertical:20,marginVertical:3,borderRadius:10}}>
+              <Text style={styles.dropdownItemText}>{task.label}</Text>
+              </View>
+          </TouchableOpacity>
+        ))}
       </View>
-      {clicked && (
-        <View style={styles.dropdownMenu}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search..."
-            placeholderTextColor="#000"
-            value={searchQuery}
-            onChangeText={text => setSearchQuery(text)}
-          />
-          {filteredTasks.length === 0 ? (
-            <Text style={styles.noResultsText}>Sorry, no results found!</Text>
-          ) : (
-            <ScrollView>
-              {filteredTasks.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.option}
-                  onPress={() => handleTaskSelection(item)}
-                >
-                  <Text style={styles.optionText}>{item.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-        </View>
-      )}
-      <MapView
-        style={{ width: '100%', height: '100%' }}
-        initialRegion={{
-          latitude: mLat || 11.40680165484803,
-          longitude: mLong ||  76.70114490043404,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-      >
-        {mLat && mLong && (
-          <Marker
-            coordinate={{ latitude: mLat, longitude: mLong }}
-            title="Current Location"
-          />
-        )}
-        {selectedTask && selectedTask.latitude && selectedTask.longitude && (
-          <Marker
-            coordinate={{
-              latitude: selectedTask.latitude,
-              longitude: selectedTask.longitude,
-            }}
-            title="Task Location"
-          />
-        )}
-        {routePath.length > 0 && (
-          <Polyline
-            coordinates={routePath.map(coord => ({
-              latitude: coord[0],
-              longitude: coord[1],
-            }))}
-            strokeColor="#FF0000"
-            strokeWidth={4}
-          />
-        )}
-        {customerLocation && mLat && mLong && (
-          <Polyline
-            coordinates={[
-              { latitude: customerLocation.latitude, longitude: customerLocation.longitude },
-              { latitude: mLat, longitude: mLong },
-            ]}
-            strokeColor="#FF0000"
-            strokeWidth={4}
-          />
-        )}
-      </MapView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   dropdownContainer: {
-    width: '100%',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    flex: 1,
+    backgroundColor: '#fff',
   },
   dropdownButton: {
+    backgroundColor: '#ddd',
+    padding: 10,
+    borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    elevation: 2,
   },
   dropdownText: {
+    flex: 1,
     fontSize: 16,
-    color: '#000',
   },
   dropdownIcon: {
     width: 20,
     height: 20,
   },
   dropdownMenu: {
-    width: '100%',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
     backgroundColor: '#fff',
-    borderRadius: 5,
-    elevation: 2,
-  },
-  searchInput: {
-    width: '100%',
-    padding: 10,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 5,
-    marginBottom: 10,
+    position: 'absolute',
+    top: 50,
+    width: '100%',
+    maxHeight: 200,
+    zIndex: 10,
   },
-  noResultsText: {
-    textAlign: 'center',
-    color: '#000',
-  },
-  option: {
+  searchInput: {
     padding: 10,
+    borderBottomColor: '#ddd',
+    borderBottomWidth: 1,
+  },
+  dropdownItem: {
   },
   optionText: {
-    fontSize: 16,
+    color: '#000',
+  },
+  dropdownItemText: {
+    marginLeft:10,
     color: '#000',
   },
 });
 
 export default CustomerLocation;
+

@@ -232,7 +232,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       return;
     }
 
-    const hasExactlyTenDigits = /^\d{10}$/;
+    const hasExactlyTenDigits = /^\d{12}$/;
     if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
@@ -315,20 +315,20 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       phoneNumber: inputValues.phoneNumber,
       whatsappId: inputValues.whatsappId,
       emailId: '',
-      action: 'ADD',
+      action: '',
       createBy: 1,
       createOn: new Date().toISOString(),
       modifiedBy: 1,
       modifiedOn: new Date().toISOString(),
-      houseNo: '200 - F',
-      street: 'First Lane',
-      locality: 'Square Street',
+      houseNo: '',
+      street: '',
+      locality: '',
       cityOrTown: inputValues.cityOrTown,
       state: inputValues.state,
       country: inputValues.country,
-      pincode: '500049',
-      pan: 'AG818EH2U1',
-      gstNo: 'HUVYYVYH8',
+      pincode: '',
+      pan: '',
+      gstNo: '',
       creditLimit: 0,
       paymentReminderId: 0,
       companyId: companyId,
@@ -408,7 +408,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       stateId: 0,
       currencyId: 9,
       country: inputValues.country,
-      pincode: "787654",
+      pincode: "",
       customerLevel: "",
       pan: "",
       gstNo: "",
@@ -1057,7 +1057,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       return; // Do not proceed with saving
     }
 
-    const hasExactlyTenDigits = /^\d{10}$/;
+    const hasExactlyTenDigits = /^\d{12}$/;
     if (!hasExactlyTenDigits.test(Number(locationInputValues.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
