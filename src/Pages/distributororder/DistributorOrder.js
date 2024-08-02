@@ -102,16 +102,31 @@ const DistributorOrder = () => {
 
     if (order && order.orderLineItems) {
       order.orderLineItems.forEach(item => {
-        const shippedQty = parseInt(item.shipQty);
-        const receivedQty = parseInt(item.grnQty);
-        const inputQty = parseInt(inputValues[item.orderLineitemId]) || 0;
-        const qty = isChecked ? shippedQty : receivedQty + inputQty;
-        const unitPrice = parseFloat(item.unitPrice);
-        const gst = parseFloat(item.gst);
+        const shippedQty = parseInt(item.shipQty, 10) || 0;
+        const receivedQty = parseInt(item.grnQty, 10) || 0;
+        const inputQtyString = inputValues[item.orderLineitemId] || '';
+        const inputQty =
+          inputQtyString !== '' ? parseInt(inputQtyString, 10) : 0;
+        const unitPrice = parseFloat(item.unitPrice) || 0;
+        const gst = parseFloat(item.gst) || 0;
 
+        // Log values for debugging
+        console.log('item.orderLineitemId:', item.orderLineitemId);
+        console.log('shippedQty:', shippedQty);
+        console.log('receivedQty:', receivedQty);
+        console.log('inputQty:', inputQty);
+
+        // Calculate qty as receivedQty + inputQty
+        const qty = receivedQty + inputQty;
+        console.log('===>', qty);
+        // Calculate gross value based on qty and unitPrice
+        const grnGross = qty * unitPrice;
+        const gstAmount = ((unitPrice * gst) / 100) * qty;
+
+        // Accumulate totals
         totalQty += qty;
-        totalGst += ((unitPrice * gst) / 100) * qty;
-        totalCost += unitPrice * qty + ((unitPrice * gst) / 100) * qty;
+        totalGst += gstAmount;
+        totalCost += grnGross + gstAmount;
       });
     }
 
@@ -122,26 +137,31 @@ const DistributorOrder = () => {
     });
   };
 
-  const handleCheckBoxToggle = () => {
-    setIsChecked(prevChecked => {
-      if (!prevChecked) {
-        setInputValues({});
-      }
-      return !prevChecked;
-    });
-  };
+  // Ensure calculateTotals is called correctly, e.g., in useEffect or event handler
+  useEffect(() => {
+    calculateTotals();
+  }, [order, inputValues, isChecked]);
 
-  const handleGoBack = () => {
-    navigation.goBack();
-  };
-  const handleQtyChange = (text, itemId) => {
-    const qty = parseInt(text);
+  const getRemainingQty = itemId => {
+    // Find the order line item based on itemId
     const orderLineItem = order.orderLineItems.find(
       item => item.orderLineitemId === itemId,
     );
-    const remainingQty = orderLineItem.shipQty - orderLineItem.grnQty;
 
-    if (qty > remainingQty) {
+    if (orderLineItem) {
+      const shippedQty = parseInt(orderLineItem.shipQty, 10) || 0;
+      const receivedQty = parseInt(orderLineItem.grnQty, 10) || 0;
+      return shippedQty - receivedQty;
+    }
+
+    return 0; // Default if item not found
+  };
+
+  const handleQtyChange = (text, itemId) => {
+    const inputQty = parseInt(text, 10) || 0;
+    const remainingQty = getRemainingQty(itemId); // Get the remaining quantity for the item
+
+    if (inputQty > remainingQty) {
       Alert.alert('Alert', 'Quantity should be less. Please check.');
     } else {
       setInputValues(prevInputValues => ({
@@ -149,6 +169,86 @@ const DistributorOrder = () => {
         [itemId]: text,
       }));
     }
+  };
+
+  const renderOrderLineItem = ({item}) => {
+    const shippedQty = parseInt(item.shipQty, 10);
+    const receivedQty = parseInt(item.grnQty, 10);
+
+    // Initialize inputQty
+    let inputQty = '0';
+    if (inputValues[item.orderLineitemId] !== undefined) {
+      inputQty = inputValues[item.orderLineitemId].toString();
+    } else {
+      inputQty = isChecked ? (shippedQty - receivedQty).toString() : '0';
+    }
+    console.log('inputQty', inputQty);
+
+    const unitPrice = parseFloat(item.unitPrice);
+    const gst = parseFloat(item.gst);
+
+    // Calculate gross value
+    const qty = parseInt(inputQty, 10) + receivedQty || 0;
+    const gstAmount = ((unitPrice * gst) / 100) * qty;
+    const grnGross = qty * unitPrice + gstAmount;
+    const grossWithoutDecimals = grnGross.toFixed(2);
+
+    return (
+      <View style={styles.orderItem}>
+        <Text style={[styles.orderText, {flex: 1.3}]}>{item.styleName}</Text>
+        <Text style={[styles.orderText, {flex: 1.3}]}>{item.colorName}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>{item.size}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>{item.shipQty}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>{item.grnQty}</Text>
+        <TextInput
+          style={[
+            styles.orderText,
+            {
+              flex: 1,
+              alignSelf: 'center',
+              borderBottomWidth: 1,
+              borderColor: 'gray',
+              textAlign: 'center',
+              color: '#000',
+              justifyContent: 'center',
+            },
+          ]}
+          value={inputQty}
+          onChangeText={text => handleQtyChange(text, item.orderLineitemId)}
+          keyboardType="numeric"
+          onBlur={() => setInputValues({...inputValues})}
+        />
+        <Text style={[styles.orderText, {flex: 1}]}>{item.unitPrice}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>{item.gst}</Text>
+        <Text style={[styles.orderText, {flex: 1}]}>
+          {grossWithoutDecimals}
+        </Text>
+      </View>
+    );
+  };
+
+  const handleCheckBoxToggle = () => {
+    setIsChecked(prevChecked => {
+      const newChecked = !prevChecked;
+      if (newChecked) {
+        const newInputValues = {};
+        order.orderLineItems.forEach(item => {
+          const shippedQty = parseInt(item.shipQty, 10) || 0;
+          const receivedQty = parseInt(item.grnQty, 10) || 0;
+          newInputValues[item.orderLineitemId] = (
+            shippedQty - receivedQty
+          ).toString();
+        });
+        setInputValues(newInputValues);
+      } else {
+        setInputValues({});
+      }
+      return newChecked;
+    });
+  };
+
+  const handleGoBack = () => {
+    navigation.goBack();
   };
 
   if (loading) {
@@ -183,18 +283,15 @@ const DistributorOrder = () => {
         const shippedQty = parseInt(item.shipQty);
         const receivedQty = parseInt(item.grnQty);
         const inputQty = parseInt(inputValues[item.orderLineitemId] || 0);
-        const qty = isChecked ? shippedQty : receivedQty + inputQty;
+        const qty = receivedQty + inputQty;
         const unitPrice = parseFloat(item.unitPrice);
         const gst = parseFloat(item.gst);
         const gross = qty * unitPrice + (qty * unitPrice * gst) / 100;
         const grossWithoutDecimals = Math.floor(gross);
-        const enterQty = isChecked
-          ? shippedQty
-          : parseInt(inputValues[item.orderLineitemId] || 0);
-        const grnQty = isChecked
-          ? item.shipQty
-          : parseInt(item.grnQty || 0) +
-            parseInt(inputValues[item.orderLineitemId] || 0);
+        const enterQty = parseInt(inputValues[item.orderLineitemId] || 0);
+        const grnQty =
+          parseInt(item.grnQty || 0) +
+          parseInt(inputValues[item.orderLineitemId] || 0);
         return {
           qty: item.qty,
           orderLineitemId: item.orderLineitemId,
@@ -244,62 +341,6 @@ const DistributorOrder = () => {
       });
   };
 
-  const renderOrderLineItem = ({item}) => {
-    const shippedQty = parseInt(item.shipQty);
-    const receivedQty = parseInt(item.grnQty);
-
-    let inputQty = '0';
-
-    if (isChecked) {
-      inputQty = (shippedQty - receivedQty).toString();
-    } else {
-      if (inputValues[item.orderLineitemId] !== undefined) {
-        inputQty = inputValues[item.orderLineitemId].toString();
-      }
-    }
-
-    const qty = isChecked ? shippedQty : receivedQty + parseInt(inputQty || 0);
-    const unitPrice = parseFloat(item.unitPrice);
-    const gst = parseFloat(item.gst);
-
-    const grnGross = qty * unitPrice + (qty * unitPrice * gst) / 100;
-    const grossWithoutDecimals = grnGross.toFixed(2);
-    console.log('Size:', item.size);
-
-    return (
-      <View style={styles.orderItem}>
-        <Text style={[styles.orderText, {flex: 1.6}]}>{item.styleName}</Text>
-        <Text style={[styles.orderText, {flex: 1.5}]}>{item.colorName}</Text>
-        <Text style={[styles.orderText, {flex: 1}]}>{item.size}</Text>
-        <Text style={[styles.orderText1, {flex: 1}]}>{item.shipQty}</Text>
-        <Text style={[styles.orderText, {flex: 1}]}>{item.grnQty}</Text>
-        <TextInput
-          style={[
-            styles.orderText,
-            {
-              flex: 1,
-              alignSelf: 'center',
-              borderBottomWidth: 1,
-              borderColor: 'gray',
-              textAlign: 'center',
-              color: '#000',
-              justifyContent: 'center',
-            },
-          ]}
-          value={inputQty}
-          onChangeText={text => handleQtyChange(text, item.orderLineitemId)}
-          keyboardType="numeric"
-          onBlur={() => setInputValues({...inputValues})}
-        />
-        <Text style={[styles.orderText, {flex: 1}]}>{item.unitPrice}</Text>
-        <Text style={[styles.orderText, {flex: 1}]}>{item.gst}</Text>
-        <Text style={[styles.orderText, {flex: 1}]}>
-          {grossWithoutDecimals}
-        </Text>
-      </View>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -322,15 +363,16 @@ const DistributorOrder = () => {
           </TouchableOpacity>
         </View>
         <Text style={styles.headerText2}>
-          Distributor Name    : {order.customerName}
+          Distributor Name  &nbsp; : {order.customerName}
         </Text>
+
         <Text style={styles.headerText3}>
           Company Location : {order.companyName}
         </Text>
       </View>
       <View style={styles.orderDetailsHeader}>
-        <Text style={[styles.orderDetailsText, {flex: 1.6}]}>Name</Text>
-        <Text style={[styles.orderDetailsText, {flex: 1.5}]}>Color</Text>
+        <Text style={[styles.orderDetailsText, {flex: 1.3}]}>Name</Text>
+        <Text style={[styles.orderDetailsText, {flex: 1.3}]}>Color</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Size</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Ship Qty</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Rec Qty</Text>
@@ -402,13 +444,12 @@ const styles = StyleSheet.create({
   orderDetailsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: '#dcdcdc',
-    alignSelf:"center"
   },
   orderDetailsText: {
     flex: 1,
+    textAlign: 'center',
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 15,
@@ -416,19 +457,15 @@ const styles = StyleSheet.create({
   orderItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
     alignItems: 'center',
   },
   orderText: {
+    flex: 1,
+    textAlign: 'center',
     color: '#000',
-    marginLeft:5
-  },
-  orderText1: {
-    color: '#000',
-    marginLeft:20
   },
   summary: {
     padding: 10,
@@ -439,7 +476,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 2,
     color: '#000',
-    textAlign: "center"
+    textAlign: 'center',
   },
   activityIndicator: {
     flex: 1,

@@ -99,7 +99,7 @@ const ProductPackagePublish = () => {
       return;
     }
 
-    const hasExactlyTenDigits = /^\d{10}$/;
+    const hasExactlyTenDigits = /^\d{12}$/;
     if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
@@ -149,20 +149,20 @@ const ProductPackagePublish = () => {
       phoneNumber: inputValues.phoneNumber,
       whatsappId: inputValues.whatsappId,
       emailId: '',
-      action: 'ADD',
+      action: '',
       createBy: 1,
       createOn: new Date().toISOString(),
       modifiedBy: 1,
       modifiedOn: new Date().toISOString(),
-      houseNo: '200 - F',
-      street: 'First Lane',
-      locality: 'Square Street',
+      houseNo: '',
+      street: '',
+      locality: '',
       cityOrTown: inputValues.cityOrTown,
       state: inputValues.state,
       country: inputValues.country,
-      pincode: '500049',
-      pan: 'AG818EH2U1',
-      gstNo: 'HUVYYVYH8',
+      pincode: '',
+      pan: '',
+      gstNo: '',
       creditLimit: 0,
       paymentReminderId: 0,
       companyId: companyId,
@@ -242,7 +242,7 @@ const ProductPackagePublish = () => {
       stateId: 0,
       currencyId: 9,
       country: inputValues.country,
-      pincode: '787654',
+      pincode: '',
       customerLevel: '',
       pan: '',
       gstNo: '',
@@ -256,10 +256,10 @@ const ProductPackagePublish = () => {
       transport: 0,
       mop: '',
       markupDisc: 0,
-      companyId:companyId ,
-      locationName:'',
-      locationCode:'',
-      locationDescription:'',
+      companyId: companyId,
+      locationName: '',
+      locationCode: '',
+      locationDescription: '',
     };
 
     axios
@@ -339,41 +339,25 @@ const ProductPackagePublish = () => {
   const handleGoBack = () => {
     navigation.goBack();
   };
-
   const getAllProducts = async companyId => {
     setLoading(true);
-    setIsFetching(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA}`;
-    console.log('API URL:', apiUrl);
-
-    try {
-      const requestData = {
-        pageNo: String(pageNo),
-        pageSize: '40',
-        categoryId: '',
-        companyId: companyId,
-      };
-
-      const response = await axios.post(apiUrl, requestData, {
+    const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA_NEW}/${companyId}`;
+    axios
+      .get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          'Content-Type': 'application/json',
         },
+      })
+      .then(response => {
+        setStylesData(response?.data?.response?.stylesList || []);
+        // console.log('Styles List:', response.data?.response?.stylesList);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
-
-      const data = response.data.content;
-      if (pageNo === 1) {
-        setStylesData(data);
-      } else {
-        setStylesData(prev => [...prev, ...data]);
-      }
-      setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-      setIsFetching(false);
-    }
   };
 
   const getDistributorsDetails = () => {
@@ -439,33 +423,30 @@ const ProductPackagePublish = () => {
         return customer ? customer.whatsappId : '';
       } else {
         const distributor = distributors.find(dist => dist.id === id);
-        return distributor
-          ? distributor.whatsappId  : '';
+        return distributor ? distributor.whatsappId : '';
       }
     };
-
     const requestData = {
-      stylesPublishList: checkedStyleIds.map(styleId => {
-        const isCustomer = selectedId === '2';
-        return {
+      stylesPublishList: checkedStyleIds.flatMap(styleId => 
+        checkedModalIds.map(customerId => ({
           styleId: styleId,
-          customerId: customerIdOrDistributorId,
-          phoneNo: getWhatsappId(customerIdOrDistributorId, isCustomer),
+          customerId: customerId,
+          phoneNo: getWhatsappId(customerId, selectedId === '2'),
           messageStts: 'Pending',
-          customerTypes: isCustomer ? 1 : 2,
-        };
-      }),
+          customerTypes: selectedId === '2' ? 1 : 2,
+        }))
+      ),
       loggedInUserWhatsappNumber: '', // Set this to the appropriate value if available
       companyId: companyId,
     };
+    console.log('stylesPublishList===>', checkedStyleIds);
 
     console.log('customerIdOrDistributorId', customerIdOrDistributorId);
     console.log('checkedModalIds:', checkedModalIds);
     console.log('requestData:', requestData);
-    // console.log("phoneNo",phoneNo)
 
     try {
-      const apiUrl = `${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
+      const apiUrl =`${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -475,11 +456,20 @@ const ProductPackagePublish = () => {
 
       console.log('Catalog generation response:', response.data);
 
-      // Show success alert
+      // Show success alert and reset checkbox selection
       Alert.alert(
         'Success',
         'Styles published successfully!',
-        [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              console.log('OK Pressed');
+              // Reset checkedStyleIds after alert confirmation
+              setCheckedStyleIds([]);
+            },
+          },
+        ],
         {cancelable: false},
       );
       handleCloseModal();
@@ -532,16 +522,6 @@ const ProductPackagePublish = () => {
         ? prevIds.filter(item => item !== id)
         : [...prevIds, id],
     );
-
-    if (selectedId === '2') {
-      setSelectedCustomerId(prevCustomerId =>
-        prevCustomerId === item.customerId ? null : item.customerId,
-      );
-    } else if (selectedId === '1') {
-      setSelectedDistributorId(prevDistributorId =>
-        prevDistributorId === item.id ? null : item.id,
-      );
-    }
   };
   const handleSelectAllToggle = () => {
     if (selectAll) {
@@ -627,15 +607,17 @@ const ProductPackagePublish = () => {
     if (!searchQuery) return data;
     return data.filter(item => {
       const searchString = searchQuery.toLowerCase();
-      const nameField = selectedId === '1' ? item.distributorName : item.firstName;
+      const nameField =
+        selectedId === '1' ? item.distributorName : item.firstName;
       return (
         nameField.toLowerCase().includes(searchString) ||
-        (item.whatsappId && item.whatsappId.toLowerCase().includes(searchString)) ||
+        (item.whatsappId &&
+          item.whatsappId.toLowerCase().includes(searchString)) ||
         (item.emailId && item.emailId.toLowerCase().includes(searchString))
       );
     });
   };
-  
+
   const renderItem = ({item}) => (
     <View style={styles.row}>
       <CustomCheckBox
@@ -815,13 +797,11 @@ const ProductPackagePublish = () => {
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
                   All Distributors
                 </Text>
-              
               )}
               {selectedId === '2' && (
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
                   All Retailer
                 </Text>
-            
               )}
               <TouchableOpacity
                 onPress={handleCloseModal}
@@ -831,7 +811,6 @@ const ProductPackagePublish = () => {
                   source={require('../../../assets/close.png')}
                 />
               </TouchableOpacity>
-
             </View>
 
             <View style={styles.searchContainerone}>
@@ -935,7 +914,7 @@ const ProductPackagePublish = () => {
                 justifyContent: 'space-between', // Space between text and close button
                 marginTop: 10,
                 paddingVertical: 5,
-                marginBottom:10,
+                marginBottom: 10,
               }}>
               {selectedId === '1' && (
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>

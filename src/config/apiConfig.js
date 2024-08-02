@@ -37,6 +37,8 @@ export const API = {
   VALIDATIONDISTRIBUTOR:"erpportal/api/distributors/isValiddistributor",
   VALIDATIONCUSTOMER:"erpportal/api/customers/isValidCustomer",
   VALIDATIONLOACTION:"erpportal/api/location/isValid",
+  ALL_PRODUCTS_DATA_NEW: 'erpportal/api/style/getAll',
+  GET_TASKS_ACC_USER:'erpportal/api/master/getTasksAccUser'
 };
 
 export const USER_ID = 'adminClientId';
