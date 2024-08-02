@@ -425,26 +425,26 @@ const NewTask = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      event => {
-        setKeyboardSpace(event.endCoordinates.height);
-      },
-    );
+  // useEffect(() => {
+  //   const keyboardDidShowListener = Keyboard.addListener(
+  //     'keyboardDidShow',
+  //     event => {
+  //       setKeyboardSpace(event.endCoordinates.height);
+  //     },
+  //   );
 
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setKeyboardSpace(0);
-      },
-    );
+  //   const keyboardDidHideListener = Keyboard.addListener(
+  //     'keyboardDidHide',
+  //     () => {
+  //       setKeyboardSpace(0);
+  //     },
+  //   );
 
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
+  //   return () => {
+  //     keyboardDidShowListener.remove();
+  //     keyboardDidHideListener.remove();
+  //   };
+  // }, []);
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -566,6 +566,11 @@ const NewTask = () => {
       return; // Exit the function early if any mandatory field is empty
     }
 
+    if(showDropdownRow && (selectedDropdownOption?.label.length===0 || !selectedDropdownOption) ){
+      Alert.alert('Alert', 'Please select before start time as u checked reminder');
+      return; // Exit the function early if any mandatory field is empty
+    }
+
     if (isButtonDisabled) return;
     setIsButtonDisabled(true);
     const switchStatus = isEnabled; // Assuming isEnabled controls the switch
@@ -677,7 +682,7 @@ const NewTask = () => {
               placeholderTextColor="#000"
               onChangeText={handleSearchCustomer}
             />
-            <ScrollView style={styles.scrollView}>
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
               {(filteredCustomer.length === 0|| (filteredCustomer.length===1 && !filteredCustomer[0])) ? (
                 <Text style={styles.noCategoriesText}>
                   Sorry, no results found!
@@ -723,7 +728,7 @@ const NewTask = () => {
               onChangeText={handleSearchDistributor}
               placeholderTextColor="#000"
             />
-            <ScrollView style={styles.scrollView}>
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
               {(filteredDistributor.length === 0|| (filteredDistributor.length===1 && !filteredDistributor[0])) ? (
                 <Text style={styles.noCategoriesText}>
                   Sorry, no results found!
@@ -746,6 +751,8 @@ const NewTask = () => {
   );
 
   return (
+    <ScrollView  style={{flex:1, backgroundColor:'#ffffff'}}>
+
     <View style={{flex: 1, backgroundColor: '#fff'}}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack}>
@@ -793,7 +800,7 @@ const NewTask = () => {
       </TouchableOpacity>
       {fromToClicked && (
         <View style={styles.dropdownContent1}>
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {customerLocations.length === 0 ? (
               <Text style={styles.noCategoriesText}>
                 Sorry, no results found!
@@ -840,7 +847,7 @@ const NewTask = () => {
             onChangeText={handleSearch}
             placeholderTextColor="#000"
           />
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {filteredUsers.length === 0 ? (
               <Text style={styles.noCategoriesText}>
                 Sorry, no results found!
@@ -986,8 +993,8 @@ const NewTask = () => {
       )}
 
       {shipFromToClicked && (
-        <View style={[styles.dropdownContent, {bottom: 190}]}>
-          <ScrollView style={styles.scrollView}>
+        <View style={styles.dropdownContent1}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {dropdownOptions.map(option => (
               <TouchableOpacity
                 key={option.value}
@@ -1033,8 +1040,8 @@ const NewTask = () => {
       </TouchableOpacity>
 
       {shipFromToClickedStatus && (
-        <View style={[styles.dropdownContent, {bottom: 90}]}>
-          <ScrollView style={styles.scrollView}>
+          <View style={styles.dropdownContent1}>
+          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
             {statusOptions.map((option, index) => (
               <TouchableOpacity
                 key={index}
@@ -1053,13 +1060,18 @@ const NewTask = () => {
         onConfirm={handleDateConfirmDue}
         onCancel={hideDatePickerDue}
       />
+      <View style={{marginBottom:50}}/>
+
       <DateTimePickerModal
         isVisible={isDatePickerVisibleUntil}
         mode="date"
         onConfirm={handleDateConfirmUntil}
         onCancel={hideDatePickerUntil}
       />
+
+
     </View>
+    </ScrollView>
   );
 };
 
@@ -1159,7 +1171,8 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   scrollView: {
-    maxHeight: 150,
+    minHeight:70,
+   maxHeight:150
   },
   dropdownOption: {
     paddingHorizontal: 10,
@@ -1169,7 +1182,7 @@ const styles = StyleSheet.create({
   },
   dropdownContent1: {
     elevation: 5,
-    height: 220,
+    // height: 220,
     alignSelf: 'center',
     width: '90%',
     backgroundColor: '#fff',
