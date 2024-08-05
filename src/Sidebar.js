@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  ScrollView,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -179,6 +180,8 @@ const Sidebar = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
+      <ScrollView style={styles.container} nestedScrollEnabled={true}>
+
       <View style={{backgroundColor: '#1F74BA'}}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -331,34 +334,8 @@ const Sidebar = ({navigation, route}) => {
         />
         <Text style={styles.ordertxt}>Location</Text>
       </TouchableOpacity>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={takePhotoFromCamera}>
-              <Text style={styles.modalButtonText}>Take Photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={choosePhotoFromLibrary}>
-              <Text style={styles.modalButtonText}>Choose from Gallery</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalCancelButton}
-              onPress={() => setModalVisible(false)}>
-              <Text style={{color: 'white'}}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
+       </ScrollView>
       <View style={styles.logoutContainer}>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutbox}>
           <Image
@@ -389,6 +366,35 @@ const Sidebar = ({navigation, route}) => {
           </Text>
         </TouchableOpacity>
       </View>
+     
+
+      <Modal
+         animationType="slide"
+         transparent={true}
+         visible={modalVisible}
+         onRequestClose={() => {
+           setModalVisible(!modalVisible);
+         }}>
+         <View style={styles.modalContainer}>
+           <View style={styles.modalContent}>
+             <TouchableOpacity
+               style={styles.modalButton}
+               onPress={takePhotoFromCamera}>
+               <Text style={styles.modalButtonText}>Take Photo</Text>
+             </TouchableOpacity>
+             <TouchableOpacity
+               style={styles.modalButton}
+               onPress={choosePhotoFromLibrary}>
+               <Text style={styles.modalButtonText}>Choose from Gallery</Text>
+             </TouchableOpacity>
+             <TouchableOpacity
+               style={styles.modalCancelButton}
+               onPress={() => setModalVisible(false)}>
+               <Text style={{color: 'white'}}>Cancel</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
+       </Modal>
       <Modal
         animationType="slide"
         transparent={true}
