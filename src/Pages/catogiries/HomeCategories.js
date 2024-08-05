@@ -278,6 +278,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     paddingTop: 10,
+    paddingBottom: 70
   },
   productItem: {
     flex: 1,
