@@ -99,7 +99,7 @@ const ProductPackagePublish = () => {
       return;
     }
 
-    const hasExactlyTenDigits = /^\d{12}$/;
+    const hasExactlyTenDigits = /^\d{10,12}$/;
     if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import {API} from '../../config/apiConfig';
-import {useRoute} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Pdf from 'react-native-pdf';
 
@@ -21,10 +21,16 @@ import Pdf from 'react-native-pdf';
 let pdfPath = null;
 
 const PackingOrders = () => {
+  const navigation = useNavigation();
   const [packingOrders, setPackingOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const route = useRoute();
   const {orderId} = route.params;
+
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
 
   useEffect(() => {
     if (orderId) {
@@ -177,6 +183,7 @@ const PackingOrders = () => {
 
   const renderOrder = ({item}) => (
     <View style={{borderBottomWidth: 1, borderBottomColor: '#ccc'}}>
+      
       <View style={styles.orderContainer}>
         <Text style={styles.text}>{item.p_id}</Text>
         <Text style={styles.text1}>{item.totQty}</Text>
@@ -216,6 +223,12 @@ const PackingOrders = () => {
 
   return (
     <View style={styles.container}>
+        <TouchableOpacity style={{backgroundColor:"#f0f0f0",}} onPress={handleGoBack}>
+          <Image
+            style={{height: 25, width: 25,marginHorizontal:10,marginVertical:5}}
+            source={require('../../../assets/back_arrow.png')}
+          />
+        </TouchableOpacity>
       <View style={styles.header}>
         <Text style={styles.headerText}>ID</Text>
         <Text style={styles.headerText1}>Packed Qty</Text>
@@ -243,7 +256,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    paddingVertical: 10,
     backgroundColor: '#f0f0f0',
   },
   headerText: {

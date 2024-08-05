@@ -232,7 +232,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       return;
     }
 
-    const hasExactlyTenDigits = /^\d{12}$/;
+    const hasExactlyTenDigits = /^\d{10,12}$/;
     if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
@@ -1041,7 +1041,6 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
     const mandatoryFields = [
       'locationName',
       'phoneNumber',
-      'locality',
       'cityOrTown',
       'state',
       'pincode',
@@ -1057,7 +1056,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       return; // Do not proceed with saving
     }
 
-    const hasExactlyTenDigits = /^\d{12}$/;
+    const hasExactlyTenDigits = /^\d{10,12}$/;
     if (!hasExactlyTenDigits.test(Number(locationInputValues.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
