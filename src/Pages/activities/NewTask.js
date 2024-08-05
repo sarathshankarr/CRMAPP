@@ -85,6 +85,12 @@ const NewTask = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedLocationId, setSelectedLocationiD] = useState('');
 
+  const [showFieldList, setShowFieldList]=useState(false);
+  const [selectedField, setSelectedField]=useState('');
+  const [filteredFieldsList, setFilteredFieldsList]=useState([]);
+  const [fieldsList, setfieldsList]=useState([]);
+  const [selectedFieldId, setSelectedFieldId]=useState([]);
+
   useEffect(() => {
     setSelectedLocation('Select');
     setCustomerLocations([]);
@@ -122,7 +128,7 @@ const NewTask = () => {
       })
       .then(response => {
         setCustomerLocations(response.data);
-        console.log('location response', response.data);
+        // console.log('location response', response.data);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -166,6 +172,28 @@ const NewTask = () => {
         const distributorList = response?.data?.response?.distributorList || [];
         setDistributor(distributorList);
         setFilterdDistributor(distributorList);
+        setLoadinggg(false);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setLoadinggg(false);
+      });
+  };
+  const getFieldsList = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_Fields_List}`;
+    console.log('apiUrl=================================>    ', apiUrl)
+    setLoadinggg(true);
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        const FieldList = response.data || [];
+        // console.log("response===> ", response.data)
+        setfieldsList(FieldList);
+        setFilteredFieldsList(FieldList);
         setLoadinggg(false);
       })
       .catch(error => {
@@ -232,6 +260,14 @@ const NewTask = () => {
     setFilteredCustomer(filtered);
   };
 
+  const handlefilterfields = text => {
+    const filtered = fieldsList?.filter(field =>
+      field?.fieldName?.toLowerCase().includes(text?.toLowerCase()),
+    );
+    console.log("FilterFields=== >", filtered)
+    setFilteredFieldsList(filtered);
+  };
+
   const handleShipDropdownClickCustomer = () => {
     if (!shipFromToClickedCustomer) {
       if (customers.length === 0) {
@@ -240,6 +276,16 @@ const NewTask = () => {
     }
     setShipFromToClickedCustomer(!shipFromToClickedCustomer);
   };
+  const handledropdownField = () => {
+    // if (!showFieldList) {
+    //   if (customers.length === 0) {
+    //     getFieldList();
+    //   }
+    // }
+    setShowFieldList(!showFieldList);
+  };
+
+
 
   const handleDropdownSelectCustomer = customer => {
     if (selectedCustomerId === customer.customerId) {
@@ -278,6 +324,14 @@ const NewTask = () => {
       setFilterdDistributor(distributor);
     }
   };
+
+  const handleSelectField=(field)=>{
+    setSelectedField(field.fieldName);
+    setSelectedFieldId(field.id);
+    setShowFieldList(false);
+  }
+
+
   const handleDropdownSelectDistributor = distributor => {
     if (selectedDistributorId === distributor.id) {
       setSelectedDistributorOption(''); // Reset distributor option
@@ -394,6 +448,23 @@ const NewTask = () => {
     setSelectedDateUntil(formattedDate);
   };
 
+  useEffect(()=>{
+    if (route.params && route.params.task) {
+      const {task} = route.params;
+      task.field && getFieldName(task.field);
+    }
+  }, [route.params, fieldsList])
+
+
+  const getFieldName=(id)=>{
+    setSelectedFieldId(id);
+    if(fieldsList?.length>0){
+      const foundItem=fieldsList.filter((item)=>item.id===id);
+      setSelectedField(foundItem[0]?.fieldName);
+      console.log("field prepoulate=============>",id, foundItem[0]?.fieldName)
+  }
+}
+
   const getTaskRepeatRem = repeatRem => {
     if (!repeatRem) return;
     setShowDropdownRow(true);
@@ -406,9 +477,9 @@ const NewTask = () => {
     }
 
     let foundItem = await users?.find(item => item.userId === role);
-    console.log('users, role ==> ', users[0], role);
+    // console.log('users, role ==> ', users[0], role);
     if (foundItem) {
-      console.log('founded user role ==> ', foundItem);
+      // console.log('founded user role ==> ', foundItem);
       setSelectedUserOption(foundItem.firstName);
     }
   };
@@ -422,6 +493,9 @@ const NewTask = () => {
     }
     if (distributor.length === 0) {
       getDistributorsDetails();
+    }
+    if(fieldsList.length===0){
+      getFieldsList();
     }
   }, []);
 
@@ -557,10 +631,10 @@ const NewTask = () => {
     setSelectedDateUntil(formattedDate); // Set the state without additional text
     hideDatePickerUntil();
   };
-  console.log(selectedLocationId);
+  // console.log(selectedLocationId);
 
   const handleSave = () => {
-    console.log(customerType);
+    // console.log(customerType);
     if (!taskName.trim() || !relatedTo.trim()) {
       Alert.alert('Alert', 'Please fill in all mandatory fields');
       return; // Exit the function early if any mandatory field is empty
@@ -579,12 +653,12 @@ const NewTask = () => {
     const customerId = switchStatus
       ? selectedCustomerId
       : selectedDistributorId;
-    console.log('customerId:', customerId);
+    // console.log('customerId:', customerId);
 
     const customeroption = switchStatus
       ? selectedCustomerOption
       : selectedDistributorOption;
-    console.log('customeroption:', customeroption);
+    // console.log('customeroption:', customeroption);
 
     const requestData = {
       id: route.params.task.id || 0,
@@ -606,6 +680,7 @@ const NewTask = () => {
       userName: selectedUserName,
       locId: selectedLocationId,
       customerType: customerType || null,
+      field:selectedFieldId || 0,
     };
 
     console.log('Request Data:', requestData);
@@ -1054,6 +1129,47 @@ const NewTask = () => {
         </View>
       )}
 
+     <View style={{marginTop:5}}>
+      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Field</Text>
+      <TouchableOpacity
+        onPress={handledropdownField}
+        style={styles.dropdownButton}>
+        <Text style={{color:"#000"}}>{selectedField || 'Select'}</Text>
+        <Image
+          source={require('../../../assets/dropdown.png')}
+          style={{width: 20, height: 20}}
+        />
+      </TouchableOpacity>
+      {
+        showFieldList && (
+          <View style={styles.dropdownContent1}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search"
+              placeholderTextColor="#000"
+              onChangeText={handlefilterfields}
+            />
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+              {(filteredFieldsList.length === 0|| (filteredFieldsList.length===1 && !filteredFieldsList[0])) ? (
+                <Text style={styles.noCategoriesText}>
+                  Sorry, no results found!
+                </Text>
+              ) : (
+                filteredFieldsList?.map((field, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleSelectField(field)}
+                    style={styles.dropdownOption}>
+                    <Text style={{color:"#000"}}>{field?.fieldName}</Text>
+                  </TouchableOpacity>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        )
+      }
+    </View>
+
       <DateTimePickerModal
         isVisible={isDatePickerVisibleDue}
         mode="date"
@@ -1068,6 +1184,7 @@ const NewTask = () => {
         onConfirm={handleDateConfirmUntil}
         onCancel={hideDatePickerUntil}
       />
+
 
 
     </View>
