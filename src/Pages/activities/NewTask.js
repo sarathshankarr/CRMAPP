@@ -325,12 +325,17 @@ const NewTask = () => {
     }
   };
 
-  const handleSelectField=(field)=>{
-    setSelectedField(field.fieldName);
-    setSelectedFieldId(field.id);
-    setShowFieldList(false);
-  }
-
+  const handleSelectField = (field) => {
+    if (selectedFieldId === field.id) {
+      setSelectedField(''); 
+      setSelectedFieldId(null); 
+    } else {
+      setSelectedField(field.fieldName); 
+      setSelectedFieldId(field.id); 
+    }
+    setShowFieldList(false); 
+  };
+  
 
   const handleDropdownSelectDistributor = distributor => {
     if (selectedDistributorId === distributor.id) {

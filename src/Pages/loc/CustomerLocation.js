@@ -8,6 +8,7 @@ import {
   Alert,
   Linking,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
@@ -25,14 +26,19 @@ const CustomerLocation = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTask, setSelectedTask] = useState(null);
   const [clicked, setClicked] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const selectedCompany = useSelector(state => state.selectedCompany);
 
   useFocusEffect(
     React.useCallback(() => {
-      requestLocationPermission();
-      getLocation();
-      getTasksAccUser();
+      const initialize = async () => {
+        await requestLocationPermission();
+        await getLocation();
+        getTasksAccUser();
+      };
+
+      initialize();
     }, [])
   );
 
@@ -56,6 +62,7 @@ const CustomerLocation = () => {
   const companyId = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
 
   const getTasksAccUser = () => {
+    setLoading(true);
     if (!userData) {
       console.error('User data is null');
       return;
@@ -73,16 +80,31 @@ const CustomerLocation = () => {
           label: task.taskName,
           value: task.id,
           locationName: task.locationName || '', // Default to empty string if not available
+          state: task.state || '',
+          houseNo: task.houseNo || '',
+          street: task.street || '',
+          locality: task.locality || '',
+          cityOrTown: task.cityOrTown || '',
+          country: task.country || '',
+          pincode: task.pincode || ''
         }));
         setTasks(taskOptions);
         setFilteredTasks(taskOptions);
       })
       .catch(error => {
         console.error('Error fetching tasks:', error.response ? error.response.data : error.message);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   const requestLocationPermission = async () => {
+    if (Platform.OS === 'ios') {
+      Geolocation.requestAuthorization('whenInUse');
+      return;
+    }
+
     try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -104,23 +126,27 @@ const CustomerLocation = () => {
     }
   };
 
-  const getLocation = (retryCount = 0) => {
-    Geolocation.getCurrentPosition(
-      position => {
-        setMLat(position.coords.latitude);
-        setMLong(position.coords.longitude);
-        console.log('Current location:', position.coords.latitude, position.coords.longitude);
-      },
-      error => {
-        console.error('Error getting location:', error);
-        if (retryCount < 3) { // Retry up to 3 times
-          setTimeout(() => getLocation(retryCount + 1), 1000); // Wait 1 second before retrying
-        } else {
-          Alert.alert('Error', 'Current location not available');
-        }
-      },
-      { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 } // Increase timeout to 30 seconds
-    );
+  const getLocation = async (retryCount = 0) => {
+    return new Promise((resolve, reject) => {
+      Geolocation.getCurrentPosition(
+        position => {
+          setMLat(position.coords.latitude);
+          setMLong(position.coords.longitude);
+          console.log('Current location:', position.coords.latitude, position.coords.longitude);
+          resolve();
+        },
+        error => {
+          console.error('Error getting location:', error);
+          if (retryCount < 3) { // Retry up to 3 times
+            setTimeout(() => getLocation(retryCount + 1).then(resolve).catch(reject), 1000); // Wait 1 second before retrying
+          } else {
+            Alert.alert('Error', 'Current location not available');
+            reject(error);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 } // Increase timeout to 30 seconds
+      );
+    });
   };
 
   const handleDropdownClick = () => {
@@ -129,16 +155,32 @@ const CustomerLocation = () => {
 
   const createAddressString = task => {
     console.log('Full Task Object:', task);
-
+  
     const {
-      locationName = ''
+      houseNo = '',
+      street = '',
+      locationName = '',
+      locality = '',
+      cityOrTown = '',
+      state = '',
+      country = '',
+      pincode = ''
     } = task;
-
+  
     const addressParts = [
+      houseNo,
+      street,
       locationName,
+      locality,
+      cityOrTown,
+      state,
+      country,
+      pincode
     ];
+  
+    // Filter out empty parts and join with commas
     const address = addressParts.filter(part => part.trim()).join(', ');
-
+  
     console.log('Constructed Address:', address);
     return address;
   };
@@ -177,30 +219,40 @@ const CustomerLocation = () => {
   };
 
   return (
-    <View style={styles.dropdownContainer}>
-    <View style={styles.dropdownContent}>
-      {filteredTasks.length === 0 ? (
-        <Text style={styles.noResultsText}>Sorry, no results found!</Text>
+    <View style={styles.Container}>
+    <View style={styles.Content}>
+      {loading ? (
+        <ActivityIndicator
+          style={{ justifyContent: 'center', alignItems: 'center' }}
+          size="large"
+          color="#390050"
+        />
       ) : (
-        filteredTasks.map(task => (
-          <TouchableOpacity
-            key={task.value}
-            style={styles.dropdownItem}
-            onPress={() => handleTaskSelect(task)}>
-            <View style={{borderWidth: 1, marginHorizontal: 1, paddingVertical: 20, marginVertical: 3, borderRadius: 10}}>
-              <Text style={styles.dropdownItemText}>{task.label}</Text>
-            </View>
-          </TouchableOpacity>
-        ))
+        <>
+          {filteredTasks.length === 0 ? (
+            <Text style={styles.noResultsText}>Sorry, no results found!</Text>
+          ) : (
+            filteredTasks.map(task => (
+              <TouchableOpacity
+                key={task.value}
+                style={styles.dropdownItem}
+                onPress={() => handleTaskSelect(task)}
+              >
+                <View style={{ borderWidth: 1, marginHorizontal: 1, paddingVertical: 20, marginVertical: 3, borderRadius: 10 }}>
+                  <Text style={styles.dropdownItemText}>{task.label}</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </>
       )}
     </View>
   </View>
-  
   );
 };
 
 const styles = StyleSheet.create({
-  dropdownContainer: {
+ Container: {
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -235,25 +287,22 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     borderBottomWidth: 1,
   },
-  dropdownItem: {
-  },
+  dropdownItem: {},
   optionText: {
     color: '#000',
   },
   dropdownItemText: {
-    marginLeft:10,
+    marginLeft: 10,
     color: '#000',
   },
-  noResultsText:{
+  noResultsText: {
     top: 40,
     textAlign: 'center',
     color: '#000000',
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
-  }
- 
+  },
 });
 
 export default CustomerLocation;
-
