@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, PureComponent } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  PureComponent,
+} from 'react';
 import {
   Text,
   View,
@@ -10,54 +16,66 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PRODUCT_DETAILS } from '../../components/ProductDetails';
+import {PRODUCT_DETAILS} from '../../components/ProductDetails';
 import ModalComponent from '../../components/ModelComponent';
-import { API } from '../../config/apiConfig';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RefreshControl } from 'react-native';
-
+import {useSelector} from 'react-redux';
+import {RefreshControl} from 'react-native';
 
 class ProductItem extends PureComponent {
   render() {
-    const { item, navigation, openModal } = this.props;
+    const {item, navigation, openModal} = this.props;
     return (
       <TouchableOpacity
         style={styles.productItem}
         onPress={() =>
           navigation.navigate(
-            item.categoryId === PRODUCT_DETAILS ? 'AllCategoriesListed' : 'Details',
+            item.categoryId === PRODUCT_DETAILS
+              ? 'AllCategoriesListed'
+              : 'Details',
             {
               item,
-            }
+            },
           )
         }>
         <View style={styles.productImageContainer}>
           {item.imageUrls && item.imageUrls.length > 0 ? (
-            <Image style={styles.productImage} source={{ uri: item.imageUrls[0] }} />
-            ) : (
-            <Image style={styles.productImage} source={require('../../../assets/NewNoImage.jpg')} />
+            <Image
+              style={styles.productImage}
+              source={{uri: item.imageUrls[0]}}
+            />
+          ) : (
+            <Image
+              style={styles.productImage}
+              source={require('../../../assets/NewNoImage.jpg')}
+            />
           )}
           <Text
             style={[
               styles.productName,
-               { backgroundColor: 'rgba(0, 0, 0, 0.2)' },
+              {backgroundColor: 'rgba(0, 0, 0, 0.2)'},
             ]}>
             {item.styleName}
           </Text>
         </View>
 
         <View style={styles.additionalDetailsContainer}>
-          <Text style={{color:'#000'}} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={{color: '#000'}} numberOfLines={1} ellipsizeMode="tail">
             Color Name: {item.colorName}
           </Text>
           <View style={styles.notesContainer}>
-            <Text style={{color:'#000'}} numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              style={{color: '#000'}}
+              numberOfLines={1}
+              ellipsizeMode="tail">
               Description: {item.styleDesc}
             </Text>
-            <Text style={{color:'#000'}}>Price: {item.mrp}</Text>
-            <TouchableOpacity onPress={() => openModal(item)} style={styles.buttonqty}>
-              <Text style={{color:'#ffffff'}}>ADD QTY</Text>
+            <Text style={{color: '#000'}}>Price: {item.mrp}</Text>
+            <TouchableOpacity
+              onPress={() => openModal(item)}
+              style={styles.buttonqty}>
+              <Text style={{color: '#ffffff'}}>ADD QTY</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -66,7 +84,7 @@ class ProductItem extends PureComponent {
   }
 }
 
-const HomeAllProducts = ({ navigation }) => {
+const HomeAllProducts = ({navigation}) => {
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -82,13 +100,15 @@ const HomeAllProducts = ({ navigation }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
 
-  const selectedCompany = useSelector((state) => state.selectedCompany);
+  const selectedCompany = useSelector(state => state.selectedCompany);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
-        const initialCompanyData = await AsyncStorage.getItem('initialSelectedCompany');
+        const initialCompanyData = await AsyncStorage.getItem(
+          'initialSelectedCompany',
+        );
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
@@ -102,7 +122,9 @@ const HomeAllProducts = ({ navigation }) => {
     fetchInitialSelectedCompany();
   }, []);
 
-  const companyId = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
+  const companyId = selectedCompany
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
 
   useEffect(() => {
     if (companyId) {
@@ -116,7 +138,6 @@ const HomeAllProducts = ({ navigation }) => {
     await getAllProducts(companyId); // Refetch the first page of data
     setRefreshing(false);
   };
-  
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -127,45 +148,47 @@ const HomeAllProducts = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
-
-
   useEffect(() => {
     setFilteredProducts(
       selectedDetails.filter(item =>
-        item.styleName.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+        item.styleName.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
     );
   }, [searchQuery, selectedDetails]);
 
-  const getAllProducts = async (categoryId) => {
+  const getAllProducts = async companyId => {
     setIsLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA}`;
-    console.log("apiurll", apiUrl);
-    
+    console.log('apiurll', apiUrl);
+
     try {
       const userData = await AsyncStorage.getItem('userdata');
       const userDetails = JSON.parse(userData);
-  
+
       const requestData = {
         pageNo: String(pageNo),
-        pageSize: "20",
-        categoryId: "",
-        companyId:companyId
+        pageSize: '20',
+        categoryId: '',
+        companyId: companyId,
       };
-  
+
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       });
-  
+
       const data = response.data.content;
+      const uniqueData = removeDuplicates(data, 'styleId'); // Remove duplicates
+
       if (pageNo === 1) {
-        setSelectedDetails(data);
+        setSelectedDetails(uniqueData);
         setTotalItems(response.data.totalItems);
       } else {
-        setSelectedDetails(prev => [...prev, ...data]);
+        setSelectedDetails(prev =>
+          removeDuplicates([...prev, ...uniqueData], 'styleId'),
+        );
       }
       setTotalPages(response.data.totalPages);
     } catch (error) {
@@ -174,7 +197,18 @@ const HomeAllProducts = ({ navigation }) => {
       setIsLoading(false);
     }
   };
-  
+
+  const removeDuplicates = (array, key) => {
+    const seen = new Set();
+    return array.filter(item => {
+      const keyValue = item[key];
+      if (seen.has(keyValue)) {
+        return false;
+      }
+      seen.add(keyValue);
+      return true;
+    });
+  };
 
   const toggleSearchInput = () => {
     setShowSearchInput(!showSearchInput);
@@ -189,14 +223,10 @@ const HomeAllProducts = ({ navigation }) => {
   };
 
   const renderProductItem = useCallback(
-    ({ item }) => (
-      <ProductItem
-        item={item}
-        navigation={navigation}
-        openModal={openModal}
-      />
+    ({item}) => (
+      <ProductItem item={item} navigation={navigation} openModal={openModal} />
     ),
-    [navigation]
+    [navigation],
   );
 
   const handleEndReached = () => {
@@ -218,14 +248,23 @@ const HomeAllProducts = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-          <TextInput
-            style={[styles.searchInput, searchQuery.length > 0 && styles.searchInputActive]}
-            autoFocus={false}
-            value={searchQuery}
-            onChangeText={text => setSearchQuery(text)}
-            placeholder={searchQuery ? searchQuery : (totalItems ? totalItems + ' Products Listed' : '')}
-            placeholderTextColor="#000"
-          />
+        <TextInput
+          style={[
+            styles.searchInput,
+            searchQuery.length > 0 && styles.searchInputActive,
+          ]}
+          autoFocus={false}
+          value={searchQuery}
+          onChangeText={text => setSearchQuery(text)}
+          placeholder={
+            searchQuery
+              ? searchQuery
+              : totalItems
+              ? totalItems + ' Products Listed'
+              : ''
+          }
+          placeholderTextColor="#000"
+        />
         <View style={styles.searchButton} onPress={toggleSearchInput}>
           <Image
             style={styles.image}
@@ -236,11 +275,12 @@ const HomeAllProducts = ({ navigation }) => {
 
       {isLoading ? (
         <ActivityIndicator
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
           size="large"
           color="#390050"
         />
-      )  : (searchQuery && filteredProducts.length === 0) || (!searchQuery && selectedDetails.length === 0) ? (
+      ) : (searchQuery && filteredProducts.length === 0) ||
+        (!searchQuery && selectedDetails.length === 0) ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
         <FlatList
@@ -259,10 +299,17 @@ const HomeAllProducts = ({ navigation }) => {
           onEndReachedThreshold={0.1}
           onScroll={handleScroll}
           scrollEventThrottle={16}
-          getItemLayout={(data, index) => ({ length: 350, offset: 350 * index, index })}
+          getItemLayout={(data, index) => ({
+            length: 350,
+            offset: 350 * index,
+            index,
+          })}
           onContentSizeChange={() => {
             if (scrollPosition !== 0) {
-              flatListRef.current.scrollToOffset({ offset: scrollPosition, animated: false });
+              flatListRef.current.scrollToOffset({
+                offset: scrollPosition,
+                animated: false,
+              });
             }
           }}
           refreshControl={
@@ -298,11 +345,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     marginTop: 10,
-    borderRadius:30,
-    marginHorizontal:10,
+    borderRadius: 30,
+    marginHorizontal: 10,
     // backgroundColor:'#f1e8e6',
-    backgroundColor:'white',
-    elevation:5
+    backgroundColor: 'white',
+    elevation: 5,
   },
   searchInput: {
     flex: 1,
@@ -328,6 +375,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     paddingTop: 10,
+    paddingBottom: 70
   },
   productItem: {
     flex: 1,
@@ -360,27 +408,26 @@ const styles = StyleSheet.create({
   additionalDetailsContainer: {
     paddingTop: 5,
   },
-  notesContainer: {
-  },
+  notesContainer: {},
   buttonqty: {
-    marginHorizontal:3,
-    marginVertical:3,
+    marginHorizontal: 3,
+    marginVertical: 3,
     borderWidth: 1,
     paddingVertical: 10,
     borderRadius: 5,
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor:'#F09120',
+    backgroundColor: '#F09120',
     // backgroundColor:'#fc9c04',
   },
-  noCategoriesText:{
+  noCategoriesText: {
     top: 40,
-    textAlign:"center",
+    textAlign: 'center',
     color: '#000000',
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
-  }
+  },
 });
 
 export default HomeAllProducts;

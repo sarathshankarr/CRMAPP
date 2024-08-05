@@ -10,6 +10,7 @@ const Bottom = createBottomTabNavigator();
 
 const HomeScreen = ({navigation}) => {
   return (
+    <View style={styles.container}>
     <Bottom.Navigator
       screenOptions={({route}) => ({
         tabBarIcon: ({color, size, focused}) => {
@@ -58,8 +59,9 @@ const HomeScreen = ({navigation}) => {
         tabBarStyle: {
           borderRadius: 30,
           marginHorizontal: 10,
-          marginBottom: 12,
+          marginBottom: 10,
           height: '8%',
+          position:"absolute"
         },
       })}>
       <Bottom.Screen
@@ -78,10 +80,16 @@ const HomeScreen = ({navigation}) => {
         options={{headerTitle: 'Order'}}
       />
     </Bottom.Navigator>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container:{
+    flex:1,
+    backgroundColor: 'transparent', 
+    
+  },
   tabIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
