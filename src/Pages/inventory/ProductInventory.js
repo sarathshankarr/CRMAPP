@@ -103,7 +103,10 @@ const ProductInventory = () => {
   const renderItem = ({item}) => (
     <View>
       <View style={styles.inventoryItem}>
-        <Text style={{flex: 2,color:"#000"}}>{item.styleName}</Text>
+      <View style={{flex: 3}}>
+        <Text style={styles.itemText1}>{item.styleName}</Text>
+        <Text style={styles.itemText1}><Text style={{color:'#000', fontWeight:500}}>{"SKU  :  "}</Text>{item.gsCode}</Text>
+      </View>
         <Text style={styles.itemText}>{item.sizeCode}</Text>
         <Text style={styles.itemText}>{item.availQty}</Text>
       </View>
@@ -143,7 +146,9 @@ const ProductInventory = () => {
       </View>
 
       <View style={styles.header}>
-        <Text style={{flex: 2,color:"#000"}}>Style Name</Text>
+        <View style={{flex: 3}}>
+        <Text style={styles.headerText1}>Style Name</Text>
+        </View>
         <Text style={styles.headerText}>Size</Text>
         <Text style={styles.headerText}>Avail Qty</Text>
       </View>
@@ -218,6 +223,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color:"#000"
   },
+  headerText1: {
+    flex: 3,
+    textAlign: 'left',
+    color:"#000"
+  },
+
   listContainer: {
     paddingHorizontal: 20,
   },
@@ -229,6 +240,11 @@ const styles = StyleSheet.create({
   itemText: {
     flex: 1,
     textAlign: 'center',
+    color:"#000"
+  },
+  itemText1: {
+    flex: 3,
+    textAlign: 'left',
     color:"#000"
   },
   noCategoriesText:{
