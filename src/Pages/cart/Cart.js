@@ -477,9 +477,10 @@ const Cart = () => {
         isEnabled ? getCustomersDetails() : getDistributorsDetails();
       }
     }
-    setSelectedLocation('Billing to');
-    setSelectedShipLocation('Shipping to');
-    setCustomerLocations([]);
+    setSelectedLocation('Billing to *');
+    setSelectedShipLocation('Shipping to *');
+    setCustomerLocations([])
+
   }, [clicked, isEnabled]);
 
   const getCustomerLocations = customerId => {
@@ -688,12 +689,12 @@ const Cart = () => {
       }
     }
 
-    if (!selectedLocation) {
+    if (!selectedLocationId) {
       Alert.alert('Alert', 'Please select a Billing to location.');
       return;
     }
 
-    if (!selectedShipLocation) {
+    if (!selectedShipLocationId) {
       Alert.alert('Alert', 'Please select a Shipping to location.');
       return;
     }
@@ -1250,16 +1251,14 @@ const Cart = () => {
                         paddingRight: 15,
                       }}
                       onPress={handleDropdownClick}>
-                      <Text style={{fontWeight: '600', color: '#000'}}>
-                        {isEnabled
-                          ? selectedCustomerDetails &&
-                            selectedCustomerDetails.length > 0
-                            ? `${selectedCustomerDetails[0].firstName} ${selectedCustomerDetails[0].lastName}`
-                            : 'Retailer'
-                          : selectedDistributorDetails &&
+                      <Text style={{ fontWeight: '600',color:"#000" }}>
+                        {isEnabled ? (selectedCustomerDetails &&
+                          selectedCustomerDetails.length > 0
+                          ? `${selectedCustomerDetails[0].firstName} ${selectedCustomerDetails[0].lastName}`
+                          : 'Retailer *') : (selectedDistributorDetails &&
                             selectedDistributorDetails.length > 0
-                          ? `${selectedDistributorDetails[0].distributorName}`
-                          : 'Distributor'}
+                            ? `${selectedDistributorDetails[0].distributorName}`
+                            : 'Distributor *')}
                       </Text>
 
                       <Image
@@ -1379,7 +1378,7 @@ const Cart = () => {
                           marginTop: -20,
                         }}
                         size="large"
-                        color="#390050"
+                        color="#1F74BA"
                       />
                     )}
                   </View>
@@ -1418,18 +1417,24 @@ const Cart = () => {
                 paddingRight: 15,
                 marginLeft: 18,
               }}>
-              {/* <Text>{selectedLocation.locationName || 'Billing to'}</Text> */}
-              <Text style={{fontWeight: '600', color: '#000'}}>
+              {/* <Text>{selectedLocation.locationName || 'Billing to *'}</Text> */}
+              <Text style={{ fontWeight: '600',color:"#000", }}>
                 {selectedLocation.length > 0
                   ? `${selectedLocation}`
-                  : 'Billing to'}
+                  : 'Billing to *'}
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
                 style={{width: 20, height: 20}}
               />
             </TouchableOpacity>
-            {fromToClicked && (
+            {fromToClicked ? 
+            (customerLocations.length === 0 && !isLoading)
+            ? (
+               <Text style={[style.noResultsLocation,{ marginLeft: 15}]}>
+                Sorry , no results found!
+                </Text>
+                ): (
               <View
                 style={{
                   elevation: 5,
@@ -1459,7 +1464,7 @@ const Cart = () => {
                   ))}
                 </ScrollView>
               </View>
-            )}
+            ):null}
           </View>
 
           <View style={{flex: 1}}>
@@ -1477,18 +1482,25 @@ const Cart = () => {
                 paddingRight: 15,
                 marginLeft: 5,
               }}>
-              {/* <Text>{selectedShipLocation.locationName || 'Shiping to'}</Text> */}
-              <Text style={{fontWeight: '600', color: '#000'}}>
+              {/* <Text>{selectedShipLocation.locationName || 'Shiping to *'}</Text> */}
+              <Text style={{ fontWeight: '600',color:"#000" }}>
                 {selectedShipLocation.length > 0
                   ? `${selectedShipLocation}`
-                  : 'Shipping to'}
+                  : 'Shipping to *'}
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
                 style={{width: 20, height: 20}}
               />
             </TouchableOpacity>
-            {shipFromToClicked && (
+            {shipFromToClicked
+            && (
+              (customerLocations.length === 0 && !isLoading)
+            ? (
+               <Text style={[style.noResultsLocation, {marginRight: 17}]}>
+                Sorry , no results found!
+                </Text>
+                ): (
               <View
                 style={{
                   elevation: 5,
@@ -1518,7 +1530,7 @@ const Cart = () => {
                   ))}
                 </ScrollView>
               </View>
-            )}
+            ))}
           </View>
           <View>
             <TouchableOpacity
@@ -1834,17 +1846,26 @@ const Cart = () => {
             }}>
             <View style={style.modalContainerr}>
               <View style={style.modalContentt}>
-                <View style={{alignSelf: 'flex-end', marginRight: 10}}>
-                  <TouchableOpacity onPress={handleCloseModalDisRet}>
-                    <Image
-                      style={{height: 30, width: 30}}
-                      source={require('../../../assets/close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <Text style={style.modalTitle}>
-                  {isEnabled ? 'Retailer Details' : 'Distributor Details'}
-                </Text>
+              <View style={{
+                backgroundColor: '#1F74BA',
+                borderRadius: 10,
+                marginHorizontal: 10,
+                flexDirection: 'row',
+                alignItems: 'center', 
+                marginTop: 10,
+                paddingVertical: 5,
+                width:'100%',
+                justifyContent:'space-between',
+                marginBottom:15,
+              }}>
+                <Text style={[style.modalTitle, {textAlign:'center', flex:1}]}>{isEnabled ? "Retailer Details" : "Distributor Details"}</Text>
+                <TouchableOpacity onPress={handleCloseModalDisRet} style={{alignSelf:'flex-end'}} >
+                  <Image
+                   style={{height: 30, width: 30, marginRight:5}}
+                   source={require('../../../assets/close.png')}
+                   />  
+                </TouchableOpacity>
+            </View>
 
                 <TextInput
                   style={[
@@ -1974,16 +1995,28 @@ const Cart = () => {
               }}>
               <View style={style.modalContainerr}>
                 <View style={style.modalContentt}>
-                  <View style={{alignSelf: 'flex-end', marginRight: 10}}>
-                    <TouchableOpacity onPress={handleCloseModalLocation}>
-                      <Image
-                        style={{height: 30, width: 30}}
-                        source={require('../../../assets/close.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
+                <View
+                style={{
+                  backgroundColor: '#1F74BA',
+                  borderRadius: 10,
+                  marginHorizontal: 10,
+                  flexDirection: 'row',
+                  alignItems: 'center', 
+                  marginTop: 10,
+                  paddingVertical: 5,
+                  width:'100%',
+                  justifyContent:'space-between',
+                  marginBottom:15,}}>
+                <Text style={[style.modalTitle, {flex:1, textAlign:'center'}]}>Location Details</Text>
 
-                  <Text style={style.modalTitle}>Location Details</Text>
+                 <TouchableOpacity onPress={handleCloseModalLocation}>
+                   <Image
+                     style={{height: 30, width: 30, marginRight:5}}
+                     source={require('../../../assets/close.png')}
+                   />
+                 </TouchableOpacity>
+                </View>
+
 
                   <TextInput
                     style={[
@@ -2250,10 +2283,10 @@ const style = StyleSheet.create({
     elevation: 5, // Add elevation for shadow on Android
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#000',
+    // marginBottom: 20,
+    color:'#000',
   },
   input: {
     borderWidth: 1,
@@ -2270,7 +2303,7 @@ const style = StyleSheet.create({
     color: 'red',
   },
   saveButton: {
-    backgroundColor: '#390050',
+    backgroundColor: '#1F74BA',
     padding: 10,
     borderRadius: 5,
     marginTop: 20,
@@ -2292,6 +2325,19 @@ const style = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     fontWeight: '600',
+  },
+  noResultsLocation: {
+    textAlign: 'center',
+    paddingTop: 15,
+    fontSize: 16,
+    color: "#000",
+    fontWeight: '600',
+    elevation: 5,
+    height: 175,
+    alignSelf: 'center',
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
   },
   modalContainer: {
     flexGrow: 1,
@@ -2371,7 +2417,7 @@ const style = StyleSheet.create({
     borderBottomColor: 'gray',
   },
   addqtyhead: {
-    backgroundColor: '#390050',
+    backgroundColor: '#1F74BA',
     padding: 10,
     flexDirection: 'row',
     alignItems: 'center',
