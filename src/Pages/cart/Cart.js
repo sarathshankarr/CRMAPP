@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Alert,
   FlatList,
@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
   Switch,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   addToPending,
   removeFromCart,
@@ -25,9 +25,9 @@ import {
 } from '../../redux/actions/Actions';
 import Clipboard from '@react-native-clipboard/clipboard';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import ModalComponent from '../../components/ModelComponent';
-import { API } from '../../config/apiConfig';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -67,13 +67,14 @@ const Cart = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedCustomerDetails, setSelectedCustomerDetails] = useState(null);
-  const [selectedDistributorDetails, setSelectedDistributorDetails] = useState(null);
+  const [selectedDistributorDetails, setSelectedDistributorDetails] =
+    useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [keyboardSpace, setKeyboardSpace] = useState(0);
   const [modalItems, setModalItems] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
-const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   const textInputStyle = {
     borderWidth: 1,
@@ -119,14 +120,16 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
   const filteredCustomers = customers
     .filter(customer => customer !== null) // Filter out null values
     .filter(customer => {
-      const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+      const fullName =
+        `${customer.firstName} ${customer.lastName}`.toLowerCase();
       return fullName.includes(searchQuery.toLowerCase());
     });
 
   const filteredDistributors = distributors
     .filter(distributor => distributor !== null) // Filter out null values
     .filter(distributor => {
-      const full = `${distributor.firstName} ${distributor.distributorName}`.toLowerCase();
+      const full =
+        `${distributor.firstName} ${distributor.distributorName}`.toLowerCase();
       return full.includes(searchQuery.toLowerCase());
     });
 
@@ -302,10 +305,13 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
           'crm.codeverse.co says',
           'A Customer/Retailer already exist with this name',
         );
-            }
+      }
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+      Alert.alert(
+        'Error',
+        'There was a problem checking the distributor validity. Please try again.',
+      );
     }
   };
   const addCustomerDetails = () => {
@@ -332,9 +338,9 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       creditLimit: 0,
       paymentReminderId: 0,
       companyId: companyId,
-      locationName:'',
-      locationCode:'',
-      locationDescription:'',
+      locationName: '',
+      locationCode: '',
+      locationDescription: '',
     };
 
     axios
@@ -385,10 +391,13 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
           'crm.codeverse.co says',
           'A Customer/Distributor already exist with this name',
         );
-            }
+      }
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+      Alert.alert(
+        'Error',
+        'There was a problem checking the distributor validity. Please try again.',
+      );
     }
   };
   const addDistributorDetails = () => {
@@ -396,37 +405,37 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       id: null,
       distributorName: inputValues.firstName,
       areaMasterId: 0,
-      areaPincodeId: "",
-      emailId: "",
+      areaPincodeId: '',
+      emailId: '',
       phoneNumber: inputValues.phoneNumber,
       whatsappId: inputValues.whatsappId,
-      houseNo: "",
-      street: "",
-      locality: "",
+      houseNo: '',
+      street: '',
+      locality: '',
       cityOrTown: inputValues.cityOrTown,
       state: inputValues.state,
       stateId: 0,
       currencyId: 9,
       country: inputValues.country,
-      pincode: "",
-      customerLevel: "",
-      pan: "",
-      gstNo: "",
+      pincode: '',
+      customerLevel: '',
+      pan: '',
+      gstNo: '',
       riskId: 0,
-      myItems: "",
+      myItems: '',
       creditLimit: 0,
       paymentReminderId: 26,
       dayId: 0,
       files: [],
-      remarks: "",
+      remarks: '',
       transport: 0,
-      mop: "",
+      mop: '',
       markupDisc: 0,
       companyId: companyId,
-      locationName:'',
-      locationCode:'',
-      locationDescription:'',
-    }
+      locationName: '',
+      locationCode: '',
+      locationDescription: '',
+    };
 
     axios
       .post(
@@ -444,7 +453,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
         console.log('ADD_DISTRIBUTOR_DETAILS', newDistributor);
 
         // Update the selected distributor details and ID
-        setSelectedDistributorDetails([newDistributor])
+        setSelectedDistributorDetails([newDistributor]);
         setSelectedDistributorId(newDistributor.id);
 
         // Fetch and set the distributor locations for the new customer
@@ -464,7 +473,9 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   useEffect(() => {
     if (clicked) {
-      { isEnabled ? getCustomersDetails() : getDistributorsDetails() }
+      {
+        isEnabled ? getCustomersDetails() : getDistributorsDetails();
+      }
     }
     setSelectedLocation('Billing to *');
     setSelectedShipLocation('Shipping to *');
@@ -486,7 +497,6 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
     }
 
     console.log(`Customer Type: ${customerType}`);
-
 
     if (!customerId) {
       console.error('customerId is undefined or null');
@@ -515,12 +525,13 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       });
   };
 
-
   const handleFromDropdownClick = () => {
     setFromToClicked(!fromToClicked);
     if (!fromToClicked) {
       // getCustomerLocations(selectedCustomerId);
-      !isEnabled ? getCustomerLocations(selectedDistributorId) : getCustomerLocations(selectedCustomerId)
+      !isEnabled
+        ? getCustomerLocations(selectedDistributorId)
+        : getCustomerLocations(selectedCustomerId);
     }
   };
 
@@ -528,14 +539,16 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
     setShipFromToClicked(!shipFromToClicked);
     if (!shipFromToClicked) {
       // getCustomerLocations(selectedCustomerId);
-      !isEnabled ? getCustomerLocations(selectedDistributorId) : getCustomerLocations(selectedCustomerId)
+      !isEnabled
+        ? getCustomerLocations(selectedDistributorId)
+        : getCustomerLocations(selectedCustomerId);
     }
   };
 
   const getCustomersDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.ADD_CUSTOMER_LIST}/${companyId}`;
     setIsLoading(true); // Set loading to true before making the request
-    console.log("customer api===>", apiUrl)
+    console.log('customer api===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -545,7 +558,10 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       .then(response => {
         setCustomers(response?.data?.response?.customerList || []);
         setIsLoading(false); // Set loading to false after receiving the response
-        console.log("INSIDE CUSTOMERS ===> ", response?.data?.response?.customerList[0])
+        console.log(
+          'INSIDE CUSTOMERS ===> ',
+          response?.data?.response?.customerList[0],
+        );
       })
       .catch(error => {
         console.error('Error:', error);
@@ -556,7 +572,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
   const getDistributorsDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTORS_DETAILS}/${companyId}`;
     setIsLoading(true);
-    console.log("distributors api ", apiUrl)
+    console.log('distributors api ', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -568,7 +584,10 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
         setDistributors(response?.data?.response?.distributorList || []);
         setIsLoading(false);
 
-        console.log("get Distributors response ===>", response?.data?.response?.distributorList[0])
+        console.log(
+          'get Distributors response ===>',
+          response?.data?.response?.distributorList[0],
+        );
       })
       .catch(error => {
         console.error('Error:', error);
@@ -584,7 +603,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
   };
 
   const handleCustomerSelection = (firstName, lastName, customerId) => {
-    console.log("INSIDE CUST HANDLE ===> ", firstName, lastName, customerId)
+    console.log('INSIDE CUST HANDLE ===> ', firstName, lastName, customerId);
     setSelectedCustomer(`${firstName} ${lastName}`);
     setClicked(false);
     setSelectedCustomerId(customerId);
@@ -598,7 +617,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
   };
 
   const handleDistributorSelection = (firstName, lastName, customerId) => {
-    console.log("INSIDE DIST HANDLE ===> ", firstName, lastName, customerId)
+    console.log('INSIDE DIST HANDLE ===> ', firstName, lastName, customerId);
     setSelectedDistributor(`${lastName}`);
     setClicked(false);
     setSelectedDistributorId(customerId);
@@ -618,7 +637,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
     setFromToClicked(false);
   };
   const handleShipLocation = location => {
-    console.log('Selected Ship Location:', location); 
+    console.log('Selected Ship Location:', location);
     setSelectedShipLocation(location.locationName);
     setSelectedShipLocationId(location.locationId);
     setShipFromToClicked(false);
@@ -657,6 +676,15 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
     } else {
       if (!selectedDistributor) {
         Alert.alert('Alert', 'Please select a Distributor.');
+        return;
+      }
+    }
+    for (let i = 0; i < cartItems.length; i++) {
+      if (!cartItems[i].price || parseFloat(cartItems[i].price) === 0) {
+        Alert.alert(
+          'crm.codeverse.co.says',
+          'Style price is mandatory for creating an order..',
+        );
         return;
       }
     }
@@ -712,8 +740,8 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
           ? selectedCustomerObj.customerId
           : ''
         : userRole === 'Distributor' || userRole === 'Retailer'
-          ? roleId
-          : '';
+        ? roleId
+        : '';
 
     const currentDate = new Date().toISOString().split('T')[0];
 
@@ -740,7 +768,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       totalDiscount: '0',
       totalDiscountSec: '0',
       totalDiscountThird: '0',
-      totalGst:  totalGst.toFixed(2),
+      totalGst: totalGst.toFixed(2),
       totalQty: totalQty.toString(),
       orderStatus: 'Open',
       comments: comments,
@@ -802,7 +830,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       gOtherExp: 0,
       companyId: companyId,
     };
-    console.log("requestData",requestData)
+    console.log('requestData', requestData);
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
         headers: {
@@ -812,7 +840,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       })
       .then(response => {
         // Handle success response
-        dispatch({ type: 'CLEAR_CART' });
+        dispatch({type: 'CLEAR_CART'});
         navigation.navigate('Home');
       })
       .catch(error => {
@@ -888,20 +916,19 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   const handleDateConfirm = date => {
     console.warn('A date has been picked: ', date);
-    
+
     // Extract day, month, and year
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
     const year = date.getFullYear();
-  
+
     // Format date as DD-MM-YYYY
     const formattedDate = `${day}-${month}-${year}`;
-  
+
     setSelectedDate('Expected Delivery Date: ' + formattedDate);
     hideDatePicker();
     setShipDate(date.toISOString().split('T')[0]);
   };
-  
 
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...cartItems];
@@ -909,6 +936,15 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
 
     if (!isNaN(parsedQuantity) || text === '') {
       updatedItems[index].quantity = text === '' ? '' : parsedQuantity;
+      dispatch(updateCartItem(index, updatedItems[index]));
+    }
+  };
+  const handlePriceChange = (index, text) => {
+    const updatedItems = [...cartItems];
+    const parsedPrice = parseFloat(text);
+
+    if (!isNaN(parsedPrice) || text === '') {
+      updatedItems[index].price = text === '' ? '' : text;
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
@@ -930,7 +966,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
   };
   const copyValueToClipboard = index => {
     const item = cartItems[index];
-    const { styleId, colorId, quantity } = item;
+    const {styleId, colorId, quantity} = item;
 
     // Check if quantity is 0 or falsy
     if (!quantity) {
@@ -1045,7 +1081,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
       'state',
       'pincode',
       'country',
-    ]
+    ];
     setLocationErrorFields([]);
     const missingFields = mandatoryFields.filter(
       field => !locationInputValues[field],
@@ -1066,10 +1102,10 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
     toggleLocationModal();
   };
   const getisValidLocation = async () => {
-    const cusDisID= isEnabled ? selectedCustomerId : selectedDistributorId
-    const cusrDisType = isEnabled ? 1 : 3
+    const cusDisID = isEnabled ? selectedCustomerId : selectedDistributorId;
+    const cusrDisType = isEnabled ? 1 : 3;
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONLOACTION}/${locationInputValues.locationName}/${cusDisID}/${cusrDisType}/${companyId}`;
-    console.log("apiUrl==>",apiUrl)
+    console.log('apiUrl==>', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -1082,11 +1118,17 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
         // Proceed to save distributor details
       } else {
         // Show an alert if the distributor name is already used
-        Alert.alert('crm.codeverse.co says', 'This name has been used. Enter a new name.');
+        Alert.alert(
+          'crm.codeverse.co says',
+          'This name has been used. Enter a new name.',
+        );
       }
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'There was a problem checking the distributor validity. Please try again.');
+      Alert.alert(
+        'Error',
+        'There was a problem checking the distributor validity. Please try again.',
+      );
     }
   };
   const addCustomerLocationDetails = () => {
@@ -1150,17 +1192,17 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
         console.error('Error adding customer:', error);
       });
   };
-  const handleCloseModalDisRet=()=>{
+  const handleCloseModalDisRet = () => {
     setIsModalVisible(false);
     setInputValues([]); // Assuming inputValues should be an array too
     setErrorFields([]);
-  }
+  };
 
-  const handleCloseModalLocation=()=>{
+  const handleCloseModalLocation = () => {
     setIsLocationModalVisible(false);
     setLocationInputValues([]); // Assuming inputValues should be an array too
     setLocationErrorFields([]);
-  }
+  };
 
   useEffect(() => {
     console.log('User Roleeeeee:', userRole);
@@ -1169,23 +1211,23 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#fff' }}
+      style={{flex: 1, backgroundColor: '#fff'}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}>
-      <View style={{ flex: 1, backgroundColor: '#fff' }}>
-        <View style={{ marginVertical: 10, backgroundColor: '#fff' }}>
+      <View style={{flex: 1, backgroundColor: '#fff'}}>
+        <View style={{marginVertical: 10, backgroundColor: '#fff'}}>
           {/* <View style={{marginHorizontal: 10, marginVertical: 2}}>
             <Text style={{color: '#000', fontWeight: 'bold'}}>Customers</Text>
           </View> */}
           <View style={style.switchContainer}>
             <Switch
-              trackColor={{ false: '#767577', true: '#81b0ff' }}
+              trackColor={{false: '#767577', true: '#81b0ff'}}
               thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
               ios_backgroundColor="#3e3e3e"
               onValueChange={toggleSwitch}
               value={isEnabled}
             />
-            <Text style={{ fontWeight: 'bold', fontSize: 15,color:"#000" }}>
+            <Text style={{fontWeight: 'bold', fontSize: 15, color: '#000'}}>
               Slide For Retailer
             </Text>
           </View>
@@ -1193,7 +1235,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
             {userRole &&
               userRole.toLowerCase &&
               userRole.toLowerCase() === 'admin' && (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <View>
                     <TouchableOpacity
                       style={{
@@ -1221,7 +1263,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
 
                       <Image
                         source={require('../../../assets/dropdown.png')}
-                        style={{ width: 20, height: 20 }}
+                        style={{width: 20, height: 20}}
                       />
                     </TouchableOpacity>
 
@@ -1245,22 +1287,20 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                             marginHorizontal: 10,
                             paddingLeft: 10,
                             marginBottom: 10,
-                            color:'#000000'
+                            color: '#000000',
                           }}
                           placeholderTextColor="#000"
                           placeholder="Search"
                           value={searchQuery}
                           onChangeText={text => setSearchQuery(text)}
                         />
-                        {!isEnabled
-                          ? (filteredDistributors.length === 0 && !isLoading)
-                            ? (
-                              <Text style={style.noCategoriesText}>
-                                Sorry, no results found!
-                              </Text>
-                            )
-                            : (
-                              <ScrollView>
+                        {!isEnabled ? (
+                          filteredDistributors.length === 0 && !isLoading ? (
+                            <Text style={style.noCategoriesText}>
+                              Sorry, no results found!
+                            </Text>
+                          ) : (
+                            <ScrollView>
                               {filteredDistributors.map((item, index) => (
                                 <TouchableOpacity
                                   key={index}
@@ -1271,56 +1311,60 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                                     borderBottomWidth: 0.5,
                                     borderColor: '#8e8e8e',
                                   }}
-                                  onPress={() => handleDistributorSelection(item?.firstName, item?.distributorName, item?.id)}
-                                >
+                                  onPress={() =>
+                                    handleDistributorSelection(
+                                      item?.firstName,
+                                      item?.distributorName,
+                                      item?.id,
+                                    )
+                                  }>
                                   <Text
                                     style={{
                                       fontWeight: '600',
                                       marginHorizontal: 15,
-                                      color:"#000",
-                                    }}
-                                  >
+                                      color: '#000',
+                                    }}>
                                     {item.firstName}
                                   </Text>
                                 </TouchableOpacity>
-                                ))}
-                              </ScrollView>
-                            )
-                          : (filteredCustomers.length === 0 && !isLoading)
-                            ? (
-                              <Text style={style.noCategoriesText}>
-                                Sorry, no results found!
-                              </Text>
-                            )
-                            : (
-                              <ScrollView>
-                              {filteredCustomers.map((item, index) => (
-                                <TouchableOpacity
-                                  key={index}
+                              ))}
+                            </ScrollView>
+                          )
+                        ) : filteredCustomers.length === 0 && !isLoading ? (
+                          <Text style={style.noCategoriesText}>
+                            Sorry, no results found!
+                          </Text>
+                        ) : (
+                          <ScrollView>
+                            {filteredCustomers.map((item, index) => (
+                              <TouchableOpacity
+                                key={index}
+                                style={{
+                                  width: '100%',
+                                  height: 50,
+                                  justifyContent: 'center',
+                                  borderBottomWidth: 0.5,
+                                  borderColor: '#8e8e8e',
+                                }}
+                                onPress={() =>
+                                  handleCustomerSelection(
+                                    item?.firstName,
+                                    item?.lastName,
+                                    item?.customerId,
+                                  )
+                                }>
+                                <Text
                                   style={{
-                                    width: '100%',
-                                    height: 50,
-                                    justifyContent: 'center',
-                                    borderBottomWidth: 0.5,
-                                    borderColor: '#8e8e8e',
-                                  }}
-                                  onPress={() => handleCustomerSelection(item?.firstName, item?.lastName, item?.customerId)}
-
-                                >
-                                  <Text
-                                    style={{
-                                      fontWeight: '600',
-                                      marginHorizontal: 15,
-                                      color:"#000"
-                                    }}
-                                  >
-                                    {item.firstName} {item.lastName}
-                                  </Text>
-                                </TouchableOpacity>
-                                ))}
-                              </ScrollView>
-                            )
-                        }
+                                    fontWeight: '600',
+                                    marginHorizontal: 15,
+                                    color: '#000',
+                                  }}>
+                                  {item.firstName} {item.lastName}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        )}
                       </View>
                     )}
 
@@ -1357,8 +1401,8 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
               )}
           </View>
         </View>
-        <View style={{ flexDirection: 'row' }}>
-          <View style={{ flex: 1 }}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{flex: 1}}>
             <TouchableOpacity
               onPress={handleFromDropdownClick}
               style={{
@@ -1381,7 +1425,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
+                style={{width: 20, height: 20}}
               />
             </TouchableOpacity>
             {fromToClicked ? 
@@ -1413,7 +1457,9 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                         borderBottomColor: '#ccc',
                       }}
                       onPress={() => handleLocationSelection(location)}>
-                      <Text style={{color:"#000"}}>{location.locationName}</Text>
+                      <Text style={{color: '#000'}}>
+                        {location.locationName}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -1421,7 +1467,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
             ):null}
           </View>
 
-          <View style={{ flex: 1 }}>
+          <View style={{flex: 1}}>
             <TouchableOpacity
               onPress={handleShipDropdownClick}
               style={{
@@ -1444,7 +1490,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
+                style={{width: 20, height: 20}}
               />
             </TouchableOpacity>
             {shipFromToClicked
@@ -1477,7 +1523,9 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                         borderBottomColor: '#ccc',
                       }}
                       onPress={() => handleShipLocation(location)}>
-                      <Text style={{color:"#000"}}>{location.locationName}</Text>
+                      <Text style={{color: '#000'}}>
+                        {location.locationName}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -1503,76 +1551,95 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
           </View>
         </View>
         <ScrollView style={style.container}>
-          <View style={style.header}>
+          {/* <View style={style.header}>
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
-          </View>
+          </View> */}
           {cartItems.length === 0 ? (
-            <Text style={{ marginLeft: 10,color:"#000" }}>No items in cart</Text>
+            <Text style={{marginLeft: 10, color: '#000'}}>
+              No items in cart
+            </Text>
           ) : (
             <View>
-              {console.log("cartItems.length===>", cartItems.length)}
+              {console.log('cartItems.length===>', cartItems.length)}
               {cartItems.map((item, index) => (
-                <View key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
+                <View
+                  key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
                   <View
                     key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}
-                    style={{ marginBottom: 20 }}>
+                    style={{marginBottom: 20}}>
                     {(index === 0 ||
                       item.styleId !== cartItems[index - 1].styleId ||
                       item.colorId !== cartItems[index - 1].colorId) && (
-                        <View style={style.itemContainer}>
-                          <View style={style.imgContainer}>
-                            {item.imageUrls && item.imageUrls.length > 0 && (
-                              <Image
-                                source={{ uri: item.imageUrls[0] }}
-                                style={{
-                                  width: 100,
-                                  height: 100,
-                                  resizeMode: 'cover',
-                                  margin: 5,
-                                }}
-                              />
-                            )}
-                            <View style={{ flex: 1 }}>
-                              <Text style={{ fontSize: 15, fontWeight: 'bold',marginLeft:5,color:"#000" }}>
-                                {item.styleDesc}
-                              </Text>
-                              <Text style={{ fontSize: 15, fontWeight: 'bold',marginLeft:5,color:"#000" }}>Color Name - {item.colorName}</Text>
-                            </View>
-                            <View style={style.buttonsContainer}>
-                              <TouchableOpacity onPress={() => openModal(item)}>
-                                <Image
-                                  style={style.buttonIcon}
-                                  source={require('../../../assets/edit.png')}
-                                />
-                              </TouchableOpacity>
-                            </View>
+                      <View style={style.itemContainer}>
+                        <View style={style.imgContainer}>
+                          {item.imageUrls && item.imageUrls.length > 0 && (
+                            <Image
+                              source={{uri: item.imageUrls[0]}}
+                              style={{
+                                width: 100,
+                                height: 100,
+                                resizeMode: 'cover',
+                                margin: 5,
+                              }}
+                            />
+                          )}
+                          <View style={{flex: 1}}>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 'bold',
+                                marginLeft: 5,
+                                color: '#000',
+                              }}>
+                              {item.styleDesc}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 'bold',
+                                marginLeft: 5,
+                                color: '#000',
+                              }}>
+                              Color Name - {item.colorName}
+                            </Text>
                           </View>
-                          <View style={style.sizehead}>
-                            <View style={{ flex: 0.6 }}>
-                              <Text style={{color:"#000", marginLeft: 10 }}>SIZE</Text>
-                            </View>
-                            <View style={{ flex: 0.6, marginLeft: 29, }}>
-                              <Text style={{color:"#000"}}>QUANTITY</Text>
-                            </View>
-                            <View style={{ flex: 0.4, marginLeft: 30 }}>
-                              <Text style={{color:"#000"}}>PRICE</Text>
-                            </View>
-                            <View style={{ flex: 0.5, marginLeft: 20 }}>
-                              <Text style={{color:"#000"}}>GROSS PRICE</Text>
-                            </View>
-                            <TouchableOpacity
-                              onPress={() => copyValueToClipboard(index)}>
+                          <View style={style.buttonsContainer}>
+                            <TouchableOpacity onPress={() => openModal(item)}>
                               <Image
-                                style={{ height: 25, width: 25, marginRight: 10 }}
-                                source={require('../../../assets/copy.png')}
+                                style={style.buttonIcon}
+                                source={require('../../../assets/edit.png')}
                               />
                             </TouchableOpacity>
                           </View>
                         </View>
-                      )}
+                        <View style={style.sizehead}>
+                          <View style={{flex: 0.6}}>
+                            <Text style={{color: '#000', marginLeft: 10}}>
+                              SIZE
+                            </Text>
+                          </View>
+                          <View style={{flex: 0.6, marginLeft: 29}}>
+                            <Text style={{color: '#000'}}>QUANTITY</Text>
+                          </View>
+                          <View style={{flex: 0.4, marginLeft: 30}}>
+                            <Text style={{color: '#000'}}>PRICE</Text>
+                          </View>
+                          <View style={{flex: 0.5, marginLeft: 20}}>
+                            <Text style={{color: '#000'}}>GROSS PRICE</Text>
+                          </View>
+                          <TouchableOpacity
+                            onPress={() => copyValueToClipboard(index)}>
+                            <Image
+                              style={{height: 25, width: 25, marginRight: 10}}
+                              source={require('../../../assets/copy.png')}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
                     <View style={style.itemDetails}>
-                      <View style={{ flex: 0.3, marginLeft: 10 }}>
-                        <Text style={{color:"#000"}}>{item.sizeDesc}</Text>
+                      <View style={{flex: 0.3, marginLeft: 10}}>
+                        <Text style={{color: '#000'}}>{item.sizeDesc}</Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => handleDecrementQuantityCart(index)}>
@@ -1594,7 +1661,9 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                               ? item.quantity.toString()
                               : ''
                           }
-                          onChangeText={text => handleQuantityChange(index, text)}
+                          onChangeText={text =>
+                            handleQuantityChange(index, text)
+                          }
                           keyboardType="numeric" // Optional: Restricts input to numeric keyboard
                         />
                       </View>
@@ -1609,11 +1678,20 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                           source={require('../../../assets/add1.png')}
                         />
                       </TouchableOpacity>
-                      <View style={{ flex: 0.3, marginLeft: 20 }}>
-                        <Text style={{color:"#000"}}>{item.price}</Text>
+                      <View style={{flex: 0.3, marginLeft: 10,borderBottomWidth:1,borderColor:"#000"}}>
+                        <TextInput
+                          style={{color: '#000',alignSelf:"center"}}
+                          value={item.price.toString()}
+                          onChangeText={text => handlePriceChange(index, text)}
+                          keyboardType="numeric"
+                        />
                       </View>
-                      <View style={{ flex: 0.3, marginLeft: 10 }}>
-                        <Text style={{color:"#000"}}>{(Number(item.price) * Number(item.quantity)).toString()}</Text>
+                      <View style={{flex: 0.3, marginLeft: 30}}>
+                        <Text style={{color: '#000'}}>
+                          {(
+                            Number(item.price) * Number(item.quantity)
+                          ).toString()}
+                        </Text>
                       </View>
                       <TouchableOpacity onPress={() => handleRemoveItem(index)}>
                         <Image
@@ -1624,37 +1702,52 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                     </View>
                     {/* <View style={style.separator} /> */}
                   </View>
-                  {(index === cartItems.length - 1 || (item.styleId !== cartItems[index + 1]?.styleId || item.colorId !== cartItems[index + 1]?.colorId)) && (
+                  {(index === cartItems.length - 1 ||
+                    item.styleId !== cartItems[index + 1]?.styleId ||
+                    item.colorId !== cartItems[index + 1]?.colorId) && (
                     <>
-                      <View style={{flexDirection: 'row', alignItems: 'center',backgroundColor:"lightgray",paddingVertical:10,borderRadius:20}}>
-                         <View style={{ flex: 1 ,marginLeft:20}}>
-                          <Text style={{color:"#000"}}>Total</Text>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: 'lightgray',
+                          paddingVertical: 10,
+                          borderRadius: 20,
+                        }}>
+                        <View style={{flex: 1, marginLeft: 20}}>
+                          <Text style={{color: '#000'}}>Total</Text>
                         </View>
-                        <View style={{flex: 1.3 }}>
-                          <Text style={{color:"#000"}}> {calculateTotalQty(item.styleId, item.colorId)}</Text>
+                        <View style={{flex: 1.5}}>
+                          <Text style={{color: '#000'}}>
+                            {' '}
+                            {calculateTotalQty(item.styleId, item.colorId)}
+                          </Text>
                         </View>
                         {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                        <View style={{flex: 0.8  }}>
-                          <Text style={{color:"#000"}}>{calculateTotalPrice(item.styleId, item.colorId)}</Text>
+                        <View style={{flex: 0.9}}>
+                          <Text style={{color: '#000'}}>
+                            {calculateTotalPrice(item.styleId, item.colorId)}
+                          </Text>
                         </View>
                       </View>
                       {/* <View style={style.separatorr} /> */}
                       <View />
                     </>
-
                   )}
                 </View>
               ))}
             </View>
           )}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <TouchableOpacity
               onPress={showDatePicker}
-              style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ paddingVertical: 10 }}>
-                <Text style={{ marginLeft: 10,color:"#000" }}>{selatedDate}</Text>
+              style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{paddingVertical: 10}}>
+                <Text style={{marginLeft: 10, color: '#000'}}>
+                  {selatedDate}
+                </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
@@ -1678,17 +1771,16 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
               marginTop: 10,
             }}></View>
           <View>
-          <TextInput
-        style={{
-          marginLeft: 10,
-          color: isDarkTheme ? '#fff' : 'black', // Change text color based on theme
-        }}
-        placeholder="Enter comments"
-        value={comments}
-        onChangeText={handleCommentsChange}
-        placeholderTextColor={isDarkTheme ? '#fff' : '#000'} // Placeholder color
-      />
-
+            <TextInput
+              style={{
+                marginLeft: 10,
+                color: isDarkTheme ? '#fff' : 'black', // Change text color based on theme
+              }}
+              placeholder="Enter comments"
+              value={comments}
+              onChangeText={handleCommentsChange}
+              placeholderTextColor={isDarkTheme ? '#fff' : '#000'} // Placeholder color
+            />
           </View>
           <View
             style={{
@@ -1700,14 +1792,20 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
 
         <View style={{}}>
           <View style={style.bottomContainer}>
-            <View style={{ }}>
-              <Text style={{ fontWeight: 'bold', marginLeft: 10,color:"#000" }}>Total Qty: {totalQty}</Text>
+            <View style={{}}>
+              <Text style={{fontWeight: 'bold', marginLeft: 10, color: '#000'}}>
+                Total Qty: {totalQty}
+              </Text>
             </View>
-            <View style={{  }}>
-              <Text style={{ fontWeight: 'bold', marginLeft: 10,color:"#000"  }}>Total Items: {totalItems}</Text>
+            <View style={{}}>
+              <Text style={{fontWeight: 'bold', marginLeft: 10, color: '#000'}}>
+                Total Items: {totalItems}
+              </Text>
             </View>
-            <View style={{ }}>
-              <Text style={{ fontWeight: 'bold', marginLeft: 15,color:"#000" }}>Total Amt: {totalPrice}</Text>
+            <View style={{}}>
+              <Text style={{fontWeight: 'bold', marginLeft: 15, color: '#000'}}>
+                Total Amt: {totalPrice}
+              </Text>
             </View>
           </View>
 
@@ -1772,28 +1870,32 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                 <TextInput
                   style={[
                     style.input,
-                    { color: '#000' },
+                    {color: '#000'},
                     errorFields.includes('firstName')
                       ? style.errorBorder
                       : null,
                   ]}
-                  placeholder={isEnabled ? "Retailer Name *" : "Distributor Name *"}
+                  placeholder={
+                    isEnabled ? 'Retailer Name *' : 'Distributor Name *'
+                  }
                   placeholderTextColor="#000"
                   onChangeText={text =>
-                    setInputValues({ ...inputValues, firstName: text })
+                    setInputValues({...inputValues, firstName: text})
                   }
                   value={inputValues.firstName}
                 />
                 {errorFields.includes('firstName') && (
                   <Text style={style.errorText}>
-                    {isEnabled ? "Please Enter Retailer Name" : "Please Enter Distributor Name"}
+                    {isEnabled
+                      ? 'Please Enter Retailer Name'
+                      : 'Please Enter Distributor Name'}
                   </Text>
                 )}
 
                 <TextInput
                   style={[
                     style.input,
-                    { color: '#000' },
+                    {color: '#000'},
                     errorFields.includes('phoneNumber')
                       ? style.errorBorder
                       : null,
@@ -1801,7 +1903,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   placeholder="Phone Number *"
                   placeholderTextColor="#000"
                   onChangeText={text =>
-                    setInputValues({ ...inputValues, phoneNumber: text })
+                    setInputValues({...inputValues, phoneNumber: text})
                   }
                 />
                 {errorFields.includes('phoneNumber') && (
@@ -1809,20 +1911,22 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                 )}
 
                 <TextInput
-                  style={[style.input, { color: '#000' }]}
+                  style={[style.input, {color: '#000'}]}
                   placeholder="Whatsapp Number *"
                   placeholderTextColor="#000"
                   onChangeText={text =>
-                    setInputValues({ ...inputValues, whatsappId: text })
+                    setInputValues({...inputValues, whatsappId: text})
                   }
                 />
                 {errorFields.includes('whatsappId') && (
-                  <Text style={style.errorText}>Please Enter Whatsapp Number</Text>
+                  <Text style={style.errorText}>
+                    Please Enter Whatsapp Number
+                  </Text>
                 )}
                 <TextInput
                   style={[
                     style.input,
-                    { color: '#000' },
+                    {color: '#000'},
                     errorFields.includes('cityOrTown')
                       ? style.errorBorder
                       : null,
@@ -1830,7 +1934,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   placeholder="City or Town *"
                   placeholderTextColor="#000"
                   onChangeText={text =>
-                    setInputValues({ ...inputValues, cityOrTown: text })
+                    setInputValues({...inputValues, cityOrTown: text})
                   }
                 />
                 {errorFields.includes('cityOrTown') && (
@@ -1839,13 +1943,13 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                 <TextInput
                   style={[
                     style.input,
-                    { color: '#000' },
+                    {color: '#000'},
                     errorFields.includes('state') ? style.errorBorder : null,
                   ]}
                   placeholderTextColor="#000"
                   placeholder="State *"
                   onChangeText={text =>
-                    setInputValues({ ...inputValues, state: text })
+                    setInputValues({...inputValues, state: text})
                   }
                 />
                 {errorFields.includes('state') && (
@@ -1854,13 +1958,13 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                 <TextInput
                   style={[
                     style.input,
-                    { color: '#000' },
+                    {color: '#000'},
                     errorFields.includes('country') ? style.errorBorder : null,
                   ]}
                   placeholderTextColor="#000"
                   placeholder="Country *"
                   onChangeText={text =>
-                    setInputValues({ ...inputValues, country: text })
+                    setInputValues({...inputValues, country: text})
                   }
                 />
                 {errorFields.includes('country') && (
@@ -1917,7 +2021,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       locationErrorFields.includes('locationName')
                         ? style.errorBorder
                         : null,
@@ -1941,7 +2045,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       errorFields.includes('state') ? style.errorBorder : null,
                       locationErrorFields.includes('phoneNumber')
                         ? style.errorBorder
@@ -1962,7 +2066,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                     </Text>
                   )}
                   <TextInput
-                    style={[style.input, { color: '#000' }]}
+                    style={[style.input, {color: '#000'}]}
                     placeholder="Locality"
                     placeholderTextColor="#000"
                     onChangeText={text =>
@@ -1975,7 +2079,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       locationErrorFields.includes('cityOrTown')
                         ? style.errorBorder
                         : null,
@@ -1997,7 +2101,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       locationErrorFields.includes('state')
                         ? style.errorBorder
                         : null,
@@ -2017,7 +2121,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       locationErrorFields.includes('pincode')
                         ? style.errorBorder
                         : null,
@@ -2037,7 +2141,7 @@ const [isDarkTheme, setIsDarkTheme] = useState(false);
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       locationErrorFields.includes('country')
                         ? style.errorBorder
                         : null,
@@ -2107,14 +2211,14 @@ const style = StyleSheet.create({
     marginLeft: 10,
   },
   bottomContainer: {
-    justifyContent:"space-around",
+    justifyContent: 'space-around',
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     borderTopWidth: 1,
     // backgroundColor: '#f1e8e6',
     backgroundColor: '#faf7f6',
-    elevation:5,
+    elevation: 5,
   },
   dateIconContainer: {
     justifyContent: 'center',
@@ -2219,7 +2323,7 @@ const style = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
-    color:"#000",
+    color: '#000',
     fontWeight: '600',
   },
   noResultsLocation: {
