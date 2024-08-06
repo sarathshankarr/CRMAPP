@@ -21,6 +21,7 @@ const Sidebar = ({navigation, route}) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownVisiblee, setDropdownVisiblee] = useState(false); // Add state for second dropdown if needed
   const [dropdownVisiblePublish, setDropdownVisiblePublish] = useState(false); // Add state for second dropdown if needed
+  const [dropdownVisibleProduct, setDropdownVisibleProduct] = useState(false); 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   useEffect(() => {
@@ -86,6 +87,10 @@ const Sidebar = ({navigation, route}) => {
     setDropdownVisiblePublish(!dropdownVisiblePublish);
   };
 
+  const toggleDropdownfourth = () => {
+    setDropdownVisibleProduct(!dropdownVisibleProduct);
+  };
+
   const goToHome = () => {
     navigation.navigate('Home');
   };
@@ -119,6 +124,9 @@ const Sidebar = ({navigation, route}) => {
   };
   const goToPublish = () => {
     navigation.navigate('ProductPackagePublish');
+  };
+  const goToProduct = () => {
+    navigation.navigate('ProductsStyles');
   };
   const goToCustomerLocation = () => {
     navigation.navigate('CustomerLocation');
@@ -315,6 +323,35 @@ const Sidebar = ({navigation, route}) => {
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={goToPublish}>
+            <Image
+              style={styles.prodimg}
+              source={require('../assets/publish.png')}
+            />
+            <Text style={styles.dropdownItem}>Product Publish</Text>
+          </TouchableOpacity>
+          {/* Add more dropdown items here */}
+        </View>
+      )}
+      <TouchableOpacity
+        style={styles.inventoryhead}
+        onPress={toggleDropdownfourth}>
+        <Image
+          style={styles.orderimg}
+          source={require('../assets/publish.png')}
+        />
+        <Text style={styles.ordertxt}>Product</Text>
+        <View style={{marginLeft: 'auto'}}>
+          <Image
+            source={require('../assets/dropdown.png')}
+            style={{width: 20, height: 20}}
+          />
+        </View>
+      </TouchableOpacity>
+      {dropdownVisibleProduct && (
+        <View style={styles.dropdown}>
+          <TouchableOpacity
+            style={styles.inventoryhead}
+            onPress={goToProduct}>
             <Image
               style={styles.prodimg}
               source={require('../assets/publish.png')}
