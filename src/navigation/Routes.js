@@ -28,6 +28,8 @@ import CustomerLocation from '../Pages/loc/CustomerLocation';
 import ProductPackagePublish from '../Pages/publish/ProductPackagePublish';
 import ProductsStyles from '../Pages/product/ProductsStyles';
 import AddNewStyle from '../Pages/product/AddNewStyle';
+import NewStyleDetail from '../Pages/product/NewStyleDetail';
+import UploadProductImage from '../Pages/product/UploadProductImage';
 
 const Stack = createNativeStackNavigator();
 
@@ -176,6 +178,16 @@ const Routes = () => {
         options={{headerShown: false}}
       />
        <Stack.Screen
+        name="StyleDetails"
+        component={NewStyleDetail}
+        options={{headerShown: false}}
+      />
+       <Stack.Screen
+        name="UploadProductImage"
+        component={UploadProductImage}
+        options={{headerShown: false}}
+      />
+       <Stack.Screen
         name="CustomCheckBox"
         component={CustomCheckBox}
         options={{headerShown: false}}
@@ -198,7 +210,15 @@ const Routes = () => {
         <Stack.Screen
         name="AddNewStyle"
         component={AddNewStyle}
-        options={{headerShown: false}}
+        options={({navigation}) => ({
+          header: () => (
+            <CommonHeader
+              navigation={navigation}
+              title="New Style"
+            />
+          ),
+          headerBackVisible: true,
+        })}
       />
 
 
