@@ -337,7 +337,7 @@ const Sidebar = ({navigation, route}) => {
         onPress={toggleDropdownfourth}>
         <Image
           style={styles.orderimg}
-          source={require('../assets/publish.png')}
+          source={require('../assets/box.png')}
         />
         <Text style={styles.ordertxt}>Product</Text>
         <View style={{marginLeft: 'auto'}}>
@@ -354,9 +354,9 @@ const Sidebar = ({navigation, route}) => {
             onPress={goToProduct}>
             <Image
               style={styles.prodimg}
-              source={require('../assets/publish.png')}
+              source={require('../assets/package.png')}
             />
-            <Text style={styles.dropdownItem}>Product Publish</Text>
+            <Text style={styles.dropdownItem}>Product/Styles</Text>
           </TouchableOpacity>
           {/* Add more dropdown items here */}
         </View>
@@ -550,8 +550,8 @@ const styles = StyleSheet.create({
     tintColor: '#5177c0',
   },
   prodimg: {
-    height: 30,
-    width: 30,
+    height: 25,
+    width: 25,
     marginLeft: 40,
     tintColor: '#5177c0',
   },
