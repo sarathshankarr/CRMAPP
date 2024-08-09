@@ -13,6 +13,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import {API} from './config/apiConfig';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { CLEAR_CART } from './redux/ActionTypes';
 
 const Sidebar = ({navigation, route}) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,7 +25,7 @@ const Sidebar = ({navigation, route}) => {
   const [dropdownVisiblePublish, setDropdownVisiblePublish] = useState(false); // Add state for second dropdown if needed
   const [dropdownVisibleProduct, setDropdownVisibleProduct] = useState(false); 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-
+  const dispatch = useDispatch();
   useEffect(() => {
     const {params} = route ?? {};
     if (params && params.userData) {
@@ -176,6 +178,7 @@ const Sidebar = ({navigation, route}) => {
       await AsyncStorage.removeItem('userRoleId'); // Remove the user role ID from AsyncStorage
       await AsyncStorage.removeItem('loggedInUser'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('selectedCompany'); // Remove the logged-in user data from AsyncStorage
+      dispatch({ type: CLEAR_CART });
       navigation.closeDrawer(); // Close the drawer
       navigation.reset({
         index: 0,
