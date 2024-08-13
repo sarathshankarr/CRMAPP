@@ -281,6 +281,29 @@ const ProductsStyles = () => {
     setModalVisible(true);
   };
 
+  const fetchStyleById =(Id) => {
+    // console.log("fetchStyleById ===> ", Id)
+    setLoading(true);
+    const end="/0";
+    const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_BY_ID}${Id}${end}`;
+    console.log("GET_STYLE_BY_ID", apiUrl);
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        navigation.navigate('AddNewStyle', {Style: response.data.response.stylesList[0]});
+      })
+      .catch(error => {
+        console.error('Error fetching Style by ID:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   useEffect(() => {
     if (companyId) {
       getAllProducts(companyId);
@@ -414,7 +437,8 @@ const ProductsStyles = () => {
   };
 
   const renderItem = ({item}) => (
-    <View style={styles.row}>
+    <TouchableOpacity style={styles.row} onPress={() => fetchStyleById(item.styleId)}>
+    
     <CustomCheckBox
       isChecked={checkedStyleIds.includes(item.styleId)}
       onToggle={() => handleCheckBoxToggleStyle(item.styleId)}
@@ -423,7 +447,8 @@ const ProductsStyles = () => {
     <Text style={styles.cell1}>{item?.styleName}</Text>
     <Text style={styles.cell2}>{item?.colorName}</Text>
     <Text style={styles.cell3}>{item?.mrp}</Text>
-  </View>
+    </TouchableOpacity>
+
   );
 
   const renderModalContent = () => {

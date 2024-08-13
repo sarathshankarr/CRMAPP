@@ -212,7 +212,7 @@ const NewCall = () => {
   };
 
   const getTimeDiffandRemainder=(date, time)=>{
-    console.log("DATE AND TIME ========================================================> ", date.split('T')[0], time);
+    // console.log("DATE AND TIME ========================================================> ", date.split('T')[0], time);
     minutesBetweenDates(date.split('T')[0], time);
   }
 

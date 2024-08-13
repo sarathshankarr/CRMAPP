@@ -53,6 +53,9 @@ const ProductPackagePublish = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectAllModel, setSelectAllModel] = useState(false);
 
+  const userData=useSelector(state=>state.loggedInUser);
+  const userId=userData?.userId;
+
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
     // Reset error fields and input values when modal is closed
@@ -169,6 +172,7 @@ const ProductPackagePublish = () => {
       locationName: '',
       locationCode: '',
       locationDescription: '',
+      // userId:userId,
     };
 
     axios
@@ -260,6 +264,7 @@ const ProductPackagePublish = () => {
       locationName: '',
       locationCode: '',
       locationDescription: '',
+      // userId:userId,
     };
 
     axios
@@ -287,6 +292,7 @@ const ProductPackagePublish = () => {
         console.error('Error adding Distributor:', error);
       });
   };
+
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
@@ -426,6 +432,8 @@ const ProductPackagePublish = () => {
         return distributor ? distributor.whatsappId : '';
       }
     };
+    
+
     const requestData = {
       stylesPublishList: checkedStyleIds.flatMap(styleId => 
         checkedModalIds.map(customerId => ({
@@ -438,6 +446,8 @@ const ProductPackagePublish = () => {
       ),
       loggedInUserWhatsappNumber: '', // Set this to the appropriate value if available
       companyId: companyId,
+      userId:userId,
+      linkType: 2,
     };
     console.log('stylesPublishList===>', checkedStyleIds);
 

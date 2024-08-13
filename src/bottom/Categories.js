@@ -78,7 +78,7 @@ const Categories = ({navigation}) => {
       })
       .then(response => {
         setSelectedDetails(response?.data || []);
-        console.log('Styles List:', response.data);
+        // console.log('Styles List:', response.data);
       })
       .catch(error => {
         console.error('Error:', error);

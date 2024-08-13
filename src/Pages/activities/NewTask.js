@@ -89,7 +89,7 @@ const NewTask = () => {
   const [selectedField, setSelectedField]=useState('');
   const [filteredFieldsList, setFilteredFieldsList]=useState([]);
   const [fieldsList, setfieldsList]=useState([]);
-  const [selectedFieldId, setSelectedFieldId]=useState([]);
+  const [selectedFieldId, setSelectedFieldId]=useState();
 
   useEffect(() => {
     setSelectedLocation('Select');
@@ -685,7 +685,7 @@ const NewTask = () => {
       userName: selectedUserName,
       locId: selectedLocationId,
       customerType: customerType || null,
-      field:selectedFieldId || 0,
+      field:selectedFieldId || null,
     };
 
     console.log('Request Data:', requestData);
@@ -1135,7 +1135,7 @@ const NewTask = () => {
       )}
 
      <View style={{marginTop:5}}>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Field</Text>
+      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Task Type</Text>
       <TouchableOpacity
         onPress={handledropdownField}
         style={styles.dropdownButton}>
