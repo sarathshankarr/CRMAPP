@@ -30,6 +30,7 @@ import ProductsStyles from '../Pages/product/ProductsStyles';
 import AddNewStyle from '../Pages/product/AddNewStyle';
 import NewStyleDetail from '../Pages/product/NewStyleDetail';
 import UploadProductImage from '../Pages/product/UploadProductImage';
+import TaskDetails from '../Pages/loc/TaskDetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -167,62 +168,61 @@ const Routes = () => {
         component={Activities}
         options={{headerShown: false}}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="NewTask"
         component={NewTask}
         options={{headerShown: false}}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="NewCall"
         component={NewCall}
         options={{headerShown: false}}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="StyleDetails"
         component={NewStyleDetail}
         options={{headerShown: false}}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="UploadProductImage"
         component={UploadProductImage}
         options={{headerShown: false}}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="CustomCheckBox"
         component={CustomCheckBox}
         options={{headerShown: false}}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="CustomerLocation"
         component={CustomerLocation}
         options={{headerShown: false}}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="ProductPackagePublish"
         component={ProductPackagePublish}
         options={{headerShown: false}}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="ProductsStyles"
         component={ProductsStyles}
         options={{headerShown: false}}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="AddNewStyle"
         component={AddNewStyle}
         options={({navigation}) => ({
           header: () => (
-            <CommonHeader
-              navigation={navigation}
-              title="New Style"
-            />
+            <CommonHeader navigation={navigation} title="New Style" />
           ),
           headerBackVisible: true,
         })}
       />
-
-
-
+       <Stack.Screen
+        name="TaskDetails"
+        component={TaskDetails}
+        options={{headerShown: false}}
+      />
     </Stack.Navigator>
   );
 };
