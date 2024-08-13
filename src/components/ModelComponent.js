@@ -204,7 +204,7 @@ const ModalComponent = ({
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        console.log('Styles List:', response.data?.response?.stylesList);
+        // console.log('Styles List:', response.data?.response?.stylesList);
       })
       .catch(error => {
         console.error('Error:', error);
