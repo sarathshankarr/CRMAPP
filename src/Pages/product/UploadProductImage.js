@@ -10,6 +10,7 @@ const UploadProductImage = ({route}) => {
   const [productStyle, setProductStyle]=useState({});
   const [allProductStyles, setAllProductStyles]=useState([]);
   const [isloading, setIsLoading]=useState(false);
+  const [saveBtn, setSaveBtn]=useState(false);
 
     const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -20,12 +21,13 @@ const UploadProductImage = ({route}) => {
     if (route.params && route?.params?.productStyle) {
       const styleDetails = route?.params?.productStyle;
       setProductStyle(styleDetails);
-      console.log("route params =======> ", styleDetails);
+      console.log("route params from upload inside =======> ", styleDetails);
+      setSaveBtn(true);
     }
-
+    
     getStyleList();
-  }, []);
-
+  }, [route]);
+  
 
 
 
@@ -80,50 +82,53 @@ const handleSave=()=>{
 
     let formData = new FormData();
 
-    formData.append("styleId", "0");
+    // formData.append("styleId", "0");
     formData.append("styleName", productStyle.styleName);
     formData.append("styleDesc", productStyle.styleDesc);
     formData.append("colorId", productStyle.colorId);
     formData.append("price", productStyle.price);
     formData.append("typeId", productStyle.typeId);
-    formData.append("retailerPrice", productStyle.retailerPrice);
-    formData.append("mrp", productStyle.mrp);
-    // formData.append("files", []);
-    formData.append("scaleId",productStyle.scaleId);
     formData.append("sizeGroupId",productStyle.sizeGroupId);
-
-    formData.append("styleQuality","");
-    formData.append("fabricQuality","");
-
-    formData.append("gsm",productStyle.gsm);
-
-    formData.append("gst","");
-
+    formData.append("scaleId",productStyle.scaleId);
+    formData.append("sizesListReq",productStyle.sizesListReq);
     formData.append("customerLevel",productStyle.customerLevel);
     formData.append("customerLevelPrice",productStyle.customerLevelPrice);
-    formData.append("hsn",productStyle.hsn);
     formData.append("discount",0);
-    formData.append("publishType","");
+    formData.append("retailerPrice", productStyle.retailerPrice);
+    formData.append("mrp", productStyle.mrp);
+    formData.append("myItems",productStyle.myItems);
     formData.append("categoryId",productStyle.categoryId);
     formData.append("locationId",productStyle.locationId);
+    // formData.append("publishType","");
     if(productStyle.fixDisc===null || productStyle.fixDisc===''){
         productStyle.fixDisc=0;
     }
     formData.append("fixDisc",productStyle.fixDisc);
     formData.append("companyId",productStyle.companyId);
-    formData.append("pub_to_jakya",0);
-    formData.append("styleNum",0);
-    formData.append("closureId",0);
-    formData.append("peakId",0);
-    formData.append("logoId",0);
-    formData.append("decId",0);
-    formData.append("trimId",0);
     formData.append("processId",productStyle.processId);
     formData.append("cedgeStyle",productStyle.cedgeStyle);
     formData.append("compFlag",productStyle.compFlag);
     formData.append("companyName",productStyle.companyName);
-    formData.append("sizesListReq",productStyle.sizesListReq);
-    formData.append("myItems",productStyle.myItems);
+
+
+    // formData.append("hsn",productStyle.hsn);
+    // formData.append("files", []);
+
+    // formData.append("styleQuality","");
+    // formData.append("fabricQuality","");
+
+    // formData.append("gsm",productStyle.gsm);
+
+    // formData.append("gst","");
+
+    
+    // formData.append("pub_to_jakya",0);
+    // formData.append("styleNum",0);
+    // formData.append("closureId",0);
+    // formData.append("peakId",0);
+    // formData.append("logoId",0);
+    // formData.append("decId",0);
+    // formData.append("trimId",0);
 
     console.log("formdata before saving ===========> ", formData);
 
@@ -143,7 +148,6 @@ const handleSave=()=>{
       })
       .then(response => {
         Alert.alert(`NeW style Created Successfully `);
-        getCategoriesList();
         console.log("Response===> ", response);
         setIsLoading(false);
       })
@@ -161,13 +165,14 @@ const handleSave=()=>{
       <Text style={{textAlign:'center',marginVertical:20, fontWeight:'bold'}}>UploadProductImage</Text>
       <TouchableOpacity
         style={{
-          backgroundColor: '#1F74BA',
+          backgroundColor: saveBtn? '#1F74BA' :'skyblue',
           padding: 10,
           borderRadius: 5,
           marginTop: 20,
           width: '90%',
           marginHorizontal: 20
         }}
+        disabled={!saveBtn}
         onPress={handleSave}>
         <Text style={style.saveButtonText}>Save</Text>
       </TouchableOpacity>

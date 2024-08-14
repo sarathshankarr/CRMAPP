@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert
 } from 'react-native';
 import {RadioButton} from 'react-native-radio-buttons-group';
 import {API} from '../../config/apiConfig';

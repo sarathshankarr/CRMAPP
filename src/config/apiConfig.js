@@ -63,6 +63,7 @@ export const API = {
   GET_STYLE_BY_ID:'erpportal/api/style/',
   GET_STYLE_LIST:'erpportal/api/style/getAll/',
   ADD_NEW_STYLE:'erpportal/api/style/addstyle',
+  ADD_NEW_SCALE:'erpportal/api/scale/addScale',
 
 };
 

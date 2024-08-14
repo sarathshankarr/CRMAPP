@@ -265,6 +265,31 @@ const DistributorOrder = () => {
 
   const addGrnOrder = async () => {
     if (isButtonDisabled) return; // Prevent further execution if button is disabled
+    let flag = 0; 
+    
+    console.log("flag1 ", flag);
+    
+    order?.orderLineItems?.forEach(item => {
+        const q = parseInt(inputValues[item?.orderLineitemId] || 0, 10); // Ensure i is a number
+        
+        if (q > 0) {
+            flag = 1; // Set flag to 1 if condition is met
+            console.log("setting flag", q)
+        }
+    });
+    
+    console.log("flag2", flag);
+
+    if(flag===0){
+      Alert.alert('Cannot process empty fields. Please fill atleast one input field');
+      return;
+    }
+
+    console.log("Success");
+
+    // return;
+
+
 
     setIsButtonDisabled(true); // Disable button after click
 

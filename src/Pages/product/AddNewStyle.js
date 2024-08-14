@@ -23,10 +23,10 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         return (
           <TouchableOpacity
             key={index}
-           onPress={() => {
-            navigation.navigate(route.name);
-          }
-          }
+            onPress={() => {
+              navigation.navigate(route.name);
+            }
+            }
             style={[styles.tabButton, isFocused && styles.activeTabButton]}>
             <Text style={[styles.tabText, isFocused && styles.activeTabText]}>
               {label}
@@ -38,15 +38,45 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
-const AddNewStyle = ({route}) => {
-    const navigation = useNavigation();
-    const styleDetails=route?.params?.Style;
+const AddNewStyle = ({ route }) => {
+  const navigation = useNavigation();
+  const styleDetails = route?.params?.Style;
 
   return (
     <View style={styles.container}>
-      <Tab.Navigator tabBar={props => <CustomTabBar {...props}  navigation={navigation}/>}>
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        backgroundColor: 'white',
+        elevation: 5,
+      }}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            resizeMode="contain"
+            source={require('../../../assets/back_arrow.png')}
+            style={styles.menuimg}
+          />
+        </TouchableOpacity>
+        <View style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <Text style={{
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: "#000",
+          }}>
+            {styleDetails?.styleDesc ? styleDetails?.styleDesc : "New Style"}
+          </Text>
+        </View>
+      </View>
+
+      <Tab.Navigator tabBar={props => <CustomTabBar {...props} navigation={navigation} />}>
         <Tab.Screen name="Basic Info" component={NewStyleDetail} initialParams={{ styleDetails }} />
-        <Tab.Screen name="Product Images" component={UploadProductImage}  />
+        <Tab.Screen name="Product Images" component={UploadProductImage} />
       </Tab.Navigator>
     </View>
   );
@@ -54,8 +84,8 @@ const AddNewStyle = ({route}) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
-    backgroundColor: '#fff', 
+    flex: 1,
+    backgroundColor: '#fff',
   },
 
   header: {
@@ -64,7 +94,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
   },
- 
   activeTabText: {
     fontWeight: 'bold',
     color: '#000',
@@ -103,6 +132,11 @@ const styles = StyleSheet.create({
   activeTabText: {
     fontWeight: 'bold',
     color: '#fff',
+  },
+  menuimg: {
+    height: 30,
+    width: 30,
+    marginHorizontal: 5,
   },
 });
 
@@ -146,10 +180,10 @@ export default AddNewStyle;
 //   return (
 //     <View style={styles.container}>
 //       <Tab.Navigator tabBar={props => <CustomTabBar {...props} navigation={navigation} />}>
-//         <Tab.Screen 
-//           name="Basic Info" 
-//           component={NewStyleDetail} 
-//           initialParams={{ styleDetails }} 
+//         <Tab.Screen
+//           name="Basic Info"
+//           component={NewStyleDetail}
+//           initialParams={{ styleDetails }}
 //         />
 //         <Tab.Screen name="Product Images" component={UploadProductImage} />
 //       </Tab.Navigator>
@@ -198,3 +232,5 @@ export default AddNewStyle;
 // });
 
 // export default AddNewStyle;
+
+
