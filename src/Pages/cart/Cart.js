@@ -214,6 +214,10 @@ const Cart = () => {
     state: '',
     country: '',
     pincode:'',
+    locationName:'',
+    locationDescription:''
+
+
   });
 
   const [errorFields, setErrorFields] = useState([]);
