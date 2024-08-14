@@ -59,6 +59,8 @@ const NewStyleDetail = ({ route }) => {
   const [selectedModalSeasonGroup, setSelectedModalSeasonGroup] = useState('');
   const [selectedModalSeasonGroupId, setSelectedModalSeasonGroupId] = useState(0);
 
+  const [selectedModalSizeInSeasonListIds, setSelectedModalSizeInSeasonListIds] = useState([]);
+
   const [showProcessWorkflowList, setShowProcessWorkflowList] = useState(false);
   const [processWorkflowList, setProcessWorkflowList] = useState([]);
   const [filteredProcessWorkflowList, setFilteredProcessWorkflowList] = useState([]);
@@ -142,8 +144,13 @@ const NewStyleDetail = ({ route }) => {
 
   const [mSize, setmSize] = useState('');
   const [mSizeDesc, setmSizeDesc] = useState('');
-  const [colorsArray, setColorsArray] = useState([]);
+  // const [colorsArray, setColorsArray] = useState([]);
 
+
+  const [editColor, setEditColor] = useState(true);
+  const [editSeasonGroup, setEditSeasonGroup] = useState(true);
+  const [editLocation, setEditLocation] = useState(true);
+  const [editScale, setEditScale] = useState(true);
 
   useEffect(() => {
     getCategoriesList();
@@ -188,7 +195,8 @@ const NewStyleDetail = ({ route }) => {
       }
 
       if (styleDetails?.colorId) {
-        setSelectedColorId(styleDetails?.colorId);
+        setSelectedColorIds([styleDetails?.colorId]);
+        setEditColor(false);
       }
 
       if (styleDetails?.customerLevelPrice) {
@@ -205,6 +213,7 @@ const NewStyleDetail = ({ route }) => {
       }
       if (styleDetails?.sizeGroupId) {
         setSelectedSeasonGroupId(styleDetails?.sizeGroupId);
+        setEditSeasonGroup(false);
       }
       if (styleDetails?.typeId) {
         setSelectedTypeId(styleDetails?.typeId);
@@ -212,11 +221,20 @@ const NewStyleDetail = ({ route }) => {
       if (styleDetails?.processId) {
         setSelectedProcessWorkflowId(styleDetails?.processId);
       }
+      if (styleDetails?.locationId) {
+        setSelectedLocationId(styleDetails?.locationId);
+        setEditLocation(false);
+      }
       if (styleDetails?.scaleId) {
         setSelectedScaleId(styleDetails?.scaleId);
+        setEditScale(false);
+      }
+
+      if (styleDetails?.sizeList) {
+        setShowScaleTable(true);
+        setSelectedSizes(styleDetails?.sizeList)
       }
     }
-
 
   }, [])
 
@@ -249,15 +267,15 @@ const NewStyleDetail = ({ route }) => {
 
   }, [selectedCustomerLevelId, customerLevelList])
 
-  useEffect(() => {
-    if (selectedColorId && colorList.length > 0) {
-      const found = colorList?.filter((item) => item.colorId === selectedColorId);
-      if (found) {
-        setSelectedColor(found[0]?.colorName)
-      }
-    }
+  // useEffect(() => {
+  //   if (selectedColorId && colorList.length > 0) {
+  //     const found = colorList?.filter((item) => item.colorId === selectedColorId);
+  //     if (found) {
+  //       setSelectedColor(found[0]?.colorName)
+  //     }
+  //   }
 
-  }, [selectedColorId, colorList])
+  // }, [selectedColorIds, colorList])
 
   useEffect(() => {
     if (selectedSeasonGroupId && seasonGroupsList.length > 0) {
@@ -326,9 +344,7 @@ const NewStyleDetail = ({ route }) => {
   }, [processWorkflowList])
 
 
-  // const comp_flag = 0;
 
-  // console.log("companyId", companyId,cedge_flag , comp_flag);
 
 
 
@@ -511,7 +527,7 @@ const NewStyleDetail = ({ route }) => {
   const getScales = () => {
     const text = "/scalesBysizegroupId";
     const apiUrl = `${global?.userData?.productURL}${API.GET_SCALES}${selectedSeasonGroupId}${text}`;
-    setIsLoading(true);
+    // setIsLoading(true);
     console.log('GET_SCALES', apiUrl);
     axios
       .get(apiUrl, {
@@ -591,46 +607,46 @@ const NewStyleDetail = ({ route }) => {
     setShowColorList(!showColorList);
   }
 
-  const handleSelectColor = (item) => {
-    setSelectedColor(item.colorName);
-    setSelectedColorId(item.colorId);
-    let array = {
-      colorId: item.colorId,
-      colorName: item.colorName,
+  // const handleSelectColor = (item) => {
+  //   setSelectedColor(item.colorName);
+  //   setSelectedColorId(item.colorId);
+  //   let array = [{
+  //     colorId: item.colorId,
+  //     colorName: item.colorName,
+  //   }]
+  //   setColorsArray(array);
+  //   setShowColorList(false);
+  // }
+
+  const handleSelectColor = item => {
+    if (!selectedColorIds.includes(item.colorId)) {
+      setSelectedColorIds([...selectedColorIds, item.colorId]);
+    } else {
+      setSelectedColorIds(selectedColorIds.filter(id => id !== item.colorId));
+      console.log("filtered colors ", selectedColorIds.filter(id => id !== item.colorId))
     }
-    setColorsArray(array);
-    setShowColorList(false);
-  }
 
-  // const handleSelectColor = item => {
-  //   if (!selectedColorIds.includes(item.colorId)) {
-  //     setSelectedColorIds([...selectedColorIds, item.colorId]);
-  //   } else {
-  //     setSelectedColorIds(selectedColorIds.filter(id => id !== item.colorId));
-  //   }
-
-  //   // Update "Select All" state based on selections
-  //   if (selectedColorIds.length === filteredColorList.length - 1) {
-  //     setIsSelectAll(true);
-  //   } else {
-  //     setIsSelectAll(false);
-  //   }
-  // };
-  // const handleSelectAll = () => {
-  //   if (isSelectAll) {
-  //     setSelectedColorIds([]);
-  //     setIsSelectAll(false);
-  //   } else {
-  //     const allIds = filteredColorList.map(item => item.colorId);
-  //     setSelectedColorIds(allIds);
-  //     setIsSelectAll(true);
-  //   }
-  // };
+    if (selectedColorIds.length === filteredColorList.length - 1) {
+      setIsSelectAll(true);
+    } else {
+      setIsSelectAll(false);
+    }
+  };
+  const handleSelectAll = () => {
+    if (isSelectAll) {
+      setSelectedColorIds([]);
+      setIsSelectAll(false);
+    } else {
+      const allIds = filteredColorList.map(item => item.colorId);
+      setSelectedColorIds(allIds);
+      setIsSelectAll(true);
+    }
+  };
 
   const handleSelectallSizesInScales = (item) => {
-    // setSelectedColor(item.colorName);
-    // setSelectedColorId(item.colorId);
-    // setShowColorList(false);
+    setSelectedModalSizeInSeasonListIds([...selectedModalSizeInSeasonListIds, item.id])
+    // console.log("season selected ", selectedModalSeasonGroupId, selectedModalSeasonGroup)
+    // console.log("sizes",selectedModalSizeInSeasonListIds.length, item.size );
   }
 
 
@@ -752,6 +768,10 @@ const NewStyleDetail = ({ route }) => {
       retailerPrice: 0,
       mrp: 0,
       availQty: 0,
+      gsCode: null,
+      gscodeMapId: null,
+      j_item_id: null,
+      article_no: null
     }));
 
     console.log('New Sizes:', newSizes); // Log the new sizes being added
@@ -816,7 +836,7 @@ const NewStyleDetail = ({ route }) => {
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_CATEGORY}`;
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
     console.log('ADD_CATEGORY', apiUrl0);
     axios
@@ -827,8 +847,10 @@ const NewStyleDetail = ({ route }) => {
         },
       })
       .then(response => {
-        Alert.alert(`Category Created Successfully ${response?.data?.category}`);
+        // Alert.alert(`Category Created Successfully ${response?.data?.category}`);
         // console.log("Response==> ", response.data);
+        setSelectedCategory(response?.data?.category)
+        setSelectedCategoryId(response?.data?.categoryId)
         getCategoriesList();
         setIsLoading(false);
       })
@@ -855,7 +877,7 @@ const NewStyleDetail = ({ route }) => {
   const handleSaveColorModal = () => {
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_COLOR}`;
-    setIsLoading(true);
+    // setIsLoading(true);
 
     const requestData = {
       colorId: null,
@@ -873,7 +895,9 @@ const NewStyleDetail = ({ route }) => {
         },
       })
       .then(response => {
-        Alert.alert(`Color Created Successfully : ${response?.data?.response?.colorList[0]?.colorName}`);
+        // Alert.alert(`Color Created Successfully : ${response?.data?.response?.colorList[0]?.colorName}`);
+        setSelectedColorId(response?.data?.response?.colorList[0]?.colorId);
+        setSelectedColor(response?.data?.response?.colorList[0]?.colorName)
         getcolorsList();
         setIsLoading(false);
       })
@@ -897,7 +921,7 @@ const NewStyleDetail = ({ route }) => {
   const handleSaveTypesModal = () => {
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_TYPE}`;
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
     const requestData = {
       typeId: null,
@@ -914,7 +938,9 @@ const NewStyleDetail = ({ route }) => {
         },
       })
       .then(response => {
-        Alert.alert(`Type Created Successfully : ${response?.data?.response?.typeList[0]?.typeName}`);
+        // Alert.alert(`Type Created Successfully : ${response?.data?.response?.typeList[0]?.typeName}`);
+        setSelectedTypeId(response?.data?.response?.typeList[0]?.typeId)
+        setSelectedType(response?.data?.response?.typeList[0]?.typeName)
         getTypesList();
         setIsLoading(false);
       })
@@ -954,7 +980,9 @@ const NewStyleDetail = ({ route }) => {
         },
       })
       .then(response => {
-        Alert.alert(`Type Created Successfully : ${response?.data?.response?.sizeGroupList[0]?.sizeGroup}`);
+        // Alert.alert(`Type Created Successfully : ${response?.data?.response?.sizeGroupList[0]?.sizeGroup}`);
+        setSelectedSeasonGroup(response?.data?.response?.sizeGroupList[0]?.sizeGroup)
+        setSelectedSeasonGroupId(response?.data?.response?.sizeGroupList[0]?.sizeGroupId)
         getSeasonalGroups();
         setIsLoading(false);
       })
@@ -971,6 +999,9 @@ const NewStyleDetail = ({ route }) => {
   const toggleScalesModal = () => {
     setScalesModal(!scalesModal);
     setmSize('');
+    setSelectedModalSizeInSeasonListIds([]);
+    setSelectedModalSeasonGroupId(0);
+    setSelectedModalSeasonGroup('');
   };
 
   const handleCloseScalesModal = () => {
@@ -978,12 +1009,12 @@ const NewStyleDetail = ({ route }) => {
   };
 
   const handleSaveScalesModal = () => {
-    setIsLoading(true);
+    // setIsLoading(true);
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_SCALE}`;
     const requestData = {
       id: null,
       size: mSize,
-      sizeDesc: mSizeDesc,
+      sizeDesc: mSize,
       companyId: companyId
     }
 
@@ -996,6 +1027,8 @@ const NewStyleDetail = ({ route }) => {
       })
       .then(response => {
         Alert.alert(`Size Created Successfully : ${response?.data?.response?.sizeList[0]?.size}`);
+        setSelectedScale(response?.data?.response?.sizeList[0]?.size)
+        setSelectedScaleId(response?.data?.response?.sizeList[0]?.scaleId)
         setIsLoading(false);
         getAllSizesInScale();
       })
@@ -1169,19 +1202,28 @@ const NewStyleDetail = ({ route }) => {
 
   const handleNextPage = () => {
 
+    const colorsArray = colorList
+      .filter(color => selectedColorIds.includes(color.colorId))
+      .map(item => ({
+        colorId: item.colorId,
+        colorName: item.colorName
+      }));
+
+    console.log("colorsArray===>", colorsArray);
+
     const styleDetails = {
       // styleId: undefined,
       styleName: styleName,
       styleDesc: styleDesc,
       colorId: selectedColorId,
-      price: dealerPrice.toString(),
+      price: Number(dealerPrice),
       typeId: selectedTypeId,
-      retailerPrice: retailerPrice,
-      mrp: mrp,
+      retailerPrice: Number(retailerPrice),
+      mrp: Number(mrp),
       // files: (productStyle.files as any[]).map(file => file.file),  // Convert file list to array of file objects
       scaleId: selectedScaleId,
       gsm: gsm,
-      customerLevel: selectedCustomerLevelId.toString(),
+      customerLevel: Number(selectedCustomerLevelId),
       hsn: hsn,
       discount: 0,
       categoryId: selectedCategoryId,
@@ -1192,18 +1234,60 @@ const NewStyleDetail = ({ route }) => {
       cedgeStyle: cedge_flag,
       compFlag: comp_flag,
       sizeGroupId: selectedSeasonGroupId,
-      customerLevelPrice: customerLevelPrice ? customerLevelPrice.toString() : '0',
+      customerLevelPrice: customerLevelPrice ? Number(customerLevelPrice) : 0,
       companyName: companyName,
       sizesListReq: JSON.stringify(selectedSizes),
       myItems: JSON.stringify(colorsArray),
     };
-    navigation.navigate('UploadProductImage', { productStyle: styleDetails });
+    navigation.navigate('Product Images', { productStyle: styleDetails });
   }
 
   const handleInputChange = (index, field, value) => {
     const updatedSizes = [...selectedSizes];
     updatedSizes[index][field] = Number(value);
     setSelectedSizes(updatedSizes);
+  };
+
+  const handleSaveNewSizesToSeasonGroup = async () => {
+
+    // setIsLoading(true);
+    const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_SCALE}`;
+    const requestData = {
+      sizeGroupId: selectedModalSeasonGroupId,
+      combineSizeId: selectedModalSizeInSeasonListIds.join(','),
+      companyId: companyId
+    }
+
+    console.log('ADD_NEW_SIZE IN_SCALE', apiUrl0, requestData);
+
+    axios
+      .post(apiUrl0, requestData, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        // Alert.alert(`Sizes Created Successfully`);
+         getScales();
+        // console.log("Response after creating ===> ", response?.data?.response?.scaleAddRequest[0]?.scaleId);
+        // setSelectedScaleId(response?.data?.response?.scaleAddRequest[0]?.scaleId);
+        // const item={
+        //   scaleRange:response?.data?.response?.scaleAddRequest[0]?.combineSizeId,
+        // }
+        // handleChangeScale(item);
+        // setShowScaleTable(true);
+
+        // setSelectedScaleId(response?.data?.response?.scaleAddRequest[0]?.scaleId);
+
+        setIsLoading(false);
+
+      })
+      .catch(error => {
+        console.error('Error:', error.response ? error.response.data : error.message);
+        Alert.alert('Error', error.response ? error.response.data.message : 'An unknown error occurred');
+        setIsLoading(false);
+      });
+      toggleScalesModal(false);
   };
 
 
@@ -1233,7 +1317,7 @@ const NewStyleDetail = ({ route }) => {
                 style={style.container3}
                 onPress={handleCategoryDropDown}>
                 <Text style={{ fontWeight: '600', color: "#000" }}>
-                  {selectedCategory.length > 0 ? selectedCategory : "Select"}
+                  {selectedCategory?.length > 0 ? selectedCategory : "Select"}
                 </Text>
 
                 <Image
@@ -1514,10 +1598,10 @@ const NewStyleDetail = ({ route }) => {
           }
           <Text style={style.headerTxt}>{"Color  *"}</Text>
 
-          <View style={style.container1}>
+          {/* <View style={style.container1}>
             <View style={style.container2}>
               <TouchableOpacity
-                style={style.container3}
+                style={[style.container3, {backgroundColor:editColor?'#fff':'#f1e8e6'}]}
                 onPress={handleColorDropDown}>
                 <Text style={{ fontWeight: '600', color: "#000" }}>
                   {selectedColorId ? selectedColor : "Select"}
@@ -1545,14 +1629,14 @@ const NewStyleDetail = ({ route }) => {
               </TouchableOpacity>
             </View>
           </View>
-          {showColorList && (
+          {showColorList && editColor && (
             <View
               style={{
                 elevation: 5,
                 height: 300,
                 alignSelf: 'center',
                 width: '90%',
-                backgroundColor: '#fff',
+                backgroundColor:'#fff',
                 borderRadius: 10,
               }}>
               <TextInput
@@ -1603,114 +1687,114 @@ const NewStyleDetail = ({ route }) => {
                 </ScrollView>
               )}
             </View>
-          )}
-          {/* <View style={style.container1}>
-        <View style={style.container2}>
-          <TouchableOpacity
-            style={style.container3}
-            onPress={handleColorDropDown}>
-            <Text style={{ fontWeight: '600', color: '#000' }}>
-              {selectedColorIds.length > 0
-                ? filteredColorList
-                  .filter(color => selectedColorIds.includes(color.colorId))
-                  .map(color => color.colorName)
-                  .join(', ')
-                : 'Select'}
-            </Text>
-            <Image
-              source={require('../../../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={style.container4}>
-          <TouchableOpacity onPress={toggleColorModal} style={style.plusButton}>
-            <Image
-              style={{
-                height: 30,
-                width: 30,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              source={require('../../../assets/plus.png')}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {showColorList && (
-        <View
-          style={{
-            elevation: 5,
-            height: 300,
-            alignSelf: 'center',
-            width: '90%',
-            backgroundColor: '#fff',
-            borderRadius: 10,
-          }}>
-          <View
-            style={{ flexDirection: 'row', alignItems: 'center', margin: 10 }}>
-            <TouchableOpacity onPress={handleSelectAll}>
-              <CustomCheckBox isChecked={isSelectAll} />
-              <Text style={{ color: '#000', marginLeft: 10 }}>Select All</Text>
-            </TouchableOpacity>
-          </View>
-          <TextInput
-            style={{
-              marginTop: 10,
-              borderRadius: 10,
-              height: 40,
-              borderColor: 'gray',
-              borderWidth: 1,
-              marginHorizontal: 10,
-              paddingLeft: 10,
-              marginBottom: 10,
-              color: '#000000',
-            }}
-            placeholderTextColor="#000"
-            placeholder="Search"
-            onChangeText={filterColors}
-          />
-
-          {filteredColorList.length === 0 && !isLoading ? (
-            <Text style={style.noCategoriesText}>Sorry, no results found!</Text>
-          ) : (
-            <ScrollView nestedScrollEnabled={true}>
-              {filteredColorList?.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
+          )} */}
+          <View style={style.container1}>
+            <View style={style.container2}>
+              <TouchableOpacity
+                style={[style.container3, { backgroundColor: editColor ? '#fff' : '#f1e8e6' }]}
+                onPress={handleColorDropDown}>
+                <Text style={{ fontWeight: '600', color: '#000' }}>
+                  {selectedColorIds.length > 0
+                    ? filteredColorList
+                      .filter(color => selectedColorIds.includes(color.colorId))
+                      .map(color => color.colorName)
+                      .join(', ')
+                    : 'Select'}
+                </Text>
+                <Image
+                  source={require('../../../assets/dropdown.png')}
+                  style={{ width: 20, height: 20 }}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={style.container4}>
+              <TouchableOpacity onPress={toggleColorModal} style={style.plusButton}>
+                <Image
                   style={{
-                    width: '100%',
-                    height: 50,
+                    height: 30,
+                    width: 30,
                     justifyContent: 'center',
-                    borderBottomWidth: 0.5,
-                    borderColor: '#8e8e8e',
+                    alignItems: 'center',
                   }}
-                  onPress={() => handleSelectColor(item)}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginHorizontal: 10,
-                    }}>
-                    <CustomCheckBox
-                      isChecked={selectedColorIds.includes(item.colorId)}
-                    />
-                    <Text
-                      style={{
-                        fontWeight: '600',
-                        color: '#000',
-                        marginLeft: 10,
-                      }}>
-                      {item?.colorName}
-                    </Text>
-                  </View>
+                  source={require('../../../assets/plus.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {showColorList && editColor && (
+            <View
+              style={{
+                elevation: 5,
+                height: 300,
+                alignSelf: 'center',
+                width: '90%',
+                backgroundColor: '#fff',
+                borderRadius: 10,
+              }}>
+              <View
+              >
+                <TouchableOpacity onPress={handleSelectAll} style={{ flexDirection: 'row', alignItems: 'center', margin: 10 }}>
+                  <CustomCheckBox isChecked={isSelectAll} />
+                  <Text style={{ color: '#000', marginLeft: 10 }}>Select All</Text>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              </View>
+              <TextInput
+                style={{
+                  marginTop: 10,
+                  borderRadius: 10,
+                  height: 40,
+                  borderColor: 'gray',
+                  borderWidth: 1,
+                  marginHorizontal: 10,
+                  paddingLeft: 10,
+                  marginBottom: 10,
+                  color: '#000000',
+                }}
+                placeholderTextColor="#000"
+                placeholder="Search"
+                onChangeText={filterColors}
+              />
+
+              {filteredColorList.length === 0 && !isLoading ? (
+                <Text style={style.noCategoriesText}>Sorry, no results found!</Text>
+              ) : (
+                <ScrollView nestedScrollEnabled={true}>
+                  {filteredColorList?.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        width: '100%',
+                        height: 50,
+                        justifyContent: 'center',
+                        borderBottomWidth: 0.5,
+                        borderColor: '#8e8e8e',
+                      }}
+                      onPress={() => handleSelectColor(item)}>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          marginHorizontal: 10,
+                        }}>
+                        <CustomCheckBox
+                          isChecked={selectedColorIds.includes(item.colorId)}
+                        />
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            color: '#000',
+                            marginLeft: 10,
+                          }}>
+                          {item?.colorName}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
           )}
-        </View>
-      )} */}
 
           <Text style={style.headerTxt}>{"Types *"}</Text>
 
@@ -1810,7 +1894,7 @@ const NewStyleDetail = ({ route }) => {
           <View style={style.container1}>
             <View style={style.container2}>
               <TouchableOpacity
-                style={style.container3}
+                style={[style.container3, { backgroundColor: editColor ? '#fff' : '#f1e8e6' }]}
                 onPress={handleSeasonGroupsDropDown}>
                 <Text style={{ fontWeight: '600', color: "#000" }}>
                   {selectedSeasonGroup ? selectedSeasonGroup : "Select"}
@@ -1838,7 +1922,7 @@ const NewStyleDetail = ({ route }) => {
               </TouchableOpacity>
             </View>
           </View>
-          {showSeasonGroupsList && (
+          {showSeasonGroupsList && editSeasonGroup && (
             <View
               style={{
                 elevation: 5,
@@ -2028,6 +2112,7 @@ const NewStyleDetail = ({ route }) => {
                 paddingLeft: 15,
                 paddingRight: 15,
                 marginHorizontal: 20,
+                backgroundColor: editColor ? '#fff' : '#f1e8e6',
               }}
               onPress={handleLocationDropDown}>
               <Text style={{ fontWeight: '600', color: "#000" }}>
@@ -2040,7 +2125,7 @@ const NewStyleDetail = ({ route }) => {
               />
             </TouchableOpacity>
           </View>
-          {showLocationList && (
+          {showLocationList && editLocation && (
             <View
               style={{
                 elevation: 5,
@@ -2104,12 +2189,11 @@ const NewStyleDetail = ({ route }) => {
           <View style={style.container1}>
             <View style={style.container2}>
               <TouchableOpacity
-                style={style.container3}
+                style={[style.container3, { backgroundColor: editColor ? '#fff' : '#f1e8e6' }]}
                 onPress={handleScalesDropDown}>
                 <Text style={{ fontWeight: '600', color: "#000" }}>
                   {selectedScale ? selectedScale : "Select"}
                 </Text>
-
                 <Image
                   source={require('../../../assets/dropdown.png')}
                   style={{ width: 20, height: 20 }}
@@ -2132,7 +2216,7 @@ const NewStyleDetail = ({ route }) => {
               </TouchableOpacity>
             </View>
           </View>
-          {showScalesList && (
+          {showScalesList && editScale && (
             <View
               style={{
                 elevation: 5,
@@ -2458,13 +2542,6 @@ const NewStyleDetail = ({ route }) => {
                     placeholderTextColor="#000"
                     onChangeText={text => setmSize(text)}
                   />
-                  <Text style={{ fontWeight: 'bold' }}>{"Size Description * "}</Text>
-                  <TextInput
-                    style={[style.input, { color: '#000' }]}
-                    placeholder=""
-                    placeholderTextColor="#000"
-                    onChangeText={text => setmSizeDesc(text)}
-                  />
                   <TouchableOpacity
                     style={style.saveButton}
                     onPress={ValidateNewScale}>
@@ -2570,12 +2647,18 @@ const NewStyleDetail = ({ route }) => {
                           style={{
                             width: '100%',
                             height: 50,
-                            justifyContent: 'center',
+                            // justifyContent: 'center',
                             borderBottomWidth: 0.5,
                             borderColor: '#8e8e8e',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginHorizontal: 10,
                           }}
                           onPress={() => handleSelectallSizesInScales(item)
                           }>
+                          <CustomCheckBox
+                            isChecked={selectedModalSizeInSeasonListIds.includes(item.id)}
+                          />
                           <Text
                             style={{
                               fontWeight: '600',
@@ -2590,7 +2673,7 @@ const NewStyleDetail = ({ route }) => {
                   </View>
                   <TouchableOpacity
                     style={style.saveButton}
-                    onPress={ValidateNewScale}>
+                    onPress={handleSaveNewSizesToSeasonGroup}>
                     <Text style={style.saveButtonText}>Save</Text>
                   </TouchableOpacity>
 
@@ -2684,159 +2767,159 @@ const NewStyleDetail = ({ route }) => {
 
 }
 
-  const style = StyleSheet.create({
-    conatiner: {
-      flex: 1,
-      backgroundColor: '#fff'
-    },
-    container1: {
-      flexDirection: 'row',
-      // marginTop: 20,
-      alignItems: 'center',
-      width: '90%'
-    },
-    container2: {
-      justifyContent: 'flex-start',
-      width: '95%'
-    },
-    container4: {
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      width: '10%'
-    },
-    headerTxt: {
-      marginHorizontal: 20,
-      marginVertical: 3,
-      color: "#000"
-    },
-    container3: {
-      width: '90%',
-      height: 50,
-      borderRadius: 10,
-      borderWidth: 0.5,
-      alignSelf: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingLeft: 15,
-      paddingRight: 15,
-    },
+const style = StyleSheet.create({
+  conatiner: {
+    flex: 1,
+    backgroundColor: '#fff'
+  },
+  container1: {
+    flexDirection: 'row',
+    // marginTop: 20,
+    alignItems: 'center',
+    width: '90%'
+  },
+  container2: {
+    justifyContent: 'flex-start',
+    width: '95%'
+  },
+  container4: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    width: '10%'
+  },
+  headerTxt: {
+    marginHorizontal: 20,
+    marginVertical: 3,
+    color: "#000"
+  },
+  container3: {
+    width: '90%',
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 0.5,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingLeft: 15,
+    paddingRight: 15,
+  },
 
-    plusButton: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center',
-    },
-    noCategoriesText: {
-      textAlign: 'center',
-      marginTop: 20,
-      fontSize: 16,
-      color: '#000',
-      fontWeight: '600',
-    },
-    modalContainerr: {
-      flex: 1,
-      alignItems: 'center',
-      marginTop: '45%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContainerr1: {
-      flex: 1,
-      alignItems: 'center',
-      marginTop: '30%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContentt: {
-      backgroundColor: '#fff',
-      padding: 20,
-      borderRadius: 10,
-      width: '80%',
-      alignItems: 'center',
-      elevation: 5, // Add elevation for shadow on Android
-    },
-    modalTitle: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      // marginBottom: 20,
-      color: '#000',
-    },
-    saveButton: {
-      backgroundColor: '#1F74BA',
-      padding: 10,
-      borderRadius: 5,
-      marginTop: 20,
-      width: '100%',
-    },
-    saveButtonText: {
-      color: '#fff',
-      fontWeight: 'bold',
-      textAlign: 'center',
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: 'gray',
-      borderRadius: 5,
-      padding: 10,
-      marginBottom: 5,
-      width: '100%',
-    },
-    inputContainer: {
-      borderWidth: 1,
-      borderColor: '#000',
-      borderRadius: 5,
-      marginHorizontal: 20,
-      marginBottom: 3,
-      marginTop: 3,
+  plusButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+  noCategoriesText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '600',
+  },
+  modalContainerr: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: '45%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainerr1: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: '30%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContentt: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+    elevation: 5, // Add elevation for shadow on Android
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    // marginBottom: 20,
+    color: '#000',
+  },
+  saveButton: {
+    backgroundColor: '#1F74BA',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 20,
+    width: '100%',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 5,
+    width: '100%',
+  },
+  inputContainer: {
+    borderWidth: 1,
+    borderColor: '#000',
+    borderRadius: 5,
+    marginHorizontal: 20,
+    marginBottom: 3,
+    marginTop: 3,
 
-    },
-    txtinput: {
-      fontSize: 16,
-      paddingHorizontal: 10,
-      color: '#000000',
-    },
+  },
+  txtinput: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    color: '#000000',
+  },
 
-    container: {
-      flex: 1,
-      padding: 10,
-    },
-    header: {
-      flexDirection: 'row',
-      backgroundColor: '#f4f4f4',
-      paddingVertical: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: '#ddd',
-    },
-    headerCell: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    headerText: {
-      fontWeight: 'bold',
-      color: '#333',
-    },
-    row: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: '#ddd',
-      paddingVertical: 10,
-    },
-    cell: {
-      flex: 1,
-      justifyContent: 'center',
-      paddingHorizontal: 5,
-    },
-    cellText: {
-      color: '#000',
-      textAlign: 'center'
-    },
-    // input1: {
-    //   height: 40,
-    //   borderColor: '#ddd',
-    //   borderWidth: 1,
-    //   borderRadius: 5,
-    //   paddingHorizontal: 10,
-    // },
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  header: {
+    flexDirection: 'row',
+    backgroundColor: '#f4f4f4',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  headerCell: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerText: {
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  row: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingVertical: 10,
+  },
+  cell: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  cellText: {
+    color: '#000',
+    textAlign: 'center'
+  },
+  // input1: {
+  //   height: 40,
+  //   borderColor: '#ddd',
+  //   borderWidth: 1,
+  //   borderRadius: 5,
+  //   paddingHorizontal: 10,
+  // },
 
-  });
+});
 
-  export default NewStyleDetail;
+export default NewStyleDetail;

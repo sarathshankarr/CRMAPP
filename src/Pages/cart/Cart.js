@@ -213,6 +213,7 @@ const Cart = () => {
     cityOrTown: '',
     state: '',
     country: '',
+    pincode:'',
   });
 
   const [errorFields, setErrorFields] = useState([]);
@@ -225,6 +226,9 @@ const Cart = () => {
       'cityOrTown',
       'state',
       'country',
+      'pincode',
+      'locationName',
+      'locationDescription'
     ];
     setErrorFields([]);
     const missingFields = mandatoryFields.filter(field => !inputValues[field]);
@@ -282,6 +286,9 @@ const Cart = () => {
         cityOrTown: '',
         state: '',
         country: '',
+        pincode:'',
+        locationName:'',
+        locationDescription:'',
         // Add other input fields if needed
       });
     }
@@ -332,15 +339,15 @@ const Cart = () => {
       cityOrTown: inputValues.cityOrTown,
       state: inputValues.state,
       country: inputValues.country,
-      pincode: '',
+      pincode: inputValues.pincode,
       pan: '',
       gstNo: '',
       creditLimit: 0,
       paymentReminderId: 0,
       companyId: companyId,
-      locationName: '',
+      locationName: inputValues.locationName,
       locationCode: '',
-      locationDescription: '',
+      locationDescription: inputValues.locationDescription,
     };
 
     axios
@@ -415,9 +422,9 @@ const Cart = () => {
       cityOrTown: inputValues.cityOrTown,
       state: inputValues.state,
       stateId: 0,
-      currencyId: 9,
+      currencyId: 1,
       country: inputValues.country,
-      pincode: '',
+      pincode: inputValues.pincode,
       customerLevel: '',
       pan: '',
       gstNo: '',
@@ -425,18 +432,19 @@ const Cart = () => {
       myItems: '',
       creditLimit: 0,
       paymentReminderId: 26,
-      dayId: 0,
-      files: [],
-      remarks: '',
-      transport: 0,
-      mop: '',
-      markupDisc: 0,
+      // dayId: 0,
+      // files: [],
+      // remarks: '',
+      // transport: 0,
+      // mop: '',
+      // markupDisc: 0,
       companyId: companyId,
-      locationName: '',
+      locationName: inputValues.locationName,
       locationCode: '',
-      locationDescription: '',
+      locationDescription:inputValues.locationDescription,
     };
 
+    console.log("requestData===>", requestData);
     axios
       .post(
         global?.userData?.productURL + API.ADD_DISTRIBUTOR_DETAILS,
@@ -1232,9 +1240,9 @@ const Cart = () => {
             </Text>
           </View>
           <View>
-            {userRole &&
+            {/* {userRole &&
               userRole.toLowerCase &&
-              userRole.toLowerCase() === 'admin' && (
+              userRole.toLowerCase() === 'admin' && ( */}
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <View>
                     <TouchableOpacity
@@ -1398,7 +1406,7 @@ const Cart = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
-              )}
+              {/* )} */}
           </View>
         </View>
         <View style={{flexDirection: 'row'}}>
@@ -1867,6 +1875,8 @@ const Cart = () => {
                 </TouchableOpacity>
             </View>
 
+            <ScrollView style={{width:'100%', height:'65%'}}>
+
                 <TextInput
                   style={[
                     style.input,
@@ -1970,11 +1980,57 @@ const Cart = () => {
                 {errorFields.includes('country') && (
                   <Text style={style.errorText}>Please Enter Country</Text>
                 )}
+                <TextInput
+                  style={[
+                    style.input,
+                    {color: '#000'},
+                    errorFields.includes('pincode') ? style.errorBorder : null,
+                  ]}
+                  placeholderTextColor="#000"
+                  placeholder="Pincode *"
+                  onChangeText={text =>
+                    setInputValues({...inputValues, pincode: text})
+                  }
+                />
+                {errorFields.includes('pincode') && (
+                  <Text style={style.errorText}>Please Enter Pincode</Text>
+                )}
+                <TextInput
+                  style={[
+                    style.input,
+                    {color: '#000'},
+                    errorFields.includes('locationName') ? style.errorBorder : null,
+                  ]}
+                  placeholderTextColor="#000"
+                  placeholder="Location Name *"
+                  onChangeText={text =>
+                    setInputValues({...inputValues, locationName: text})
+                  }
+                />
+                {errorFields.includes('locationName') && (
+                  <Text style={style.errorText}>Please Enter Location Name</Text>
+                )}
+                <TextInput
+                  style={[
+                    style.input,
+                    {color: '#000'},
+                    errorFields.includes('locationDescription') ? style.errorBorder : null,
+                  ]}
+                  placeholderTextColor="#000"
+                  placeholder="Location Description *"
+                  onChangeText={text =>
+                    setInputValues({...inputValues, locationDescription: text})
+                  }
+                />
+                {errorFields.includes('locationDescription') && (
+                  <Text style={style.errorText}>Please Enter Location Description</Text>
+                )}
                 <TouchableOpacity
                   style={style.saveButton}
                   onPress={handleSaveButtonPress}>
                   <Text style={style.saveButtonText}>Save</Text>
                 </TouchableOpacity>
+                </ScrollView>
               </View>
             </View>
           </Modal>

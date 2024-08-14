@@ -134,7 +134,7 @@ const ProductsStyles = () => {
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        // console.log('Styles List:', response.data?.response?.stylesList);
+        console.log('Styles List:', response.data?.response?.stylesList[0]);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -437,12 +437,12 @@ const ProductsStyles = () => {
   };
 
   const renderItem = ({item}) => (
-    <TouchableOpacity style={styles.row} onPress={() => fetchStyleById(item.styleId)}>
+    <TouchableOpacity style={styles.row} onPress={() => fetchStyleById(item?.styleId)}>
     
-    <CustomCheckBox
-      isChecked={checkedStyleIds.includes(item.styleId)}
-      onToggle={() => handleCheckBoxToggleStyle(item.styleId)}
-    />
+    {item?.styleId && <CustomCheckBox
+      isChecked={checkedStyleIds.includes(item?.styleId)}
+      onToggle={() => handleCheckBoxToggleStyle(item?.styleId)}
+    />}
     <Text style={styles.cell}>{item?.styleNum}</Text>
     <Text style={styles.cell1}>{item?.styleName}</Text>
     <Text style={styles.cell2}>{item?.colorName}</Text>
@@ -560,10 +560,12 @@ const ProductsStyles = () => {
       </View>
       {loading && pageNo === 1 ? (
         <ActivityIndicator size="large" color="#0000ff" />
+      ) : (stylesData?.length===1 && stylesData[0]===null) || stylesData?.length === 0 ? (
+        <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
         <FlatList
           data={filteredStylesData()}
-          keyExtractor={item => item.styleId.toString()} // Ensure styleId is unique
+          keyExtractor={item => item?.styleId?.toString()} // Ensure styleId is unique
           renderItem={renderItem}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.1}

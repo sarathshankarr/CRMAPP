@@ -212,10 +212,11 @@ const Routes = () => {
         name="AddNewStyle"
         component={AddNewStyle}
         options={({navigation}) => ({
-          header: () => (
-            <CommonHeader navigation={navigation} title="New Style" />
-          ),
+          // header: () => (
+          //   <CommonHeader navigation={navigation} title="New Style" />
+          // ),
           headerBackVisible: true,
+          headerShown:false,
         })}
       />
        <Stack.Screen

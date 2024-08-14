@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Text,
   TouchableOpacity,
@@ -15,13 +15,13 @@ import {
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../config/apiConfig';
-import {RadioButton} from 'react-native-radio-buttons-group';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../config/apiConfig';
+import { RadioButton } from 'react-native-radio-buttons-group';
 
-const CustomerLocation = ({navigation}) => {
+const CustomerLocation = ({ navigation }) => {
   const userData = useSelector(state => state.loggedInUser);
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
@@ -72,12 +72,12 @@ const CustomerLocation = ({navigation}) => {
   const companyId = selectedCompany
     ? selectedCompany.id
     : initialSelectedCompany?.id;
-    
 
-    const handleGoBack = () => {
-      navigation.goBack();
-    };
-  
+
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
 
   const getTasksAccUser = () => {
     setLoading(true);
@@ -108,7 +108,7 @@ const CustomerLocation = ({navigation}) => {
           pincode: task.pincode || '',
           status: task.status || '',
           dueDateStr: task.dueDateStr || '',
-          desc:task.desc || ''
+          desc: task.desc || ''
         }));
         setTasks(taskOptions);
         setFilteredTasks(taskOptions);
@@ -180,7 +180,7 @@ const CustomerLocation = ({navigation}) => {
             reject(error);
           }
         },
-        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
       );
     });
   };
@@ -269,23 +269,23 @@ const CustomerLocation = ({navigation}) => {
 
     // Navigate to TaskDetails with the task details
     navigation.navigate('TaskDetails', {
-      task:task,
+      task: task,
       locationName: task.locationName,
       state: task.state,
       status: task.status,
       dueDateStr: task.dueDateStr,
       id: task.id,
       label: task.label,
-      desc:task.desc
+      desc: task.desc
     });
 
-       // Reset switch state for the task
-       setSwitchState(prevState => ({
-        ...prevState,
-        [task.id]: false,
-      }));
-    };
-  
+    // Reset switch state for the task
+    setSwitchState(prevState => ({
+      ...prevState,
+      [task.id]: false,
+    }));
+  };
+
 
 
   const openGoogleMaps = (
@@ -315,7 +315,7 @@ const CustomerLocation = ({navigation}) => {
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
-            style={{height: 25, width: 25}}
+            style={{ height: 25, width: 25 }}
             source={require('../../../assets/back_arrow.png')}
           />
         </TouchableOpacity>
@@ -358,52 +358,51 @@ const CustomerLocation = ({navigation}) => {
         </Text>
       </View>
 
-      <ScrollView style={styles.Content}>
-        {loading ? (
-          <ActivityIndicator
-            style={{justifyContent: 'center', alignItems: 'center'}}
-            size="large"
-            color="#390050"
-          />
+      {loading ? (
+        <ActivityIndicator
+          style={{ justifyContent: 'center', alignItems: 'center' }}
+          size="large"
+          color="#390050"
+        />
+      ) : (
+        filteredTasks.length === 0 ? (
+          <Text style={styles.noResultsText}>Sorry, no results found!</Text>
         ) : (
-          <>
-            {filteredTasks.length === 0 ? (
-              <Text style={styles.noResultsText}>Sorry, no results found!</Text>
-            ) : (
-              filteredTasks.map(task => (
-                <View key={task.value}>
-                  <View style={{marginHorizontal: 10, marginVertical: 5}}>
-                    <Text style={{color: '#000', fontWeight: 'bold'}}>
-                      {task.dueDateStr}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() => handleTaskSelectt(task)}>
-                    <View style={styles.taskContainer}>
-                      <RadioButton
-                        selected={selectedId === task.id}
-                        onPress={() => handleTaskSelectt(task)}
-                      />
-                      <View style={styles.taskDetails}>
-                        <Text style={styles.dropdownItemText}>
-                          {task.label}
-                        </Text>
-                        <Text style={styles.loctxt}>{task.locationName}</Text>
-                        <Text style={styles.statetxt}>{task.state}</Text>
-                      </View>
-                      <View style={{flex: 0.6}}>
-                        <TouchableOpacity onPress={() => handleTaskSelect(task)} >
+          <ScrollView style={styles.Content}>
+            {filteredTasks.map(task => (
+              <View key={task.value}>
+                <View style={{ marginHorizontal: 10, marginVertical: 5 }}>
+                  <Text style={{ color: '#000', fontWeight: 'bold' }}>
+                    {task.dueDateStr}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => handleTaskSelectt(task)}>
+                  <View style={styles.taskContainer}>
+                    <RadioButton
+                      selected={selectedId === task.id}
+                      onPress={() => handleTaskSelectt(task)}
+                    />
+                    <View style={styles.taskDetails}>
+                      <Text style={styles.dropdownItemText}>
+                        {task.label}
+                      </Text>
+                      <Text style={styles.loctxt}>{task.locationName}</Text>
+                      <Text style={styles.statetxt}>{task.state}</Text>
+                    </View>
+                    <View style={{ flex: 0.6 }}>
+                      <TouchableOpacity onPress={() => handleTaskSelect(task)} >
                         <Image
                           style={styles.locatioimg}
                           source={require('../../../assets/location-pin.png')}
                         />
-                        </TouchableOpacity>
-                      </View>
+                      </TouchableOpacity>
+                    </View>
 
-                      <View style={{flex: 0.6}}>
-                        <Text style={styles.statustxt}>{task.status}</Text>
-                        <View style={{}}>
+                    <View style={{ flex: 0.6 }}>
+                      <Text style={styles.statustxt}>{task.status}</Text>
+                      <View style={{}}>
                         {/* <Switch
                          trackColor={{false: '#767577', true: '#81b0ff'}}
                          ios_backgroundColor="#3e3e3e"
@@ -413,16 +412,15 @@ const CustomerLocation = ({navigation}) => {
                             if (value) handleTaskSelectt(task);
                           }}
                         /> */}
-                        </View>  
                       </View>
                     </View>
-                  </TouchableOpacity>
-                </View>
-              ))
-            )}
-          </>
-        )}
-      </ScrollView>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )
+      )}
     </View>
   );
 };
@@ -488,6 +486,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
+    flex: 1,
   },
 });
 

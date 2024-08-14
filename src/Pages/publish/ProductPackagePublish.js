@@ -67,7 +67,9 @@ const ProductPackagePublish = () => {
         cityOrTown: '',
         state: '',
         country: '',
-        // Add other input fields if needed
+        pincode:'',
+        locationName:'',
+        locationDescription:'',
       });
       setSearchQuery('');
       setSearchQueryStylesData('');
@@ -80,6 +82,9 @@ const ProductPackagePublish = () => {
     cityOrTown: '',
     state: '',
     country: '',
+    pincode:'',
+    locationName:'',
+    locationDescription:'',
   });
 
   const [errorFields, setErrorFields] = useState([]);
@@ -92,6 +97,9 @@ const ProductPackagePublish = () => {
       'cityOrTown',
       'state',
       'country',
+      'pincode',
+      'locationName',
+      'locationDescription'
     ];
     setErrorFields([]);
     const missingFields = mandatoryFields.filter(field => !inputValues[field]);
@@ -169,12 +177,11 @@ const ProductPackagePublish = () => {
       creditLimit: 0,
       paymentReminderId: 0,
       companyId: companyId,
-      locationName: '',
+      locationName: inputValues.locationName,
       locationCode: '',
-      locationDescription: '',
+      locationDescription: inputValues.locationDescription,
       // userId:userId,
     };
-
     axios
       .post(
         global?.userData?.productURL + API.ADD_CUSTOMER_DETAILS,
@@ -246,7 +253,7 @@ const ProductPackagePublish = () => {
       stateId: 0,
       currencyId: 9,
       country: inputValues.country,
-      pincode: '',
+      pincode: inputValues.pincode,
       customerLevel: '',
       pan: '',
       gstNo: '',
@@ -261,9 +268,9 @@ const ProductPackagePublish = () => {
       mop: '',
       markupDisc: 0,
       companyId: companyId,
-      locationName: '',
+      locationName: inputValues.locationName,
       locationCode: '',
-      locationDescription: '',
+      locationDescription:inputValues.locationDescription,
       // userId:userId,
     };
 
@@ -630,10 +637,10 @@ const ProductPackagePublish = () => {
 
   const renderItem = ({item}) => (
     <View style={styles.row}>
-      <CustomCheckBox
-        isChecked={checkedStyleIds.includes(item.styleId)}
-        onToggle={() => handleCheckBoxToggleStyle(item.styleId)}
-      />
+      {item?.styleId && <CustomCheckBox
+        isChecked={checkedStyleIds.includes(item?.styleId)}
+        onToggle={() => handleCheckBoxToggleStyle(item?.styleId)}
+      />}
       <Text style={styles.cell1}>{item?.styleName}</Text>
       <Text style={styles.cell2}>{item?.colorName}</Text>
       <Text style={styles.cell3}>{item?.mrp}</Text>
@@ -765,10 +772,12 @@ const ProductPackagePublish = () => {
       </View>
       {loading && pageNo === 1 ? (
         <ActivityIndicator size="large" color="#0000ff" />
+      ) : (stylesData?.length===1 && stylesData[0]===null) || stylesData?.length === 0 ? (
+        <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
         <FlatList
           data={filteredStylesData()}
-          keyExtractor={item => item.styleId.toString()} // Ensure styleId is unique
+          keyExtractor={item => item.styleId?.toString()} // Ensure styleId is unique
           renderItem={renderItem}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.1}
@@ -924,7 +933,7 @@ const ProductPackagePublish = () => {
                 justifyContent: 'space-between', // Space between text and close button
                 marginTop: 10,
                 paddingVertical: 5,
-                marginBottom: 10,
+                marginBottom: 15,
               }}>
               {selectedId === '1' && (
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
@@ -945,6 +954,7 @@ const ProductPackagePublish = () => {
                 />
               </TouchableOpacity>
             </View>
+            <ScrollView style={{width:'100%', height:'80%'}}>
 
             <TextInput
               style={[
@@ -1041,11 +1051,57 @@ const ProductPackagePublish = () => {
             {errorFields.includes('country') && (
               <Text style={styles.errorText}>Please Enter Country</Text>
             )}
+            <TextInput
+              style={[
+                styles.input,
+                {color: '#000'},
+                errorFields.includes('pincode') ? styles.errorBorder : null,
+              ]}
+              placeholderTextColor="#000"
+              placeholder="Pincode *"
+              onChangeText={text =>
+                setInputValues({...inputValues, pincode: text})
+              }
+            />
+            {errorFields.includes('pincode') && (
+              <Text style={styles.errorText}>Please Enter Pincode</Text>
+            )}
+            <TextInput
+              style={[
+                styles.input,
+                {color: '#000'},
+                errorFields.includes('locationName') ? styles.errorBorder : null,
+              ]}
+              placeholderTextColor="#000"
+              placeholder="Location Name *"
+              onChangeText={text =>
+                setInputValues({...inputValues, locationName: text})
+              }
+            />
+            {errorFields.includes('locationName') && (
+              <Text style={styles.errorText}>Please Enter Location Name</Text>
+            )}
+            <TextInput
+              style={[
+                styles.input,
+                {color: '#000'},
+                errorFields.includes('locationDescription') ? styles.errorBorder : null,
+              ]}
+              placeholderTextColor="#000"
+              placeholder="Location Description *"
+              onChangeText={text =>
+                setInputValues({...inputValues, locationDescription: text})
+              }
+            />
+            {errorFields.includes('locationDescription') && (
+              <Text style={styles.errorText}>Please Enter Location Description</Text>
+            )}
             <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSaveButtonPress}>
               <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -1173,7 +1229,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     width: '90%',
-    maxHeight: '80%',
+    // maxHeight: '80%',
   },
   modalItem: {
     paddingVertical: 10,
