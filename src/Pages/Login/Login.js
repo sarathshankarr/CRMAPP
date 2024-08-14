@@ -257,26 +257,26 @@ const Login = () => {
         dispatch(setLoggedInUser(loggedInUser));
         dispatch(setUserRole(loggedInUser.role));
         await saveUserDataToStorage(loggedInUser);
-        const roles = loggedInUser.role;
-        let roleName = '';
-        let roleId = '';
-        for (const role of roles) {
-          const name = role.role;
-          if (name) {
-            if (
-              name === 'admin' ||
-              name === 'Distributor' ||
-              name === 'Retailer'
-            ) {
-              roleName = name;
-              roleId = role.id;
-              break;
-            }
-          }
-        }
-        if (roleName && roleId) {
-          await saveRoleToStorage({roleName, roleId});
-        } 
+        // const roles = loggedInUser.role;
+        // let roleName = '';
+        // let roleId = '';
+        // for (const role of roles) {
+        //   const name = role.role;
+        //   if (name) {
+        //     if (
+        //       name === 'admin' ||
+        //       name === 'Distributor' ||
+        //       name === 'Retailer'
+        //     ) {
+        //       roleName = name;
+        //       roleId = role.id;
+        //       break;
+        //     }
+        //   }
+        // }
+        // if (roleName && roleId) {
+        //   await saveRoleToStorage({roleName, roleId});
+        // } 
         // else {
         //   Alert.alert(
         //     'Unauthorized role',
