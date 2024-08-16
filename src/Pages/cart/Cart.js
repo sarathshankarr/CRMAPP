@@ -491,6 +491,8 @@ const Cart = () => {
     }
     setSelectedLocation('Billing to *');
     setSelectedShipLocation('Shipping to *');
+    setSelectedLocationId('');
+    setSelectedShipLocationId('');
     setCustomerLocations([])
 
   }, [clicked, isEnabled]);
@@ -621,6 +623,8 @@ const Cart = () => {
     setSelectedCustomerId(customerId);
     setSelectedLocation('');
     setSelectedShipLocation('');
+    setSelectedLocationId('');
+    setSelectedShipLocationId('');
     getCustomerLocations(customerId);
     const selectedCustomer = customers.find(
       customer => customer.customerId === customerId,
@@ -635,6 +639,8 @@ const Cart = () => {
     setSelectedDistributorId(customerId);
     setSelectedLocation('');
     setSelectedShipLocation('');
+    setSelectedShipLocationId('');
+    setSelectedLocationId('');
     getCustomerLocations(customerId);
     const selectedDistributor = distributors.find(
       distributor => distributor.id === customerId,
@@ -700,12 +706,15 @@ const Cart = () => {
         return;
       }
     }
+    // console.log("selectedLocationId   Billing==> ", selectedLocationId);
+    // console.log("selectedShipLocationId   Shipping   ==> ", selectedShipLocationId);
 
     if (!selectedLocationId) {
       Alert.alert('Alert', 'Please select a Billing to location.');
       return;
     }
-
+    
+    
     if (!selectedShipLocationId) {
       Alert.alert('Alert', 'Please select a Shipping to location.');
       return;
@@ -714,6 +723,9 @@ const Cart = () => {
       Alert.alert('Alert', 'No items selected. Please add items to the cart.');
       return;
     }
+
+    // return;
+
     setIsSubmitting(true);
 
     console.log('loggedInUser:', loggedInUser);
@@ -1802,7 +1814,7 @@ const Cart = () => {
             }}></View>
         </ScrollView>
 
-        <View style={{}}>
+        <View style={{backgroundColor: '#faf7f6',borderTopWidth: 1}}>
           <View style={style.bottomContainer}>
             <View style={{}}>
               <Text style={{fontWeight: 'bold', marginLeft: 10, color: '#000'}}>
@@ -1815,7 +1827,7 @@ const Cart = () => {
               </Text>
             </View>
             <View style={{}}>
-              <Text style={{fontWeight: 'bold', marginLeft: 15, color: '#000'}}>
+              <Text style={{fontWeight: 'bold', marginLeft: 10, color: '#000'}}>
                 Total Amt: {totalPrice}
               </Text>
             </View>
@@ -2271,14 +2283,15 @@ const style = StyleSheet.create({
     marginLeft: 10,
   },
   bottomContainer: {
-    justifyContent: 'space-around',
-    flexDirection: 'row',
-    alignItems: 'center',
+    // justifyContent: 'flex-end',
+    // flexDirection: 'row',
+    alignItems: 'flex-start',
     paddingVertical: 10,
-    borderTopWidth: 1,
+    // borderTopWidth: 1,
     // backgroundColor: '#f1e8e6',
     backgroundColor: '#faf7f6',
-    elevation: 5,
+    alignSelf:'flex-end',
+    // elevation: 5,
   },
   dateIconContainer: {
     justifyContent: 'center',
