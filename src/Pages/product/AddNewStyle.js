@@ -41,7 +41,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 const AddNewStyle = ({ route }) => {
   const navigation = useNavigation();
   const styleDetails = route?.params?.Style;
-
+console.log("styleDetails",styleDetails)
   return (
     <View style={styles.container}>
       <View style={{
@@ -76,7 +76,7 @@ const AddNewStyle = ({ route }) => {
 
       <Tab.Navigator tabBar={props => <CustomTabBar {...props} navigation={navigation} />}>
         <Tab.Screen name="Basic Info" component={NewStyleDetail} initialParams={{ styleDetails }} />
-        <Tab.Screen name="Product Images" component={UploadProductImage} />
+        <Tab.Screen name="Product Images" component={UploadProductImage}  initialParams={{ styleDetails }}/>
       </Tab.Navigator>
     </View>
   );

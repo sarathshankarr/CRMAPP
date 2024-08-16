@@ -12,19 +12,60 @@ const UploadProductImage = ({ route }) => {
   const [saveBtn, setSaveBtn] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]); // State to hold selected images
 
+
   const selectedCompany = useSelector(state => state.selectedCompany);
   const companyId = selectedCompany?.id;
 
-  useEffect(() => {
-    if (route.params && route?.params?.productStyle) {
-      const styleDetails = route?.params?.productStyle;
-      setProductStyle(styleDetails);
-      console.log("route params from upload inside =======> ", styleDetails);
-      setSaveBtn(true);
-    }
+ 
+  // useEffect(() => {
+  //   if (route.params && route?.params?.productStyle) {
+  //     const styleDetails = route?.params?.productStyle;
+  //     setProductStyle(styleDetails);
 
+  //     // If images exist in productStyle, set them to selectedImages
+  //     if (styleDetails.imageUrls && styleDetails.imageUrls.length > 0) {
+  //       const imageArray = styleDetails.imageUrls.map((url, index) => ({
+  //         uri: url,
+  //         width: 100,
+  //         height: 100,
+  //         mime: 'image/jpeg',
+  //         name: `image_${index}.jpg`,
+  //       }));
+  //       setSelectedImages(imageArray);
+  //     }
+
+  //     console.log("route params from upload inside =======> ", styleDetails);
+  //     setSaveBtn(true);
+  //   }
+
+  //   getStyleList();
+  // }, [route]);
+
+  useEffect(() => {
+    const styleDetails = route?.params?.productStyle || route?.params?.styleDetails;
+  
+    if (styleDetails) {
+      setProductStyle(styleDetails);
+  
+      // If images exist in styleDetails, set them to selectedImages
+      if (styleDetails.imageUrls && styleDetails.imageUrls.length > 0) {
+        const imageArray = styleDetails.imageUrls.map((url, index) => ({
+          uri: url,
+          width: 100,
+          height: 100,
+          mime: 'image/jpeg',
+          name: `image_${index}.jpg`,
+        }));
+        setSelectedImages(imageArray);
+      }
+  
+      setSaveBtn(true);
+      console.log("route params from upload inside =======> ", styleDetails);
+    }
+  
     getStyleList();
   }, [route]);
+  
 
   const getStyleList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_LIST}${companyId}`;
@@ -57,24 +98,32 @@ const UploadProductImage = ({ route }) => {
       maxFiles: 10 - selectedImages.length,
       mediaType: 'photo',
       cropping: true, // Enable cropping
-    }).then(images => {
-      const imageArray = images.map(image => ({
-        uri: image.path,
-        width: image.width,
-        height: image.height,
-        mime: image.mime,
-      }));
+    })
+      .then(images => {
+        const imageArray = images.map(image => ({
+          uri: image.path,
+          width: image.width,
+          height: image.height,
+          mime: image.mime,
+        }));
   
-      if (selectedImages.length + imageArray.length > 10) {
-        Alert.alert('Image Limit Exceeded', 'You can only upload a maximum of 10 images.');
-      } else {
-        setSelectedImages([...selectedImages, ...imageArray]); 
-        console.log('Selected images: ', imageArray);
-      }
-    }).catch(error => {
-      console.error('Error selecting images: ', error);
-    });
+        if (selectedImages.length + imageArray.length > 10) {
+          Alert.alert('Image Limit Exceeded', 'You can only upload a maximum of 10 images.');
+        } else {
+          setSelectedImages([...selectedImages, ...imageArray]); 
+          console.log('Selected images: ', imageArray);
+        }
+      })
+      .catch(error => {
+        if (error.message.includes('User cancelled image selection')) {
+          console.log('Image selection was cancelled by the user.');
+        } else {
+          console.error('Error selecting images: ', error);
+          Alert.alert('Error', 'An error occurred while selecting images. Please try again.');
+        }
+      });
   };
+  
   
 
   const removeImage = (index) => {
