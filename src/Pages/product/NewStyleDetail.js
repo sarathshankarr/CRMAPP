@@ -13,6 +13,8 @@ const NewStyleDetail = ({ route }) => {
   const navigation = useNavigation();
   const selectedCompany = useSelector(state => state.selectedCompany);
 
+  const [imageUrls, setImageUrls] = useState([]);
+
   const [companyId, set_companyId] = useState(selectedCompany?.id);
   const [cedge_flag, set_cedge_flag] = useState(selectedCompany?.cedge_flag);
   const [comp_flag, set_comp_flag] = useState(selectedCompany?.comp_flag);
@@ -234,14 +236,25 @@ const NewStyleDetail = ({ route }) => {
         setShowScaleTable(true);
         setSelectedSizes(styleDetails?.sizeList)
       }
+      if (styleDetails?.imageUrls) {
+        setImageUrls(styleDetails.imageUrls);
+      }
     }
 
   }, [])
 
 
+  // useEffect(() => {
+  //   console.log(selectedCategory?.length, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevel?.length, selectedColorIds?.length, selectedType?.length, selectedSeasonGroup?.length, selectedProcessWorkflow?.length, selectedLocation?.length, selectedScale?.length)
+  //   if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
+  //     setNextButton(true);
+  //   }
+  // }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedCustomerLevelId, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
+
   useEffect(() => {
-    console.log(selectedCategory?.length, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevel?.length, selectedColorIds?.length, selectedType?.length, selectedSeasonGroup?.length, selectedProcessWorkflow?.length, selectedLocation?.length, selectedScale?.length)
-    if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
+    console.log(selectedCategoryId, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevelId, selectedColorIds?.length, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId)
+    // if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
+    if (selectedCategoryId  && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevelId+1 && selectedColorIds.length > 0 && selectedTypeId && selectedSeasonGroupId && (cedge_flag === 0 || selectedProcessWorkflowId) && selectedLocationId && selectedScaleId) {
       setNextButton(true);
     }
   }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedCustomerLevelId, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
@@ -849,7 +862,8 @@ const NewStyleDetail = ({ route }) => {
       .then(response => {
         // Alert.alert(`Category Created Successfully ${response?.data?.category}`);
         // console.log("Response==> ", response.data);
-        setSelectedCategory(response?.data?.category)
+        // setSelectedCategory(response?.data?.category)
+        console.log("response.data=======>",response.data)
         setSelectedCategoryId(response?.data?.categoryId)
         getCategoriesList();
         setIsLoading(false);
@@ -887,7 +901,7 @@ const NewStyleDetail = ({ route }) => {
       companyId: companyId
     }
 
-    console.log('ADD_COLOR', apiUrl0);
+    console.log('ADD_COLOR======>', apiUrl0,requestData);
     axios
       .post(apiUrl0, requestData, {
         headers: {
@@ -1215,7 +1229,7 @@ const NewStyleDetail = ({ route }) => {
       // styleId: undefined,
       styleName: styleName,
       styleDesc: styleDesc,
-      colorId: selectedColorId,
+      colorId: selectedColorIds,
       price: Number(dealerPrice),
       typeId: selectedTypeId,
       retailerPrice: Number(retailerPrice),
@@ -1238,6 +1252,7 @@ const NewStyleDetail = ({ route }) => {
       companyName: companyName,
       sizesListReq: JSON.stringify(selectedSizes),
       myItems: JSON.stringify(colorsArray),
+      imageUrls: imageUrls
     };
     navigation.navigate('Product Images', { productStyle: styleDetails });
   }
