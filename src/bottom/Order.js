@@ -286,7 +286,7 @@ const Order = () => {
             <View style={style.modalContent}>
               <View style={style.custtlheader}>
                 <Text style={{color: '#000'}}>
-                  OrderId : {selectedOrder.orderNum}
+                  Order No : {selectedOrder.orderNum}
                 </Text>
                 <Text style={{color: '#000'}}>
                   TotalQty :{selectedOrder.totalQty}
