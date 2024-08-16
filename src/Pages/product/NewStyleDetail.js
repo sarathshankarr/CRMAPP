@@ -12,6 +12,11 @@ const NewStyleDetail = ({ route }) => {
 
   const navigation = useNavigation();
   const selectedCompany = useSelector(state => state.selectedCompany);
+  const userId=useSelector(state=>state?.loggedInUser?.userId);
+
+  // const userData=useSelector(state=>state.loggedInUser);
+  // const userId=userData?.userId;
+
 
   const [imageUrls, setImageUrls] = useState([]);
 
@@ -98,7 +103,9 @@ const NewStyleDetail = ({ route }) => {
 
   const [nextButton, setNextButton] = useState(false);
 
-  const [selectedSizes, setSelectedSizes] = useState([])
+  const [selectedSizes, setSelectedSizes] = useState([]);
+
+  const [styleId, setStyleId]=useState(0);
 
 
 
@@ -141,6 +148,8 @@ const NewStyleDetail = ({ route }) => {
   const [mTypeName, setmTypeName] = useState('');
   const [mTypeDesc, setmTypeDesc] = useState('');
 
+
+
   const [mSeasonGroupName, setmSeasonGroupName] = useState('');
   const [mSeasonGroupDesc, setmSeasonGroupDesc] = useState('');
 
@@ -153,6 +162,9 @@ const NewStyleDetail = ({ route }) => {
   const [editSeasonGroup, setEditSeasonGroup] = useState(true);
   const [editLocation, setEditLocation] = useState(true);
   const [editScale, setEditScale] = useState(true);
+  const [editStyleName, seteditStyleName] = useState(true);
+  const [editAvailQty, seteditAvailQty] = useState(true);
+
 
   useEffect(() => {
     getCategoriesList();
@@ -234,11 +246,16 @@ const NewStyleDetail = ({ route }) => {
 
       if (styleDetails?.sizeList) {
         setShowScaleTable(true);
-        setSelectedSizes(styleDetails?.sizeList)
+        setSelectedSizes(styleDetails?.sizeList);
+        seteditAvailQty(false);
       }
       if (styleDetails?.imageUrls) {
         setImageUrls(styleDetails.imageUrls);
       }
+      if (styleDetails?.styleId) {
+        setStyleId(styleDetails.styleId);
+      }
+
     }
 
   }, [])
@@ -845,6 +862,7 @@ const NewStyleDetail = ({ route }) => {
     formData.append("category", mCategoryName);
     formData.append("categoryDesc", mCategoryDesc);
     formData.append("companyId", companyId);
+    formData.append("linkType", 2);
 
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_CATEGORY}`;
@@ -898,7 +916,9 @@ const NewStyleDetail = ({ route }) => {
       colorName: mColorName,
       colorDesc: mColorDesc,
       colorCode: mColorCode,
-      companyId: companyId
+      companyId: companyId,
+      linkType:2,
+      userId:userId,
     }
 
     console.log('ADD_COLOR======>', apiUrl0,requestData);
@@ -941,7 +961,9 @@ const NewStyleDetail = ({ route }) => {
       typeId: null,
       typeName: mTypeName,
       typeDesc: mTypeDesc,
-      companyId: companyId
+      companyId: companyId,
+      linkType:2,
+      userId:userId,
     }
 
     console.log('ADD_TYPE', apiUrl0);
@@ -983,7 +1005,9 @@ const NewStyleDetail = ({ route }) => {
       sizeGroupId: null,
       sizeGroup: mSeasonGroupName,
       sizeGroupDesc: mSeasonGroupDesc,
-      companyId: companyId
+      companyId: companyId,
+      linkType:2,
+      userId:userId,
     }
 
     console.log('ADD_SEASON_GROUP', apiUrl0);
@@ -1029,7 +1053,9 @@ const NewStyleDetail = ({ route }) => {
       id: null,
       size: mSize,
       sizeDesc: mSize,
-      companyId: companyId
+      companyId: companyId,
+      linkType:2,
+      userId:userId,
     }
 
     console.log('ADD_SCALE', apiUrl0);
@@ -1226,7 +1252,7 @@ const NewStyleDetail = ({ route }) => {
     console.log("colorsArray===>", colorsArray);
 
     const styleDetails = {
-      // styleId: undefined,
+      styleId: styleId,
       styleName: styleName,
       styleDesc: styleDesc,
       colorId: selectedColorIds,
@@ -1251,7 +1277,8 @@ const NewStyleDetail = ({ route }) => {
       customerLevelPrice: customerLevelPrice ? Number(customerLevelPrice) : 0,
       companyName: companyName,
       sizesListReq: JSON.stringify(selectedSizes),
-      myItems: JSON.stringify(colorsArray),
+      myItems: colorsArray,
+      myItemsStringify: JSON.stringify(colorsArray),
       imageUrls: imageUrls
     };
     navigation.navigate('Product Images', { productStyle: styleDetails });
@@ -1424,10 +1451,11 @@ const NewStyleDetail = ({ route }) => {
           <Text style={{ marginHorizontal: 20, marginVertical: 3, color: "#000" }}>{"Style Name *"}</Text>
           <View style={style.inputContainer}>
             <TextInput
-              style={style.txtinput}
+              style={[style.txtinput,{backgroundColor:editColor?'#fff':'#f1e8e6'} ]}
               placeholder="Style name"
               placeholderTextColor="#000"
               value={styleName}
+              editable={editStyleName}
               onChangeText={(text) => setStyleName(text)}
             />
           </View>
@@ -1770,8 +1798,8 @@ const NewStyleDetail = ({ route }) => {
                 placeholder="Search"
                 onChangeText={filterColors}
               />
-
-              {filteredColorList.length === 0 && !isLoading ? (
+              {console.log("checking length========>", filteredColorList?.length)}
+              {filteredColorList?.length === 0 || (filteredColorList?.length === 1 && !filteredColorList[0]) && !isLoading ? (
                 <Text style={style.noCategoriesText}>Sorry, no results found!</Text>
               ) : (
                 <ScrollView nestedScrollEnabled={true}>
@@ -1793,7 +1821,7 @@ const NewStyleDetail = ({ route }) => {
                           marginHorizontal: 10,
                         }}>
                         <CustomCheckBox
-                          isChecked={selectedColorIds.includes(item.colorId)}
+                          isChecked={selectedColorIds?.includes(item?.colorId)}
                         />
                         <Text
                           style={{
@@ -1871,7 +1899,7 @@ const NewStyleDetail = ({ route }) => {
                 onChangeText={filterTypes}
               />
 
-              {filteredTypesList.length === 0 && !isLoading ? (
+              {filteredTypesList.length === 0 || (filteredTypesList?.length === 1 && !filteredTypesList[0] ) && !isLoading ? (
                 <Text style={style.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -1964,7 +1992,7 @@ const NewStyleDetail = ({ route }) => {
                 onChangeText={filterSeasonGroups}
               />
 
-              {filteredSeasonGroupsList.length === 0 && !isLoading ? (
+              {filteredSeasonGroupsList.length === 0 || (filteredSeasonGroupsList?.length === 1 && !filteredSeasonGroupsList[0] ) && !isLoading ? (
                 <Text style={style.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -2618,7 +2646,7 @@ const NewStyleDetail = ({ route }) => {
                         onChangeText={filterModalSeasonGroups}
                       />
 
-                      {filteredModalSeasonGroupsList.length === 0 && !isLoading ? (
+                      {filteredModalSeasonGroupsList.length === 0|| (filteredModalSeasonGroupsList?.length === 1 && !filteredModalSeasonGroupsList[0] ) && !isLoading ? (
                         <Text style={style.noCategoriesText}>
                           Sorry, no results found!
                         </Text>
@@ -2654,6 +2682,12 @@ const NewStyleDetail = ({ route }) => {
                   <Text style={{ fontWeight: 'bold', marginTop: 10 }}>{"Sizes :"}</Text>
 
                   <View style={{ height: 180, width: '90%', marginTop: 10 }}>
+                    
+                  {allSizesInScales.length === 0 || (allSizesInScales?.length === 1 && !allSizesInScales[0] )&& !isLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
 
                     <ScrollView nestedScrollEnabled={true}>
                       {allSizesInScales?.map((item, index) => (
@@ -2672,7 +2706,7 @@ const NewStyleDetail = ({ route }) => {
                           onPress={() => handleSelectallSizesInScales(item)
                           }>
                           <CustomCheckBox
-                            isChecked={selectedModalSizeInSeasonListIds.includes(item.id)}
+                            isChecked={selectedModalSizeInSeasonListIds?.includes(item?.id)}
                           />
                           <Text
                             style={{
@@ -2685,6 +2719,7 @@ const NewStyleDetail = ({ route }) => {
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
+                      )}
                   </View>
                   <TouchableOpacity
                     style={style.saveButton}
@@ -2704,23 +2739,23 @@ const NewStyleDetail = ({ route }) => {
               <View style={style.headerCell}><Text style={style.headerText}>Dealer Price</Text></View>
               <View style={style.headerCell}><Text style={style.headerText}>Retailer Price</Text></View>
               <View style={style.headerCell}><Text style={style.headerText}>MRP</Text></View>
-              <View style={style.headerCell}><Text style={style.headerText}>Quantity</Text></View>
+              <View style={style.headerCell}><Text style={style.headerText}>Available Quantity</Text></View>
             </View>
 
             <ScrollView>
               {selectedSizes.map((item, index) => (
                 <View key={index} style={style.row}>
                   <View style={style.cell}>
-                    <Text style={style.cellText}>{item.sizeId}</Text>
+                    <Text style={style.cellText}>{item?.sizeId}</Text>
                   </View>
                   <View style={style.cell}>
-                    <Text style={style.cellText}>{item.sizeDesc}</Text>
+                    <Text style={style.cellText}>{item?.sizeDesc}</Text>
                   </View>
                   <View style={style.cell}>
                     <TextInput
                       style={style.input}
                       keyboardType="numeric"
-                      value={item.dealerPrice.toString()}
+                      value={item?.dealerPrice.toString()}
                       onChangeText={(text) => handleInputChange(index, 'dealerPrice', text)}
                       editable={true}
                     />
@@ -2729,7 +2764,7 @@ const NewStyleDetail = ({ route }) => {
                     <TextInput
                       style={style.input}
                       keyboardType="numeric"
-                      value={item.retailerPrice.toString()}
+                      value={item?.retailerPrice.toString()}
                       onChangeText={(text) => handleInputChange(index, 'retailerPrice', text)}
                       editable={true}
                     />
@@ -2749,7 +2784,7 @@ const NewStyleDetail = ({ route }) => {
                       keyboardType="numeric"
                       value={item.availQty.toString()}
                       onChangeText={(text) => handleInputChange(index, 'availQty', text)}
-                      editable={true}
+                      editable={editAvailQty}
                     />
                   </View>
                 </View>

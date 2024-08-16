@@ -11,6 +11,7 @@ const UploadProductImage = ({ route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [saveBtn, setSaveBtn] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]); // State to hold selected images
+  const [styleId, setStyleId]=useState(0);
 
 
   const selectedCompany = useSelector(state => state.selectedCompany);
@@ -57,8 +58,10 @@ const UploadProductImage = ({ route }) => {
           name: `image_${index}.jpg`,
         }));
         setSelectedImages(imageArray);
+
       }
-  
+
+      setStyleId(styleDetails?.styleId || 0);
       setSaveBtn(true);
       console.log("route params from upload inside =======> ", styleDetails);
     }
@@ -132,12 +135,22 @@ const UploadProductImage = ({ route }) => {
   };
 
   const handleSave = () => {
-    if (ValidateStyle()) {
-      console.log("Validation true");
+
+
+    if(styleId){
+      console.log("EDit Page ", styleId)
       handleSaving();
-    } else {
-      console.log("Validation false");
+    }else{
+      if (ValidateStyle()) {
+        console.log("Validation true");
+        handleSaving();
+      } else {
+        console.log("Validation false");
+        Alert.alert("Already exist!");
+        return;
+      }
     }
+   
   };
 
   const ValidateStyle = () => {
@@ -160,7 +173,9 @@ const UploadProductImage = ({ route }) => {
 
   const handleSaving = () => {
     let formData = new FormData();
-  
+
+
+    formData.append("styleId", productStyle.styleId ? productStyle.styleId : 0);
     formData.append("styleName", productStyle.styleName);
     formData.append("styleDesc", productStyle.styleDesc);
     formData.append("colorId", productStyle.colorId);
@@ -174,7 +189,7 @@ const UploadProductImage = ({ route }) => {
     formData.append("discount", 0);
     formData.append("retailerPrice", productStyle.retailerPrice);
     formData.append("mrp", productStyle.mrp);
-    formData.append("myItems", productStyle.myItems);
+    formData.append("myItems", productStyle.myItemsStringify);
     formData.append("categoryId", productStyle.categoryId);
     formData.append("locationId", productStyle.locationId);
     if (productStyle.fixDisc === null || productStyle.fixDisc === '') {
@@ -186,6 +201,7 @@ const UploadProductImage = ({ route }) => {
     formData.append("cedgeStyle", productStyle.cedgeStyle);
     formData.append("compFlag", productStyle.compFlag);
     formData.append("companyName", productStyle.companyName);
+
   
     selectedImages.forEach((image, index) => {
       formData.append('files', {
@@ -195,15 +211,18 @@ const UploadProductImage = ({ route }) => {
       });
     });
   
-    console.log("formdata before saving ===========> ", formData);
-  
+    
+    
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_STYLE}`;
-    console.log("apiUrl0 ", apiUrl0);
-  
+    const apiUrl1 = `${global?.userData?.productURL}${API.EDIT_NEW_STYLE}`;
+    const URL= styleId ? apiUrl1 : apiUrl0;
+    console.log("URL===> ", URL);
+    
     setIsLoading(true);
+    console.log("formdata before saving  in Upload page ===========> ", formData);
   
     axios
-      .post(apiUrl0, formData, {
+      .post(URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Add Content-Type header
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
