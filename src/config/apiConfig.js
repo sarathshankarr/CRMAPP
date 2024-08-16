@@ -62,9 +62,10 @@ export const API = {
   ALL_SIZES_IN_SCALE:'erpportal/api/size/getByCompanyId',
   GET_STYLE_BY_ID:'erpportal/api/style/',
   GET_STYLE_LIST:'erpportal/api/style/getAll/',
-  ADD_NEW_STYLE:'erpportal/api/style/addstyle',
   ADD_NEW_SCALE:'erpportal/api/scale/addScale',
 
+  ADD_NEW_STYLE:'erpportal/api/style/addstyle',
+  EDIT_NEW_STYLE:'erpportal/api/style/editstyle',
 };
 
 export const USER_ID = 'adminClientId';
