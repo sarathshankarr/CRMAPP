@@ -240,11 +240,11 @@ const NewStyleDetail = ({ route }) => {
 
 
   useEffect(() => {
-    console.log(selectedCategory?.length, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevel?.length, selectedColor?.length, selectedType?.length, selectedSeasonGroup?.length, selectedProcessWorkflow?.length, selectedLocation?.length, selectedScale?.length)
-    if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColor.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
+    console.log(selectedCategory?.length, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevel?.length, selectedColorIds?.length, selectedType?.length, selectedSeasonGroup?.length, selectedProcessWorkflow?.length, selectedLocation?.length, selectedScale?.length)
+    if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
       setNextButton(true);
     }
-  }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedCustomerLevelId, selectedColorId, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
+  }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedCustomerLevelId, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
 
 
   useEffect(() => {
