@@ -52,6 +52,8 @@ const ProductsStyles = () => {
     useState(null);
   const [selectAll, setSelectAll] = useState(false);
   const [selectAllModel, setSelectAllModel] = useState(false);
+  const userData=useSelector(state=>state.loggedInUser);
+  const userId=userData?.userId;
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -222,6 +224,8 @@ const ProductsStyles = () => {
       ),
       loggedInUserWhatsappNumber: '', // Set this to the appropriate value if available
       companyId: companyId,
+      userId:userId,
+      linkType: 3,
     };
     console.log('stylesPublishList===>', checkedStyleIds);
 

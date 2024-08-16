@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo, useCallback} from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -18,18 +18,21 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import axios from 'axios';
-import {useDispatch, useSelector} from 'react-redux';
-import {API} from '../../config/apiConfig';
+import { useDispatch, useSelector } from 'react-redux';
+import { API } from '../../config/apiConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {formatDateIntoDMY} from '../../Helper/Helper';
+import { formatDateIntoDMY } from '../../Helper/Helper';
 import CustomCheckBox from '../../components/CheckBox';
 
 const NewTask = () => {
   const dispatch = useDispatch(); // Get dispatch function from useDispatch hook
   const userData = useSelector(state => state.loggedInUser);
+  const userId = userData?.userId;
+
+
   const navigation = useNavigation();
   const route = useRoute();
-  const {task} = route.params;
+  const { task } = route.params;
   const callData = route.params?.call;
   const [isDatePickerVisibleDue, setDatePickerVisibilityDue] = useState(false);
   const [selectedDateDue, setSelectedDateDue] = useState('Due Date');
@@ -85,11 +88,11 @@ const NewTask = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedLocationId, setSelectedLocationiD] = useState('');
 
-  const [showFieldList, setShowFieldList]=useState(false);
-  const [selectedField, setSelectedField]=useState('');
-  const [filteredFieldsList, setFilteredFieldsList]=useState([]);
-  const [fieldsList, setfieldsList]=useState([]);
-  const [selectedFieldId, setSelectedFieldId]=useState();
+  const [showFieldList, setShowFieldList] = useState(false);
+  const [selectedField, setSelectedField] = useState('');
+  const [filteredFieldsList, setFilteredFieldsList] = useState([]);
+  const [fieldsList, setfieldsList] = useState([]);
+  const [selectedFieldId, setSelectedFieldId] = useState();
 
   useEffect(() => {
     setSelectedLocation('Select');
@@ -222,7 +225,7 @@ const NewTask = () => {
     // Optionally close the dropdown after selection
     setFromToClicked(false);
   };
-  
+
 
   const handleShipDropdownClick = () => {
     setShipFromToClicked(!shipFromToClicked);
@@ -297,7 +300,7 @@ const NewTask = () => {
     }
     setShipFromToClickedCustomer(false); // Close Customer dropdown after selection (optional)
   };
-  
+
 
   const handleShipDropdownClickDistributor = () => {
     if (!shipFromToClickedDistributor) {
@@ -315,11 +318,11 @@ const NewTask = () => {
 
     // setFilterdDistributor(filtered);
 
-     if (text.trim().length > 0) {
-     const filtered = distributor?.filter(distributor =>
-      distributor?.firstName?.toLowerCase()?.includes(text?.toLowerCase()),
-    );
-    setFilterdDistributor(filtered);
+    if (text.trim().length > 0) {
+      const filtered = distributor?.filter(distributor =>
+        distributor?.firstName?.toLowerCase()?.includes(text?.toLowerCase()),
+      );
+      setFilterdDistributor(filtered);
     } else {
       setFilterdDistributor(distributor);
     }
@@ -327,15 +330,15 @@ const NewTask = () => {
 
   const handleSelectField = (field) => {
     if (selectedFieldId === field.id) {
-      setSelectedField(''); 
-      setSelectedFieldId(null); 
+      setSelectedField('');
+      setSelectedFieldId(null);
     } else {
-      setSelectedField(field.fieldName); 
-      setSelectedFieldId(field.id); 
+      setSelectedField(field.fieldName);
+      setSelectedFieldId(field.id);
     }
-    setShowFieldList(false); 
+    setShowFieldList(false);
   };
-  
+
 
   const handleDropdownSelectDistributor = distributor => {
     if (selectedDistributorId === distributor.id) {
@@ -347,12 +350,12 @@ const NewTask = () => {
     }
     setShipFromToClickedDistributor(false); // Close Distributor dropdown after selection (optional)
   };
-  
+
 
   useEffect(() => {
     console.log('task', task);
     if (route.params && route.params.task) {
-      const {task} = route.params;
+      const { task } = route.params;
       // Populate state with task details if available
       setTaskName(task.taskName || '');
       setRelatedTo(task.relatedTo || '');
@@ -366,7 +369,7 @@ const NewTask = () => {
       getuntilDate(task.untilDate);
       getTaskRepeatRem(task.repeatRem);
       task.priority && setMarkHighPriority(true);
-      task?.customerType && task?.customerType ===1 ? setIsEnabled(true):setIsEnabled(false);
+      task?.customerType && task?.customerType === 1 ? setIsEnabled(true) : setIsEnabled(false);
     }
   }, [route.params]);
 
@@ -425,7 +428,7 @@ const NewTask = () => {
 
   useEffect(() => {
     if (route.params && route.params.task) {
-      const {task} = route.params;
+      const { task } = route.params;
       getUserRole(task.assign_to);
       getNameAndLocation(
         task.customerType,
@@ -453,22 +456,22 @@ const NewTask = () => {
     setSelectedDateUntil(formattedDate);
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     if (route.params && route.params.task) {
-      const {task} = route.params;
+      const { task } = route.params;
       task.field && getFieldName(task.field);
     }
   }, [route.params, fieldsList])
 
 
-  const getFieldName=(id)=>{
+  const getFieldName = (id) => {
     setSelectedFieldId(id);
-    if(fieldsList?.length>0){
-      const foundItem=fieldsList.filter((item)=>item.id===id);
+    if (fieldsList?.length > 0) {
+      const foundItem = fieldsList.filter((item) => item.id === id);
       setSelectedField(foundItem[0]?.fieldName);
-      console.log("field prepoulate=============>",id, foundItem[0]?.fieldName)
+      console.log("field prepoulate=============>", id, foundItem[0]?.fieldName)
+    }
   }
-}
 
   const getTaskRepeatRem = repeatRem => {
     if (!repeatRem) return;
@@ -499,7 +502,7 @@ const NewTask = () => {
     if (distributor.length === 0) {
       getDistributorsDetails();
     }
-    if(fieldsList.length===0){
+    if (fieldsList.length === 0) {
       getFieldsList();
     }
   }, []);
@@ -598,7 +601,7 @@ const NewTask = () => {
     }
     setShipFromToClickedStatus(false);
   };
-  
+
   const showDatePickerUntil = () => {
     setDatePickerVisibilityUntil(true);
   };
@@ -624,7 +627,7 @@ const NewTask = () => {
     setShipFromToClicked(false); // Close main dropdown if open
     setShipFromToClickedUser(false); // Close User dropdown if open
   };
-  
+
   const handleDateConfirmDue = date => {
     const formattedDate = date.toISOString().split('T')[0]; // Formats date to "YYYY-MM-DD"
     setSelectedDateDue(formattedDate); // Set the state without additional text
@@ -645,7 +648,7 @@ const NewTask = () => {
       return; // Exit the function early if any mandatory field is empty
     }
 
-    if(showDropdownRow && (selectedDropdownOption?.label.length===0 || !selectedDropdownOption) ){
+    if (showDropdownRow && (selectedDropdownOption?.label.length === 0 || !selectedDropdownOption)) {
       Alert.alert('Alert', 'Please select before start time as u checked reminder');
       return; // Exit the function early if any mandatory field is empty
     }
@@ -672,8 +675,8 @@ const NewTask = () => {
       created_on: route.params.task.created_on,
       taskName: taskName || null,
       dueDate: selectedDateDue !== 'Due Date' ? selectedDateDue : null,
-      repeatRem: showDropdownRow ? selectedDropdownOption.value :null,
-      untilDate: showDropdownRow ? (selectedDateUntil !== 'Until Date' ? selectedDateUntil : null) : null,      relatedTo: relatedTo || null,
+      repeatRem: showDropdownRow ? selectedDropdownOption.value : null,
+      untilDate: showDropdownRow ? (selectedDateUntil !== 'Until Date' ? selectedDateUntil : null) : null, relatedTo: relatedTo || null,
       desc: desc || null,
       completed: null,
       priority: markHighPriority ? 1 : 0,
@@ -685,7 +688,10 @@ const NewTask = () => {
       userName: selectedUserName,
       locId: selectedLocationId,
       customerType: customerType || null,
-      field:selectedFieldId || null,
+      field: selectedFieldId || null,
+      userId: userId,
+      companyId: companyId,
+      type: 2
     };
 
     console.log('Request Data:', requestData);
@@ -710,10 +716,10 @@ const NewTask = () => {
   };
 
   const dropdownOptions = [
-    {label: 'Every Day', value: '1'},
-    {label: 'Every Week', value: '2'},
-    {label: 'Every Month', value: '3'},
-    {label: 'Every Year', value: '4'},
+    { label: 'Every Day', value: '1' },
+    { label: 'Every Week', value: '2' },
+    { label: 'Every Month', value: '3' },
+    { label: 'Every Year', value: '4' },
   ];
   const handleDropdownSelect = option => {
     setSelectedDropdownOption(option); // Assuming `option` is an object { label: '...', value: '...' }
@@ -740,14 +746,14 @@ const NewTask = () => {
   };
   const renderCustomerDetails = () => (
     <View style={{}}>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Retailer</Text>
+      <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Retailer</Text>
       <TouchableOpacity
         onPress={handleShipDropdownClickCustomer}
         style={styles.dropdownButton}>
-        <Text style={{color:"#000"}}>{selectedCustomerOption || 'Select'}</Text>
+        <Text style={{ color: "#000" }}>{selectedCustomerOption || 'Select'}</Text>
         <Image
           source={require('../../../assets/dropdown.png')}
-          style={{width: 20, height: 20}}
+          style={{ width: 20, height: 20 }}
         />
       </TouchableOpacity>
 
@@ -763,7 +769,7 @@ const NewTask = () => {
               onChangeText={handleSearchCustomer}
             />
             <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-              {(filteredCustomer.length === 0|| (filteredCustomer.length===1 && !filteredCustomer[0])) ? (
+              {(filteredCustomer.length === 0 || (filteredCustomer.length === 1 && !filteredCustomer[0])) ? (
                 <Text style={styles.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -773,7 +779,7 @@ const NewTask = () => {
                     key={index}
                     onPress={() => handleDropdownSelectCustomer(customer)}
                     style={styles.dropdownOption}>
-                    <Text style={{color:"#000"}}>{customer?.firstName}</Text>
+                    <Text style={{ color: "#000" }}>{customer?.firstName}</Text>
                   </TouchableOpacity>
                 ))
               )}
@@ -785,15 +791,15 @@ const NewTask = () => {
   );
 
   const renderDistributorDetails = () => (
-    <View style={{marginBottom: 2}}>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Distributor</Text>
+    <View style={{ marginBottom: 2 }}>
+      <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Distributor</Text>
       <TouchableOpacity
         onPress={handleShipDropdownClickDistributor}
         style={styles.dropdownButton}>
-        <Text style={{color:"#000"}}>{selectedDistributorOption || 'Select'}</Text>
+        <Text style={{ color: "#000" }}>{selectedDistributorOption || 'Select'}</Text>
         <Image
           source={require('../../../assets/dropdown.png')}
-          style={{width: 20, height: 20}}
+          style={{ width: 20, height: 20 }}
         />
       </TouchableOpacity>
 
@@ -809,7 +815,7 @@ const NewTask = () => {
               placeholderTextColor="#000"
             />
             <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-              {(filteredDistributor.length === 0|| (filteredDistributor.length===1 && !filteredDistributor[0])) ? (
+              {(filteredDistributor.length === 0 || (filteredDistributor.length === 1 && !filteredDistributor[0])) ? (
                 <Text style={styles.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -819,7 +825,7 @@ const NewTask = () => {
                     key={index}
                     onPress={() => handleDropdownSelectDistributor(distributor)}
                     style={styles.dropdownOption}>
-                    <Text style={{color:"#000"}}>{distributor?.firstName}</Text>
+                    <Text style={{ color: "#000" }}>{distributor?.firstName}</Text>
                   </TouchableOpacity>
                 ))
               )}
@@ -831,368 +837,368 @@ const NewTask = () => {
   );
 
   return (
-    <ScrollView  style={{flex:1, backgroundColor:'#ffffff'}}>
+    <ScrollView style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
-    <View style={{flex: 1, backgroundColor: '#fff'}}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack}>
-          <Image
-            style={{height: 25, width: 25}}
-            source={require('../../../assets/back_arrow.png')}
-          />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>New Task</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={handleSave}
-          disabled={isButtonDisabled}>
-          <Text style={styles.addButtonText}>SAVE</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Basic Info</Text>
-      </View>
-      <View style={styles.switchContainer}>
-        <Switch
-          trackColor={{false: '#767577', true: '#81b0ff'}}
-          thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-          ios_backgroundColor="#3e3e3e"
-          onValueChange={toggleSwitch}
-          value={isEnabled}
-        />
-        <Text style={{fontWeight: 'bold', fontSize: 15,color:"#000"}}>
-          Slide For Retailer
-        </Text>
-      </View>
-      {isEnabled ? renderCustomerDetails() : renderDistributorDetails()}
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Location</Text>
-      <TouchableOpacity
-        onPress={handleFromDropdownClick}
-        style={styles.dropdownButton}>
-        <Text style={{color:"#000"}}>
-          {selectedLocation.length > 0 ? `${selectedLocation}` : 'Location'}
-        </Text>
-        <Image
-          source={require('../../../assets/dropdown.png')}
-          style={{width: 20, height: 20}}
-        />
-      </TouchableOpacity>
-      {fromToClicked && (
-        <View style={styles.dropdownContent1}>
-          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-            {customerLocations.length === 0 ? (
-              <Text style={styles.noCategoriesText}>
-                Sorry, no results found!
-              </Text>
-            ) : (
-              customerLocations.map(location => (
-                <TouchableOpacity
-                  style={styles.dropdownOption}
-                  key={location.locationId}
-                  onPress={() => handleLocationSelection(location)}>
-                  <Text style={{color:"#000"}}>{location.locationName}</Text>
-                </TouchableOpacity>
-              ))
-            )}
-          </ScrollView>
-        </View>
-      )}
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Users</Text>
-      <TouchableOpacity
-        onPress={handleShipDropdownClickUser}
-        style={{
-          height: 35,
-          borderRadius: 10,
-          borderWidth: 0.5,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingLeft: 15,
-          paddingRight: 15,
-          marginHorizontal: 10,
-        }}>
-        <Text style={{color:"#000"}}>{selectedUserOption || 'Select'}</Text>
-        <Image
-          source={require('../../../assets/dropdown.png')}
-          style={{width: 20, height: 20}}
-        />
-      </TouchableOpacity>
-
-      {shipFromToClickedUser && (
-        <View style={styles.dropdownContent1}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by name..."
-            onChangeText={handleSearch}
-            placeholderTextColor="#000"
-          />
-          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-            {filteredUsers.length === 0 ? (
-              <Text style={styles.noCategoriesText}>
-                Sorry, no results found!
-              </Text>
-            ) : (
-              filteredUsers.map((user, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.dropdownOption}
-                  onPress={() => handleDropdownSelectUser(user)}>
-                  <Text style={{color:"#000"}}>{user.firstName}</Text>
-                </TouchableOpacity>
-              ))
-            )}
-          </ScrollView>
-        </View>
-      )}
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Task Name *</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Task Name *"
-          placeholderTextColor="#000"
-          value={taskName}
-          onChangeText={setTaskName}
-        />
-      </View>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>
-        Related To *
-      </Text>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Related To *"
-          placeholderTextColor="#000"
-          value={relatedTo}
-          onChangeText={setRelatedTo}
-        />
-      </View>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Description</Text>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Description"
-          placeholderTextColor="#000"
-          value={desc}
-          onChangeText={setDesc}
-        />
-      </View>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Due Date</Text>
-      <View style={styles.datecontainer}>
-        <TouchableOpacity onPress={showDatePickerDue}>
-          <View style={{paddingVertical: 6}}>
-            <Text style={{marginLeft: 10,color:"#000"}}>
-              {selectedDateDue !== 'Due Date'
-                ? formatDateIntoDMY(selectedDateDue)
-                : selectedDateDue}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginHorizontal: 10,
-          }}
-          onPress={showDatePickerDue}>
-          <Image
-            style={styles.dateIcon}
-            source={require('../../../assets/date.png')}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <View
-        style={{
-          marginHorizontal: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginLeft: 10,
-        }}>
-         <CustomCheckBox isChecked={showDropdownRow} onToggle={handleCheckboxChange} />
-        {/* <CheckBox isChecked={showDropdownRow} onClick={handleCheckboxChange} /> */}
-        <Text style={{marginLeft: 5, marginVertical: 5,color:"#000"}}>Repeat</Text>
-      </View>
-
-      {showDropdownRow && (
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginHorizontal: 10,
-          }}>
-          <TouchableOpacity
-            onPress={handleShipDropdownClickk}
-            style={{
-              flex: 1,
-              height: 35,
-              borderRadius: 10,
-              borderWidth: 0.5,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingLeft: 15,
-              paddingRight: 15,
-              marginRight: 5,
-              
-            }}>
-            <Text style={{color:"#000"}}>{selectedDropdownOption.label || 'Select'}</Text>
+      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleGoBack}>
             <Image
-              source={require('../../../assets/dropdown.png')}
-              style={{width: 20, height: 20}}
+              style={{ height: 25, width: 25 }}
+              source={require('../../../assets/back_arrow.png')}
             />
           </TouchableOpacity>
-
+          <Text style={styles.headerText}>New Task</Text>
           <TouchableOpacity
-            onPress={showDatePickerUntil}
+            style={styles.addButton}
+            onPress={handleSave}
+            disabled={isButtonDisabled}>
+            <Text style={styles.addButtonText}>SAVE</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionText}>Basic Info</Text>
+        </View>
+        <View style={styles.switchContainer}>
+          <Switch
+            trackColor={{ false: '#767577', true: '#81b0ff' }}
+            thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isEnabled}
+          />
+          <Text style={{ fontWeight: 'bold', fontSize: 15, color: "#000" }}>
+            Slide For Retailer
+          </Text>
+        </View>
+        {isEnabled ? renderCustomerDetails() : renderDistributorDetails()}
+        <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Location</Text>
+        <TouchableOpacity
+          onPress={handleFromDropdownClick}
+          style={styles.dropdownButton}>
+          <Text style={{ color: "#000" }}>
+            {selectedLocation.length > 0 ? `${selectedLocation}` : 'Location'}
+          </Text>
+          <Image
+            source={require('../../../assets/dropdown.png')}
+            style={{ width: 20, height: 20 }}
+          />
+        </TouchableOpacity>
+        {fromToClicked && (
+          <View style={styles.dropdownContent1}>
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+              {customerLocations.length === 0 ? (
+                <Text style={styles.noCategoriesText}>
+                  Sorry, no results found!
+                </Text>
+              ) : (
+                customerLocations.map(location => (
+                  <TouchableOpacity
+                    style={styles.dropdownOption}
+                    key={location.locationId}
+                    onPress={() => handleLocationSelection(location)}>
+                    <Text style={{ color: "#000" }}>{location.locationName}</Text>
+                  </TouchableOpacity>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        )}
+        <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Users</Text>
+        <TouchableOpacity
+          onPress={handleShipDropdownClickUser}
+          style={{
+            height: 35,
+            borderRadius: 10,
+            borderWidth: 0.5,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingLeft: 15,
+            paddingRight: 15,
+            marginHorizontal: 10,
+          }}>
+          <Text style={{ color: "#000" }}>{selectedUserOption || 'Select'}</Text>
+          <Image
+            source={require('../../../assets/dropdown.png')}
+            style={{ width: 20, height: 20 }}
+          />
+        </TouchableOpacity>
+
+        {shipFromToClickedUser && (
+          <View style={styles.dropdownContent1}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by name..."
+              onChangeText={handleSearch}
+              placeholderTextColor="#000"
+            />
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+              {filteredUsers.length === 0 ? (
+                <Text style={styles.noCategoriesText}>
+                  Sorry, no results found!
+                </Text>
+              ) : (
+                filteredUsers.map((user, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.dropdownOption}
+                    onPress={() => handleDropdownSelectUser(user)}>
+                    <Text style={{ color: "#000" }}>{user.firstName}</Text>
+                  </TouchableOpacity>
+                ))
+              )}
+            </ScrollView>
+          </View>
+        )}
+        <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Task Name *</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Task Name *"
+            placeholderTextColor="#000"
+            value={taskName}
+            onChangeText={setTaskName}
+          />
+        </View>
+        <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>
+          Related To *
+        </Text>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Related To *"
+            placeholderTextColor="#000"
+            value={relatedTo}
+            onChangeText={setRelatedTo}
+          />
+        </View>
+        <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Description</Text>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Description"
+            placeholderTextColor="#000"
+            value={desc}
+            onChangeText={setDesc}
+          />
+        </View>
+        <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Due Date</Text>
+        <View style={styles.datecontainer}>
+          <TouchableOpacity onPress={showDatePickerDue}>
+            <View style={{ paddingVertical: 6 }}>
+              <Text style={{ marginLeft: 10, color: "#000" }}>
+                {selectedDateDue !== 'Due Date'
+                  ? formatDateIntoDMY(selectedDateDue)
+                  : selectedDateDue}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={{
-              flex: 1,
-              height: 35,
-              borderRadius: 10,
-              borderWidth: 0.5,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
               alignItems: 'center',
-              paddingLeft: 15,
-              paddingRight: 15,
-              marginLeft: 5,
-            }}>
-            <Text style={{color:"#000"}}>
-              {selectedDateUntil !== 'Until Date'
-                ? formatDateIntoDMY(selectedDateUntil)
-                : selectedDateUntil}
-            </Text>
+              marginHorizontal: 10,
+            }}
+            onPress={showDatePickerDue}>
             <Image
               style={styles.dateIcon}
               source={require('../../../assets/date.png')}
             />
           </TouchableOpacity>
         </View>
-      )}
 
-      {shipFromToClicked && (
-        <View style={styles.dropdownContent1}>
-          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-            {dropdownOptions.map(option => (
-              <TouchableOpacity
-                key={option.value}
-                onPress={() => handleDropdownSelect(option)}
-                style={styles.dropdownOption}>
-                <Text style={{color:"#000"}}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+        <View
+          style={{
+            marginHorizontal: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginLeft: 10,
+          }}>
+          <CustomCheckBox isChecked={showDropdownRow} onToggle={handleCheckboxChange} />
+          {/* <CheckBox isChecked={showDropdownRow} onClick={handleCheckboxChange} /> */}
+          <Text style={{ marginLeft: 5, marginVertical: 5, color: "#000" }}>Repeat</Text>
         </View>
-      )}
 
-      <View
-        style={{
-          marginHorizontal: 10,
-          flexDirection: 'row',
-          marginVertical: 7,
-        }}>
-        <CustomCheckBox isChecked={markHighPriority} onToggle={handleCheckPriority} />
-        {/* <CheckBox isChecked={markHighPriority} onClick={handleCheckPriority} /> */}
-        <Text style={{color:"#000"}}>Mark as High Priority</Text>
-      </View>
+        {showDropdownRow && (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginHorizontal: 10,
+            }}>
+            <TouchableOpacity
+              onPress={handleShipDropdownClickk}
+              style={{
+                flex: 1,
+                height: 35,
+                borderRadius: 10,
+                borderWidth: 0.5,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingLeft: 15,
+                paddingRight: 15,
+                marginRight: 5,
 
-      <TouchableOpacity
-        onPress={handleShipDropdownClickStatus}
-        style={{
-          height: 35,
-          borderRadius: 10,
-          borderWidth: 0.5,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingLeft: 15,
-          paddingRight: 15,
-          marginHorizontal: 10,
-          marginVertical: 1,
-        }}>
-        <Text style={{color:"#000"}}>{selectedStatusOption || 'Status'}</Text>
-        <Image
-          source={require('../../../assets/dropdown.png')}
-          style={{width: 20, height: 20}}
-        />
-      </TouchableOpacity>
+              }}>
+              <Text style={{ color: "#000" }}>{selectedDropdownOption.label || 'Select'}</Text>
+              <Image
+                source={require('../../../assets/dropdown.png')}
+                style={{ width: 20, height: 20 }}
+              />
+            </TouchableOpacity>
 
-      {shipFromToClickedStatus && (
+            <TouchableOpacity
+              onPress={showDatePickerUntil}
+              style={{
+                flex: 1,
+                height: 35,
+                borderRadius: 10,
+                borderWidth: 0.5,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingLeft: 15,
+                paddingRight: 15,
+                marginLeft: 5,
+              }}>
+              <Text style={{ color: "#000" }}>
+                {selectedDateUntil !== 'Until Date'
+                  ? formatDateIntoDMY(selectedDateUntil)
+                  : selectedDateUntil}
+              </Text>
+              <Image
+                style={styles.dateIcon}
+                source={require('../../../assets/date.png')}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {shipFromToClicked && (
           <View style={styles.dropdownContent1}>
-          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-            {statusOptions.map((option, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.dropdownOption}
-                onPress={() => handleDropdownSelectStatus(option)}>
-                <Text style={{color:"#000"}}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-     <View style={{marginTop:5}}>
-      <Text style={{marginHorizontal: 10, marginVertical: 3,color:"#000"}}>Task Type</Text>
-      <TouchableOpacity
-        onPress={handledropdownField}
-        style={styles.dropdownButton}>
-        <Text style={{color:"#000"}}>{selectedField || 'Select'}</Text>
-        <Image
-          source={require('../../../assets/dropdown.png')}
-          style={{width: 20, height: 20}}
-        />
-      </TouchableOpacity>
-      {
-        showFieldList && (
-          <View style={styles.dropdownContent1}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search"
-              placeholderTextColor="#000"
-              onChangeText={handlefilterfields}
-            />
             <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-              {(filteredFieldsList.length === 0|| (filteredFieldsList.length===1 && !filteredFieldsList[0])) ? (
-                <Text style={styles.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                filteredFieldsList?.map((field, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => handleSelectField(field)}
-                    style={styles.dropdownOption}>
-                    <Text style={{color:"#000"}}>{field?.fieldName}</Text>
-                  </TouchableOpacity>
-                ))
-              )}
+              {dropdownOptions.map(option => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => handleDropdownSelect(option)}
+                  style={styles.dropdownOption}>
+                  <Text style={{ color: "#000" }}>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
-        )
-      }
-    </View>
+        )}
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisibleDue}
-        mode="date"
-        onConfirm={handleDateConfirmDue}
-        onCancel={hideDatePickerDue}
-      />
-      <View style={{marginBottom:50}}/>
+        <View
+          style={{
+            marginHorizontal: 10,
+            flexDirection: 'row',
+            marginVertical: 7,
+          }}>
+          <CustomCheckBox isChecked={markHighPriority} onToggle={handleCheckPriority} />
+          {/* <CheckBox isChecked={markHighPriority} onClick={handleCheckPriority} /> */}
+          <Text style={{ color: "#000" }}>Mark as High Priority</Text>
+        </View>
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisibleUntil}
-        mode="date"
-        onConfirm={handleDateConfirmUntil}
-        onCancel={hideDatePickerUntil}
-      />
+        <TouchableOpacity
+          onPress={handleShipDropdownClickStatus}
+          style={{
+            height: 35,
+            borderRadius: 10,
+            borderWidth: 0.5,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingLeft: 15,
+            paddingRight: 15,
+            marginHorizontal: 10,
+            marginVertical: 1,
+          }}>
+          <Text style={{ color: "#000" }}>{selectedStatusOption || 'Status'}</Text>
+          <Image
+            source={require('../../../assets/dropdown.png')}
+            style={{ width: 20, height: 20 }}
+          />
+        </TouchableOpacity>
+
+        {shipFromToClickedStatus && (
+          <View style={styles.dropdownContent1}>
+            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+              {statusOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.dropdownOption}
+                  onPress={() => handleDropdownSelectStatus(option)}>
+                  <Text style={{ color: "#000" }}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={{ marginTop: 5 }}>
+          <Text style={{ marginHorizontal: 10, marginVertical: 3, color: "#000" }}>Task Type</Text>
+          <TouchableOpacity
+            onPress={handledropdownField}
+            style={styles.dropdownButton}>
+            <Text style={{ color: "#000" }}>{selectedField || 'Select'}</Text>
+            <Image
+              source={require('../../../assets/dropdown.png')}
+              style={{ width: 20, height: 20 }}
+            />
+          </TouchableOpacity>
+          {
+            showFieldList && (
+              <View style={styles.dropdownContent1}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search"
+                  placeholderTextColor="#000"
+                  onChangeText={handlefilterfields}
+                />
+                <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+                  {(filteredFieldsList.length === 0 || (filteredFieldsList.length === 1 && !filteredFieldsList[0])) ? (
+                    <Text style={styles.noCategoriesText}>
+                      Sorry, no results found!
+                    </Text>
+                  ) : (
+                    filteredFieldsList?.map((field, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => handleSelectField(field)}
+                        style={styles.dropdownOption}>
+                        <Text style={{ color: "#000" }}>{field?.fieldName}</Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
+                </ScrollView>
+              </View>
+            )
+          }
+        </View>
+
+        <DateTimePickerModal
+          isVisible={isDatePickerVisibleDue}
+          mode="date"
+          onConfirm={handleDateConfirmDue}
+          onCancel={hideDatePickerDue}
+        />
+        <View style={{ marginBottom: 50 }} />
+
+        <DateTimePickerModal
+          isVisible={isDatePickerVisibleUntil}
+          mode="date"
+          onConfirm={handleDateConfirmUntil}
+          onCancel={hideDatePickerUntil}
+        />
 
 
 
-    </View>
+      </View>
     </ScrollView>
   );
 };
@@ -1212,7 +1218,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color:"#000"
+    color: "#000"
   },
   addButton: {
     // backgroundColor: '#390050',
@@ -1232,7 +1238,7 @@ const styles = StyleSheet.create({
   sectionText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color:"#000"
+    color: "#000"
   },
   switchContainer: {
     marginHorizontal: 6,
@@ -1276,7 +1282,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 2,
@@ -1293,8 +1299,8 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   scrollView: {
-    minHeight:70,
-   maxHeight:150
+    minHeight: 70,
+    maxHeight: 150
   },
   dropdownOption: {
     paddingHorizontal: 10,
