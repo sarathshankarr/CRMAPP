@@ -25,6 +25,8 @@ import CustomCheckBox from '../../components/CheckBox';
 const NewCall = () => {
   const route = useRoute();
   const userData = useSelector(state => state.loggedInUser);
+  const userId=userData?.userId;
+
   const navigation = useNavigation();
   const callData = route.params?.call;
   const {call} = route.params;
@@ -760,6 +762,9 @@ const NewCall = () => {
       locId: selectedLocationId,
       assign_by: userData.userId,
       customerType: customerType,
+      companyId:companyId,
+      userId:userId,
+      type: 2
     };
 
     console.log('requested Data ===>  ', requestData);

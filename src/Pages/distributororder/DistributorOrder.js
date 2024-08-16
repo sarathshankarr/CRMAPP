@@ -34,6 +34,8 @@ const DistributorOrder = () => {
   const [loading, setLoading] = useState(true);
   const [addedOrderData, setAddedOrderData] = useState(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false); // New state for button disabled
+  const userData=useSelector(state=>state.loggedInUser);
+  const userId=userData?.userId;
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -341,6 +343,9 @@ const DistributorOrder = () => {
           totQty: grnQty,
           grnQty: item.grnQty,
           tsiId: item.tsiId,
+          companyId:companyId,
+          userId:userId,
+          linkType: 1
         };
       }),
     };

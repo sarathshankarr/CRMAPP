@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
   Switch,
 } from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   addToPending,
   removeFromCart,
@@ -25,9 +25,9 @@ import {
 } from '../../redux/actions/Actions';
 import Clipboard from '@react-native-clipboard/clipboard';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import ModalComponent from '../../components/ModelComponent';
-import {API} from '../../config/apiConfig';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -75,6 +75,9 @@ const Cart = () => {
   const [modalItems, setModalItems] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+
+  const userData = useSelector(state => state.loggedInUser);
+  const userId = userData?.userId;
 
   const textInputStyle = {
     borderWidth: 1,
@@ -213,9 +216,9 @@ const Cart = () => {
     cityOrTown: '',
     state: '',
     country: '',
-    pincode:'',
-    locationName:'',
-    locationDescription:''
+    pincode: '',
+    locationName: '',
+    locationDescription: ''
 
 
   });
@@ -290,9 +293,9 @@ const Cart = () => {
         cityOrTown: '',
         state: '',
         country: '',
-        pincode:'',
-        locationName:'',
-        locationDescription:'',
+        pincode: '',
+        locationName: '',
+        locationDescription: '',
         // Add other input fields if needed
       });
     }
@@ -352,6 +355,8 @@ const Cart = () => {
       locationName: inputValues.locationName,
       locationCode: '',
       locationDescription: inputValues.locationDescription,
+      linkType: 3,
+      // userId:userId
     };
 
     axios
@@ -445,7 +450,9 @@ const Cart = () => {
       companyId: companyId,
       locationName: inputValues.locationName,
       locationCode: '',
-      locationDescription:inputValues.locationDescription,
+      locationDescription: inputValues.locationDescription,
+      linkType: 3,
+      userId: userId
     };
 
     console.log("requestData===>", requestData);
@@ -764,8 +771,8 @@ const Cart = () => {
           ? selectedCustomerObj.customerId
           : ''
         : userRole === 'Distributor' || userRole === 'Retailer'
-        ? roleId
-        : '';
+          ? roleId
+          : '';
 
     const currentDate = new Date().toISOString().split('T')[0];
 
@@ -853,6 +860,7 @@ const Cart = () => {
       gTranspExp: 0,
       gOtherExp: 0,
       companyId: companyId,
+      linkType: 3
     };
     console.log('requestData', requestData);
     axios
@@ -864,7 +872,7 @@ const Cart = () => {
       })
       .then(response => {
         // Handle success response
-        dispatch({type: 'CLEAR_CART'});
+        dispatch({ type: 'CLEAR_CART' });
         navigation.navigate('Home');
       })
       .catch(error => {
@@ -990,7 +998,7 @@ const Cart = () => {
   };
   const copyValueToClipboard = index => {
     const item = cartItems[index];
-    const {styleId, colorId, quantity} = item;
+    const { styleId, colorId, quantity } = item;
 
     // Check if quantity is 0 or falsy
     if (!quantity) {
@@ -1183,6 +1191,8 @@ const Cart = () => {
       fullName: null,
       companyId: companyId,
       locationType: 0,
+      userId:userId,
+      linkType: 7
     };
 
     axios
@@ -1235,23 +1245,23 @@ const Cart = () => {
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   return (
     <KeyboardAvoidingView
-      style={{flex: 1, backgroundColor: '#fff'}}
+      style={{ flex: 1, backgroundColor: '#fff' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}>
-      <View style={{flex: 1, backgroundColor: '#fff'}}>
-        <View style={{marginVertical: 10, backgroundColor: '#fff'}}>
+      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={{ marginVertical: 10, backgroundColor: '#fff' }}>
           {/* <View style={{marginHorizontal: 10, marginVertical: 2}}>
             <Text style={{color: '#000', fontWeight: 'bold'}}>Customers</Text>
           </View> */}
           <View style={style.switchContainer}>
             <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
+              trackColor={{ false: '#767577', true: '#81b0ff' }}
               thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
               ios_backgroundColor="#3e3e3e"
               onValueChange={toggleSwitch}
               value={isEnabled}
             />
-            <Text style={{fontWeight: 'bold', fontSize: 15, color: '#000'}}>
+            <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#000' }}>
               Slide For Retailer
             </Text>
           </View>
@@ -1259,174 +1269,174 @@ const Cart = () => {
             {/* {userRole &&
               userRole.toLowerCase &&
               userRole.toLowerCase() === 'admin' && ( */}
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <View>
-                    <TouchableOpacity
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View>
+                <TouchableOpacity
+                  style={{
+                    width: '90%',
+                    height: 50,
+                    borderRadius: 10,
+                    borderWidth: 0.5,
+                    alignSelf: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                  }}
+                  onPress={handleDropdownClick}>
+                  <Text style={{ fontWeight: '600', color: "#000" }}>
+                    {isEnabled ? (selectedCustomerDetails &&
+                      selectedCustomerDetails.length > 0
+                      ? `${selectedCustomerDetails[0].firstName} ${selectedCustomerDetails[0].lastName}`
+                      : 'Retailer *') : (selectedDistributorDetails &&
+                        selectedDistributorDetails.length > 0
+                        ? `${selectedDistributorDetails[0].distributorName}`
+                        : 'Distributor *')}
+                  </Text>
+
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{ width: 20, height: 20 }}
+                  />
+                </TouchableOpacity>
+
+                {clicked && (
+                  <View
+                    style={{
+                      elevation: 5,
+                      height: 300,
+                      alignSelf: 'center',
+                      width: '90%',
+                      backgroundColor: '#fff',
+                      borderRadius: 10,
+                    }}>
+                    <TextInput
                       style={{
-                        width: '90%',
-                        height: 50,
+                        marginTop: 10,
                         borderRadius: 10,
-                        borderWidth: 0.5,
-                        alignSelf: 'center',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        paddingLeft: 15,
-                        paddingRight: 15,
+                        height: 40,
+                        borderColor: 'gray',
+                        borderWidth: 1,
+                        marginHorizontal: 10,
+                        paddingLeft: 10,
+                        marginBottom: 10,
+                        color: '#000000',
                       }}
-                      onPress={handleDropdownClick}>
-                      <Text style={{ fontWeight: '600',color:"#000" }}>
-                        {isEnabled ? (selectedCustomerDetails &&
-                          selectedCustomerDetails.length > 0
-                          ? `${selectedCustomerDetails[0].firstName} ${selectedCustomerDetails[0].lastName}`
-                          : 'Retailer *') : (selectedDistributorDetails &&
-                            selectedDistributorDetails.length > 0
-                            ? `${selectedDistributorDetails[0].distributorName}`
-                            : 'Distributor *')}
-                      </Text>
-
-                      <Image
-                        source={require('../../../assets/dropdown.png')}
-                        style={{width: 20, height: 20}}
-                      />
-                    </TouchableOpacity>
-
-                    {clicked && (
-                      <View
-                        style={{
-                          elevation: 5,
-                          height: 300,
-                          alignSelf: 'center',
-                          width: '90%',
-                          backgroundColor: '#fff',
-                          borderRadius: 10,
-                        }}>
-                        <TextInput
-                          style={{
-                            marginTop: 10,
-                            borderRadius: 10,
-                            height: 40,
-                            borderColor: 'gray',
-                            borderWidth: 1,
-                            marginHorizontal: 10,
-                            paddingLeft: 10,
-                            marginBottom: 10,
-                            color: '#000000',
-                          }}
-                          placeholderTextColor="#000"
-                          placeholder="Search"
-                          value={searchQuery}
-                          onChangeText={text => setSearchQuery(text)}
-                        />
-                        {!isEnabled ? (
-                          filteredDistributors.length === 0 && !isLoading ? (
-                            <Text style={style.noCategoriesText}>
-                              Sorry, no results found!
-                            </Text>
-                          ) : (
-                            <ScrollView>
-                              {filteredDistributors.map((item, index) => (
-                                <TouchableOpacity
-                                  key={index}
-                                  style={{
-                                    width: '100%',
-                                    height: 50,
-                                    justifyContent: 'center',
-                                    borderBottomWidth: 0.5,
-                                    borderColor: '#8e8e8e',
-                                  }}
-                                  onPress={() =>
-                                    handleDistributorSelection(
-                                      item?.firstName,
-                                      item?.distributorName,
-                                      item?.id,
-                                    )
-                                  }>
-                                  <Text
-                                    style={{
-                                      fontWeight: '600',
-                                      marginHorizontal: 15,
-                                      color: '#000',
-                                    }}>
-                                    {item.firstName}
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          )
-                        ) : filteredCustomers.length === 0 && !isLoading ? (
-                          <Text style={style.noCategoriesText}>
-                            Sorry, no results found!
-                          </Text>
-                        ) : (
-                          <ScrollView>
-                            {filteredCustomers.map((item, index) => (
-                              <TouchableOpacity
-                                key={index}
+                      placeholderTextColor="#000"
+                      placeholder="Search"
+                      value={searchQuery}
+                      onChangeText={text => setSearchQuery(text)}
+                    />
+                    {!isEnabled ? (
+                      filteredDistributors.length === 0 && !isLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
+                        <ScrollView>
+                          {filteredDistributors.map((item, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              style={{
+                                width: '100%',
+                                height: 50,
+                                justifyContent: 'center',
+                                borderBottomWidth: 0.5,
+                                borderColor: '#8e8e8e',
+                              }}
+                              onPress={() =>
+                                handleDistributorSelection(
+                                  item?.firstName,
+                                  item?.distributorName,
+                                  item?.id,
+                                )
+                              }>
+                              <Text
                                 style={{
-                                  width: '100%',
-                                  height: 50,
-                                  justifyContent: 'center',
-                                  borderBottomWidth: 0.5,
-                                  borderColor: '#8e8e8e',
-                                }}
-                                onPress={() =>
-                                  handleCustomerSelection(
-                                    item?.firstName,
-                                    item?.lastName,
-                                    item?.customerId,
-                                  )
-                                }>
-                                <Text
-                                  style={{
-                                    fontWeight: '600',
-                                    marginHorizontal: 15,
-                                    color: '#000',
-                                  }}>
-                                  {item.firstName} {item.lastName}
-                                </Text>
-                              </TouchableOpacity>
-                            ))}
-                          </ScrollView>
-                        )}
-                      </View>
+                                  fontWeight: '600',
+                                  marginHorizontal: 15,
+                                  color: '#000',
+                                }}>
+                                {item.firstName}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      )
+                    ) : filteredCustomers.length === 0 && !isLoading ? (
+                      <Text style={style.noCategoriesText}>
+                        Sorry, no results found!
+                      </Text>
+                    ) : (
+                      <ScrollView>
+                        {filteredCustomers.map((item, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={{
+                              width: '100%',
+                              height: 50,
+                              justifyContent: 'center',
+                              borderBottomWidth: 0.5,
+                              borderColor: '#8e8e8e',
+                            }}
+                            onPress={() =>
+                              handleCustomerSelection(
+                                item?.firstName,
+                                item?.lastName,
+                                item?.customerId,
+                              )
+                            }>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                marginHorizontal: 15,
+                                color: '#000',
+                              }}>
+                              {item.firstName} {item.lastName}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
                     )}
+                  </View>
+                )}
 
-                    {isLoading && ( // Show ActivityIndicator if isLoading is true
-                      <ActivityIndicator
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          marginLeft: -20,
-                          marginTop: -20,
-                        }}
-                        size="large"
-                        color="#1F74BA"
-                      />
-                    )}
-                  </View>
-                  <View>
-                    <TouchableOpacity
-                      onPress={toggleModal}
-                      style={style.plusButton}>
-                      <Image
-                        style={{
-                          height: 30,
-                          width: 30,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        source={require('../../../assets/plus.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              {/* )} */}
+                {isLoading && ( // Show ActivityIndicator if isLoading is true
+                  <ActivityIndicator
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      marginLeft: -20,
+                      marginTop: -20,
+                    }}
+                    size="large"
+                    color="#1F74BA"
+                  />
+                )}
+              </View>
+              <View>
+                <TouchableOpacity
+                  onPress={toggleModal}
+                  style={style.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* )} */}
           </View>
         </View>
-        <View style={{flexDirection: 'row'}}>
-          <View style={{flex: 1}}>
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ flex: 1 }}>
             <TouchableOpacity
               onPress={handleFromDropdownClick}
               style={{
@@ -1442,56 +1452,56 @@ const Cart = () => {
                 marginLeft: 18,
               }}>
               {/* <Text>{selectedLocation.locationName || 'Billing to *'}</Text> */}
-              <Text style={{ fontWeight: '600',color:"#000", }}>
+              <Text style={{ fontWeight: '600', color: "#000", }}>
                 {selectedLocation.length > 0
                   ? `${selectedLocation}`
                   : 'Billing to *'}
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
+                style={{ width: 20, height: 20 }}
               />
             </TouchableOpacity>
-            {fromToClicked ? 
-            (customerLocations.length === 0 && !isLoading)
-            ? (
-               <Text style={[style.noResultsLocation,{ marginLeft: 15}]}>
-                Sorry , no results found!
-                </Text>
-                ): (
-              <View
-                style={{
-                  elevation: 5,
-                  height: 175,
-                  alignSelf: 'center',
-                  width: '85%',
-                  backgroundColor: '#fff',
-                  borderRadius: 10,
-                  marginLeft: 15,
-                }}>
-                {/* Here you can render your dropdown content */}
-                <ScrollView>
-                  {customerLocations.map(location => (
-                    <TouchableOpacity
-                      key={location.locationId}
-                      style={{
-                        paddingHorizontal: 10,
-                        paddingVertical: 15,
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#ccc',
-                      }}
-                      onPress={() => handleLocationSelection(location)}>
-                      <Text style={{color: '#000'}}>
-                        {location.locationName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            ):null}
+            {fromToClicked ?
+              (customerLocations.length === 0 && !isLoading)
+                ? (
+                  <Text style={[style.noResultsLocation, { marginLeft: 15 }]}>
+                    Sorry , no results found!
+                  </Text>
+                ) : (
+                  <View
+                    style={{
+                      elevation: 5,
+                      height: 175,
+                      alignSelf: 'center',
+                      width: '85%',
+                      backgroundColor: '#fff',
+                      borderRadius: 10,
+                      marginLeft: 15,
+                    }}>
+                    {/* Here you can render your dropdown content */}
+                    <ScrollView>
+                      {customerLocations.map(location => (
+                        <TouchableOpacity
+                          key={location.locationId}
+                          style={{
+                            paddingHorizontal: 10,
+                            paddingVertical: 15,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#ccc',
+                          }}
+                          onPress={() => handleLocationSelection(location)}>
+                          <Text style={{ color: '#000' }}>
+                            {location.locationName}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                ) : null}
           </View>
 
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <TouchableOpacity
               onPress={handleShipDropdownClick}
               style={{
@@ -1507,54 +1517,54 @@ const Cart = () => {
                 marginLeft: 5,
               }}>
               {/* <Text>{selectedShipLocation.locationName || 'Shiping to *'}</Text> */}
-              <Text style={{ fontWeight: '600',color:"#000" }}>
+              <Text style={{ fontWeight: '600', color: "#000" }}>
                 {selectedShipLocation.length > 0
                   ? `${selectedShipLocation}`
                   : 'Shipping to *'}
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
+                style={{ width: 20, height: 20 }}
               />
             </TouchableOpacity>
             {shipFromToClicked
-            && (
-              (customerLocations.length === 0 && !isLoading)
-            ? (
-               <Text style={[style.noResultsLocation, {marginRight: 17}]}>
-                Sorry , no results found!
-                </Text>
-                ): (
-              <View
-                style={{
-                  elevation: 5,
-                  height: 175,
-                  alignSelf: 'center',
-                  width: '85%',
-                  backgroundColor: '#fff',
-                  borderRadius: 10,
-                  marginRight: 17,
-                }}>
-                {/* Here you can render your dropdown content */}
-                <ScrollView>
-                  {customerLocations.map(location => (
-                    <TouchableOpacity
-                      key={location.locationId}
+              && (
+                (customerLocations.length === 0 && !isLoading)
+                  ? (
+                    <Text style={[style.noResultsLocation, { marginRight: 17 }]}>
+                      Sorry , no results found!
+                    </Text>
+                  ) : (
+                    <View
                       style={{
-                        paddingHorizontal: 10,
-                        paddingVertical: 15,
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#ccc',
-                      }}
-                      onPress={() => handleShipLocation(location)}>
-                      <Text style={{color: '#000'}}>
-                        {location.locationName}
-                      </Text>
-                    </TouchableOpacity>
+                        elevation: 5,
+                        height: 175,
+                        alignSelf: 'center',
+                        width: '85%',
+                        backgroundColor: '#fff',
+                        borderRadius: 10,
+                        marginRight: 17,
+                      }}>
+                      {/* Here you can render your dropdown content */}
+                      <ScrollView>
+                        {customerLocations.map(location => (
+                          <TouchableOpacity
+                            key={location.locationId}
+                            style={{
+                              paddingHorizontal: 10,
+                              paddingVertical: 15,
+                              borderBottomWidth: 1,
+                              borderBottomColor: '#ccc',
+                            }}
+                            onPress={() => handleShipLocation(location)}>
+                            <Text style={{ color: '#000' }}>
+                              {location.locationName}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
                   ))}
-                </ScrollView>
-              </View>
-            ))}
           </View>
           <View>
             <TouchableOpacity
@@ -1579,7 +1589,7 @@ const Cart = () => {
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
           </View> */}
           {cartItems.length === 0 ? (
-            <Text style={{marginLeft: 10, color: '#000'}}>
+            <Text style={{ marginLeft: 10, color: '#000' }}>
               No items in cart
             </Text>
           ) : (
@@ -1590,80 +1600,80 @@ const Cart = () => {
                   key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
                   <View
                     key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}
-                    style={{marginBottom: 20}}>
+                    style={{ marginBottom: 20 }}>
                     {(index === 0 ||
                       item.styleId !== cartItems[index - 1].styleId ||
                       item.colorId !== cartItems[index - 1].colorId) && (
-                      <View style={style.itemContainer}>
-                        <View style={style.imgContainer}>
-                          {item.imageUrls && item.imageUrls.length > 0 && (
-                            <Image
-                              source={{uri: item.imageUrls[0]}}
-                              style={{
-                                width: 100,
-                                height: 100,
-                                resizeMode: 'cover',
-                                margin: 5,
-                              }}
-                            />
-                          )}
-                          <View style={{flex: 1}}>
-                            <Text
-                              style={{
-                                fontSize: 15,
-                                fontWeight: 'bold',
-                                marginLeft: 5,
-                                color: '#000',
-                              }}>
-                              {item.styleDesc}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 15,
-                                fontWeight: 'bold',
-                                marginLeft: 5,
-                                color: '#000',
-                              }}>
-                              Color Name - {item.colorName}
-                            </Text>
-                          </View>
-                          <View style={style.buttonsContainer}>
-                            <TouchableOpacity onPress={() => openModal(item)}>
+                        <View style={style.itemContainer}>
+                          <View style={style.imgContainer}>
+                            {item.imageUrls && item.imageUrls.length > 0 && (
                               <Image
-                                style={style.buttonIcon}
-                                source={require('../../../assets/edit.png')}
+                                source={{ uri: item.imageUrls[0] }}
+                                style={{
+                                  width: 100,
+                                  height: 100,
+                                  resizeMode: 'cover',
+                                  margin: 5,
+                                }}
+                              />
+                            )}
+                            <View style={{ flex: 1 }}>
+                              <Text
+                                style={{
+                                  fontSize: 15,
+                                  fontWeight: 'bold',
+                                  marginLeft: 5,
+                                  color: '#000',
+                                }}>
+                                {item.styleDesc}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 15,
+                                  fontWeight: 'bold',
+                                  marginLeft: 5,
+                                  color: '#000',
+                                }}>
+                                Color Name - {item.colorName}
+                              </Text>
+                            </View>
+                            <View style={style.buttonsContainer}>
+                              <TouchableOpacity onPress={() => openModal(item)}>
+                                <Image
+                                  style={style.buttonIcon}
+                                  source={require('../../../assets/edit.png')}
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                          <View style={style.sizehead}>
+                            <View style={{ flex: 0.6 }}>
+                              <Text style={{ color: '#000', marginLeft: 10 }}>
+                                SIZE
+                              </Text>
+                            </View>
+                            <View style={{ flex: 0.6, marginLeft: 29 }}>
+                              <Text style={{ color: '#000' }}>QUANTITY</Text>
+                            </View>
+                            <View style={{ flex: 0.4, marginLeft: 30 }}>
+                              <Text style={{ color: '#000' }}>PRICE</Text>
+                            </View>
+                            <View style={{ flex: 0.5, marginLeft: 20 }}>
+                              <Text style={{ color: '#000' }}>GROSS PRICE</Text>
+                            </View>
+                            <TouchableOpacity
+                              onPress={() => copyValueToClipboard(index)}>
+                              <Image
+                                style={{ height: 25, width: 25, marginRight: 10 }}
+                                source={require('../../../assets/copy.png')}
                               />
                             </TouchableOpacity>
                           </View>
                         </View>
-                        <View style={style.sizehead}>
-                          <View style={{flex: 0.6}}>
-                            <Text style={{color: '#000', marginLeft: 10}}>
-                              SIZE
-                            </Text>
-                          </View>
-                          <View style={{flex: 0.6, marginLeft: 29}}>
-                            <Text style={{color: '#000'}}>QUANTITY</Text>
-                          </View>
-                          <View style={{flex: 0.4, marginLeft: 30}}>
-                            <Text style={{color: '#000'}}>PRICE</Text>
-                          </View>
-                          <View style={{flex: 0.5, marginLeft: 20}}>
-                            <Text style={{color: '#000'}}>GROSS PRICE</Text>
-                          </View>
-                          <TouchableOpacity
-                            onPress={() => copyValueToClipboard(index)}>
-                            <Image
-                              style={{height: 25, width: 25, marginRight: 10}}
-                              source={require('../../../assets/copy.png')}
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    )}
+                      )}
                     <View style={style.itemDetails}>
-                      <View style={{flex: 0.3, marginLeft: 10}}>
-                        <Text style={{color: '#000'}}>{item.sizeDesc}</Text>
+                      <View style={{ flex: 0.3, marginLeft: 10 }}>
+                        <Text style={{ color: '#000' }}>{item.sizeDesc}</Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => handleDecrementQuantityCart(index)}>
@@ -1702,16 +1712,16 @@ const Cart = () => {
                           source={require('../../../assets/add1.png')}
                         />
                       </TouchableOpacity>
-                      <View style={{flex: 0.3, marginLeft: 10,borderBottomWidth:1,borderColor:"#000"}}>
+                      <View style={{ flex: 0.3, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
                         <TextInput
-                          style={{color: '#000',alignSelf:"center"}}
+                          style={{ color: '#000', alignSelf: "center" }}
                           value={item.price.toString()}
                           onChangeText={text => handlePriceChange(index, text)}
                           keyboardType="numeric"
                         />
                       </View>
-                      <View style={{flex: 0.3, marginLeft: 30}}>
-                        <Text style={{color: '#000'}}>
+                      <View style={{ flex: 0.3, marginLeft: 30 }}>
+                        <Text style={{ color: '#000' }}>
                           {(
                             Number(item.price) * Number(item.quantity)
                           ).toString()}
@@ -1729,47 +1739,47 @@ const Cart = () => {
                   {(index === cartItems.length - 1 ||
                     item.styleId !== cartItems[index + 1]?.styleId ||
                     item.colorId !== cartItems[index + 1]?.colorId) && (
-                    <>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          backgroundColor: 'lightgray',
-                          paddingVertical: 10,
-                          borderRadius: 20,
-                        }}>
-                        <View style={{flex: 1, marginLeft: 20}}>
-                          <Text style={{color: '#000'}}>Total</Text>
-                        </View>
-                        <View style={{flex: 1.5}}>
-                          <Text style={{color: '#000'}}>
-                            {' '}
-                            {calculateTotalQty(item.styleId, item.colorId)}
-                          </Text>
-                        </View>
-                        {/* <View style={{ flex: 1 }}>
+                      <>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: 'lightgray',
+                            paddingVertical: 10,
+                            borderRadius: 20,
+                          }}>
+                          <View style={{ flex: 1, marginLeft: 20 }}>
+                            <Text style={{ color: '#000' }}>Total</Text>
+                          </View>
+                          <View style={{ flex: 1.5 }}>
+                            <Text style={{ color: '#000' }}>
+                              {' '}
+                              {calculateTotalQty(item.styleId, item.colorId)}
+                            </Text>
+                          </View>
+                          {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                        <View style={{flex: 0.9}}>
-                          <Text style={{color: '#000'}}>
-                            {calculateTotalPrice(item.styleId, item.colorId)}
-                          </Text>
+                          <View style={{ flex: 0.9 }}>
+                            <Text style={{ color: '#000' }}>
+                              {calculateTotalPrice(item.styleId, item.colorId)}
+                            </Text>
+                          </View>
                         </View>
-                      </View>
-                      {/* <View style={style.separatorr} /> */}
-                      <View />
-                    </>
-                  )}
+                        {/* <View style={style.separatorr} /> */}
+                        <View />
+                      </>
+                    )}
                 </View>
               ))}
             </View>
           )}
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <TouchableOpacity
               onPress={showDatePicker}
-              style={{flexDirection: 'row', alignItems: 'center'}}>
-              <View style={{paddingVertical: 10}}>
-                <Text style={{marginLeft: 10, color: '#000'}}>
+              style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ paddingVertical: 10 }}>
+                <Text style={{ marginLeft: 10, color: '#000' }}>
                   {selatedDate}
                 </Text>
               </View>
@@ -1817,12 +1827,12 @@ const Cart = () => {
         <View style={{backgroundColor: '#faf7f6',borderTopWidth: 1}}>
           <View style={style.bottomContainer}>
             <View style={{}}>
-              <Text style={{fontWeight: 'bold', marginLeft: 10, color: '#000'}}>
+              <Text style={{ fontWeight: 'bold', marginLeft: 10, color: '#000' }}>
                 Total Qty: {totalQty}
               </Text>
             </View>
             <View style={{}}>
-              <Text style={{fontWeight: 'bold', marginLeft: 10, color: '#000'}}>
+              <Text style={{ fontWeight: 'bold', marginLeft: 10, color: '#000' }}>
                 Total Items: {totalItems}
               </Text>
             </View>
@@ -1870,182 +1880,182 @@ const Cart = () => {
             }}>
             <View style={style.modalContainerr}>
               <View style={style.modalContentt}>
-              <View style={{
-                backgroundColor: '#1F74BA',
-                borderRadius: 10,
-                marginHorizontal: 10,
-                flexDirection: 'row',
-                alignItems: 'center', 
-                marginTop: 10,
-                paddingVertical: 5,
-                width:'100%',
-                justifyContent:'space-between',
-                marginBottom:15,
-              }}>
-                <Text style={[style.modalTitle, {textAlign:'center', flex:1}]}>{isEnabled ? "Retailer Details" : "Distributor Details"}</Text>
-                <TouchableOpacity onPress={handleCloseModalDisRet} style={{alignSelf:'flex-end'}} >
-                  <Image
-                   style={{height: 30, width: 30, marginRight:5}}
-                   source={require('../../../assets/close.png')}
-                   />  
-                </TouchableOpacity>
-            </View>
+                <View style={{
+                  backgroundColor: '#1F74BA',
+                  borderRadius: 10,
+                  marginHorizontal: 10,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: 10,
+                  paddingVertical: 5,
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  marginBottom: 15,
+                }}>
+                  <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>{isEnabled ? "Retailer Details" : "Distributor Details"}</Text>
+                  <TouchableOpacity onPress={handleCloseModalDisRet} style={{ alignSelf: 'flex-end' }} >
+                    <Image
+                      style={{ height: 30, width: 30, marginRight: 5 }}
+                      source={require('../../../assets/close.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-            <ScrollView style={{width:'100%', height:'65%'}}>
+                <ScrollView style={{ width: '100%', height: '65%' }}>
 
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('firstName')
-                      ? style.errorBorder
-                      : null,
-                  ]}
-                  placeholder={
-                    isEnabled ? 'Retailer Name *' : 'Distributor Name *'
-                  }
-                  placeholderTextColor="#000"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, firstName: text})
-                  }
-                  value={inputValues.firstName}
-                />
-                {errorFields.includes('firstName') && (
-                  <Text style={style.errorText}>
-                    {isEnabled
-                      ? 'Please Enter Retailer Name'
-                      : 'Please Enter Distributor Name'}
-                  </Text>
-                )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('firstName')
+                        ? style.errorBorder
+                        : null,
+                    ]}
+                    placeholder={
+                      isEnabled ? 'Retailer Name *' : 'Distributor Name *'
+                    }
+                    placeholderTextColor="#000"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, firstName: text })
+                    }
+                    value={inputValues.firstName}
+                  />
+                  {errorFields.includes('firstName') && (
+                    <Text style={style.errorText}>
+                      {isEnabled
+                        ? 'Please Enter Retailer Name'
+                        : 'Please Enter Distributor Name'}
+                    </Text>
+                  )}
 
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('phoneNumber')
-                      ? style.errorBorder
-                      : null,
-                  ]}
-                  placeholder="Phone Number *"
-                  placeholderTextColor="#000"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, phoneNumber: text})
-                  }
-                />
-                {errorFields.includes('phoneNumber') && (
-                  <Text style={style.errorText}>Please Enter Phone Number</Text>
-                )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('phoneNumber')
+                        ? style.errorBorder
+                        : null,
+                    ]}
+                    placeholder="Phone Number *"
+                    placeholderTextColor="#000"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, phoneNumber: text })
+                    }
+                  />
+                  {errorFields.includes('phoneNumber') && (
+                    <Text style={style.errorText}>Please Enter Phone Number</Text>
+                  )}
 
-                <TextInput
-                  style={[style.input, {color: '#000'}]}
-                  placeholder="Whatsapp Number *"
-                  placeholderTextColor="#000"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, whatsappId: text})
-                  }
-                />
-                {errorFields.includes('whatsappId') && (
-                  <Text style={style.errorText}>
-                    Please Enter Whatsapp Number
-                  </Text>
-                )}
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('cityOrTown')
-                      ? style.errorBorder
-                      : null,
-                  ]}
-                  placeholder="City or Town *"
-                  placeholderTextColor="#000"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, cityOrTown: text})
-                  }
-                />
-                {errorFields.includes('cityOrTown') && (
-                  <Text style={style.errorText}>Please Enter City Or Town</Text>
-                )}
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('state') ? style.errorBorder : null,
-                  ]}
-                  placeholderTextColor="#000"
-                  placeholder="State *"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, state: text})
-                  }
-                />
-                {errorFields.includes('state') && (
-                  <Text style={style.errorText}>Please Enter State</Text>
-                )}
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('country') ? style.errorBorder : null,
-                  ]}
-                  placeholderTextColor="#000"
-                  placeholder="Country *"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, country: text})
-                  }
-                />
-                {errorFields.includes('country') && (
-                  <Text style={style.errorText}>Please Enter Country</Text>
-                )}
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('pincode') ? style.errorBorder : null,
-                  ]}
-                  placeholderTextColor="#000"
-                  placeholder="Pincode *"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, pincode: text})
-                  }
-                />
-                {errorFields.includes('pincode') && (
-                  <Text style={style.errorText}>Please Enter Pincode</Text>
-                )}
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('locationName') ? style.errorBorder : null,
-                  ]}
-                  placeholderTextColor="#000"
-                  placeholder="Location Name *"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, locationName: text})
-                  }
-                />
-                {errorFields.includes('locationName') && (
-                  <Text style={style.errorText}>Please Enter Location Name</Text>
-                )}
-                <TextInput
-                  style={[
-                    style.input,
-                    {color: '#000'},
-                    errorFields.includes('locationDescription') ? style.errorBorder : null,
-                  ]}
-                  placeholderTextColor="#000"
-                  placeholder="Location Description *"
-                  onChangeText={text =>
-                    setInputValues({...inputValues, locationDescription: text})
-                  }
-                />
-                {errorFields.includes('locationDescription') && (
-                  <Text style={style.errorText}>Please Enter Location Description</Text>
-                )}
-                <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={handleSaveButtonPress}>
-                  <Text style={style.saveButtonText}>Save</Text>
-                </TouchableOpacity>
+                  <TextInput
+                    style={[style.input, { color: '#000' }]}
+                    placeholder="Whatsapp Number *"
+                    placeholderTextColor="#000"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, whatsappId: text })
+                    }
+                  />
+                  {errorFields.includes('whatsappId') && (
+                    <Text style={style.errorText}>
+                      Please Enter Whatsapp Number
+                    </Text>
+                  )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('cityOrTown')
+                        ? style.errorBorder
+                        : null,
+                    ]}
+                    placeholder="City or Town *"
+                    placeholderTextColor="#000"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, cityOrTown: text })
+                    }
+                  />
+                  {errorFields.includes('cityOrTown') && (
+                    <Text style={style.errorText}>Please Enter City Or Town</Text>
+                  )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('state') ? style.errorBorder : null,
+                    ]}
+                    placeholderTextColor="#000"
+                    placeholder="State *"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, state: text })
+                    }
+                  />
+                  {errorFields.includes('state') && (
+                    <Text style={style.errorText}>Please Enter State</Text>
+                  )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('country') ? style.errorBorder : null,
+                    ]}
+                    placeholderTextColor="#000"
+                    placeholder="Country *"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, country: text })
+                    }
+                  />
+                  {errorFields.includes('country') && (
+                    <Text style={style.errorText}>Please Enter Country</Text>
+                  )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('pincode') ? style.errorBorder : null,
+                    ]}
+                    placeholderTextColor="#000"
+                    placeholder="Pincode *"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, pincode: text })
+                    }
+                  />
+                  {errorFields.includes('pincode') && (
+                    <Text style={style.errorText}>Please Enter Pincode</Text>
+                  )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('locationName') ? style.errorBorder : null,
+                    ]}
+                    placeholderTextColor="#000"
+                    placeholder="Location Name *"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, locationName: text })
+                    }
+                  />
+                  {errorFields.includes('locationName') && (
+                    <Text style={style.errorText}>Please Enter Location Name</Text>
+                  )}
+                  <TextInput
+                    style={[
+                      style.input,
+                      { color: '#000' },
+                      errorFields.includes('locationDescription') ? style.errorBorder : null,
+                    ]}
+                    placeholderTextColor="#000"
+                    placeholder="Location Description *"
+                    onChangeText={text =>
+                      setInputValues({ ...inputValues, locationDescription: text })
+                    }
+                  />
+                  {errorFields.includes('locationDescription') && (
+                    <Text style={style.errorText}>Please Enter Location Description</Text>
+                  )}
+                  <TouchableOpacity
+                    style={style.saveButton}
+                    onPress={handleSaveButtonPress}>
+                    <Text style={style.saveButtonText}>Save</Text>
+                  </TouchableOpacity>
                 </ScrollView>
               </View>
             </View>
@@ -2067,33 +2077,34 @@ const Cart = () => {
               }}>
               <View style={style.modalContainerr}>
                 <View style={style.modalContentt}>
-                <View
-                style={{
-                  backgroundColor: '#1F74BA',
-                  borderRadius: 10,
-                  marginHorizontal: 10,
-                  flexDirection: 'row',
-                  alignItems: 'center', 
-                  marginTop: 10,
-                  paddingVertical: 5,
-                  width:'100%',
-                  justifyContent:'space-between',
-                  marginBottom:15,}}>
-                <Text style={[style.modalTitle, {flex:1, textAlign:'center'}]}>Location Details</Text>
+                  <View
+                    style={{
+                      backgroundColor: '#1F74BA',
+                      borderRadius: 10,
+                      marginHorizontal: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: 10,
+                      paddingVertical: 5,
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      marginBottom: 15,
+                    }}>
+                    <Text style={[style.modalTitle, { flex: 1, textAlign: 'center' }]}>Location Details</Text>
 
-                 <TouchableOpacity onPress={handleCloseModalLocation}>
-                   <Image
-                     style={{height: 30, width: 30, marginRight:5}}
-                     source={require('../../../assets/close.png')}
-                   />
-                 </TouchableOpacity>
-                </View>
+                    <TouchableOpacity onPress={handleCloseModalLocation}>
+                      <Image
+                        style={{ height: 30, width: 30, marginRight: 5 }}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
 
 
                   <TextInput
                     style={[
                       style.input,
-                      {color: '#000'},
+                      { color: '#000' },
                       locationErrorFields.includes('locationName')
                         ? style.errorBorder
                         : null,
@@ -2117,7 +2128,7 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      {color: '#000'},
+                      { color: '#000' },
                       errorFields.includes('state') ? style.errorBorder : null,
                       locationErrorFields.includes('phoneNumber')
                         ? style.errorBorder
@@ -2138,7 +2149,7 @@ const Cart = () => {
                     </Text>
                   )}
                   <TextInput
-                    style={[style.input, {color: '#000'}]}
+                    style={[style.input, { color: '#000' }]}
                     placeholder="Locality"
                     placeholderTextColor="#000"
                     onChangeText={text =>
@@ -2151,7 +2162,7 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      {color: '#000'},
+                      { color: '#000' },
                       locationErrorFields.includes('cityOrTown')
                         ? style.errorBorder
                         : null,
@@ -2173,7 +2184,7 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      {color: '#000'},
+                      { color: '#000' },
                       locationErrorFields.includes('state')
                         ? style.errorBorder
                         : null,
@@ -2193,7 +2204,7 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      {color: '#000'},
+                      { color: '#000' },
                       locationErrorFields.includes('pincode')
                         ? style.errorBorder
                         : null,
@@ -2213,7 +2224,7 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      {color: '#000'},
+                      { color: '#000' },
                       locationErrorFields.includes('country')
                         ? style.errorBorder
                         : null,
@@ -2359,7 +2370,7 @@ const style = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     // marginBottom: 20,
-    color:'#000',
+    color: '#000',
   },
   input: {
     borderWidth: 1,

@@ -180,7 +180,8 @@ const ProductPackagePublish = () => {
       locationName: inputValues.locationName,
       locationCode: '',
       locationDescription: inputValues.locationDescription,
-      // userId:userId,
+      userId:userId,
+      linkType: 3
     };
     axios
       .post(
@@ -271,7 +272,8 @@ const ProductPackagePublish = () => {
       locationName: inputValues.locationName,
       locationCode: '',
       locationDescription:inputValues.locationDescription,
-      // userId:userId,
+      userId:userId,
+      linkType: 3
     };
 
     axios
@@ -454,7 +456,7 @@ const ProductPackagePublish = () => {
       loggedInUserWhatsappNumber: '', // Set this to the appropriate value if available
       companyId: companyId,
       userId:userId,
-      linkType: 2,
+      linkType: 3,
     };
     console.log('stylesPublishList===>', checkedStyleIds);
 
