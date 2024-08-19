@@ -31,6 +31,7 @@ import AddNewStyle from '../Pages/product/AddNewStyle';
 import NewStyleDetail from '../Pages/product/NewStyleDetail';
 import UploadProductImage from '../Pages/product/UploadProductImage';
 import TaskDetails from '../Pages/loc/TaskDetails';
+import NewCategoryUi from '../Pages/newCategoriesUi/NewCategoryUi';
 
 const Stack = createNativeStackNavigator();
 
@@ -95,6 +96,22 @@ const Routes = () => {
             <CommonHeader
               navigation={navigation}
               title={route.params.categoryDesc} // Set the header title dynamically
+              showMessageIcon={true}
+              showCartIcon={true}
+              showLocationIcon={true}
+            />
+          ),
+          headerBackVisible: true,
+        })}
+      />
+      <Stack.Screen
+        name="NewCategoryUi"
+        component={NewCategoryUi}
+        options={({route, navigation}) => ({
+          header: () => (
+            <CommonHeader
+              navigation={navigation}
+              title={`NewCategoryUi`} // Set the header title dynamically
               showMessageIcon={true}
               showCartIcon={true}
               showLocationIcon={true}
