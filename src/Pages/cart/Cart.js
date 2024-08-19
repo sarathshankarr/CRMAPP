@@ -720,8 +720,8 @@ const Cart = () => {
       Alert.alert('Alert', 'Please select a Billing to location.');
       return;
     }
-    
-    
+
+
     if (!selectedShipLocationId) {
       Alert.alert('Alert', 'Please select a Shipping to location.');
       return;
@@ -1191,7 +1191,7 @@ const Cart = () => {
       fullName: null,
       companyId: companyId,
       locationType: 0,
-      userId:userId,
+      userId: userId,
       linkType: 7
     };
 
@@ -1824,22 +1824,19 @@ const Cart = () => {
             }}></View>
         </ScrollView>
 
-        <View style={{backgroundColor: '#faf7f6',borderTopWidth: 1}}>
+        <View style={{ backgroundColor: '#faf7f6', borderTopWidth: 1 }}>
           <View style={style.bottomContainer}>
-            <View style={{}}>
-              <Text style={{ fontWeight: 'bold', marginLeft: 10, color: '#000' }}>
-                Total Qty: {totalQty}
-              </Text>
+            <View style={style.row}>
+              <Text style={style.label1}>Total Qty</Text>
+              <Text style={style.value}>: {totalQty}</Text>
             </View>
-            <View style={{}}>
-              <Text style={{ fontWeight: 'bold', marginLeft: 10, color: '#000' }}>
-                Total Items: {totalItems}
-              </Text>
+            <View style={style.row}>
+              <Text style={style.label2}>Total Items</Text>
+              <Text style={style.value2}>: {totalItems}</Text>
             </View>
-            <View style={{}}>
-              <Text style={{fontWeight: 'bold', marginLeft: 10, color: '#000'}}>
-                Total Amt: {totalPrice}
-              </Text>
+            <View style={style.row}>
+              <Text style={style.label3}>Total Amt</Text>
+              <Text style={style.value3}>: {totalPrice}</Text>
             </View>
           </View>
 
@@ -2294,15 +2291,40 @@ const style = StyleSheet.create({
     marginLeft: 10,
   },
   bottomContainer: {
-    // justifyContent: 'flex-end',
-    // flexDirection: 'row',
     alignItems: 'flex-start',
     paddingVertical: 10,
-    // borderTopWidth: 1,
-    // backgroundColor: '#f1e8e6',
     backgroundColor: '#faf7f6',
-    alignSelf:'flex-end',
-    // elevation: 5,
+    alignSelf: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  label1: {
+    color: "#000"
+  },
+  label2: {
+    color: "#000"
+
+  },
+  label3: {
+    color: "#000"
+  },
+  value: {
+    marginLeft: 35,
+    color: "#000",
+    marginRight: 5
+  },
+  value2: {
+    marginLeft: 20,
+    color: "#000",
+    marginRight: 5
+  },
+  value3: {
+    marginLeft: 30,
+    color: "#000",
+    marginRight: 5
   },
   dateIconContainer: {
     justifyContent: 'center',
