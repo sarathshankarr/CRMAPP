@@ -256,7 +256,7 @@ function Home() {
   return (
     <Tab.Navigator tabBar={props => <CustomTabBar {...props} />}>
       <Tab.Screen name="ALL CATEGORIES" component={HomeCategories} />
-      {/* <Tab.Screen name="ALL PRODUCTS" component={HomeAllProducts} /> */}
+      <Tab.Screen name="ALL PRODUCTS" component={HomeAllProducts} />
     </Tab.Navigator>
   );
 }

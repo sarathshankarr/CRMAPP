@@ -39,6 +39,7 @@ const Cart = () => {
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
+  const comp_flag= selectedCompany?.comp_flag;
   const [isLoading, setIsLoading] = useState(false);
 
   const [inputValuess, setInputValuess] = useState({});
@@ -76,6 +77,14 @@ const Cart = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
 
+  const [showCompanyLocationList, setShowCompanyLocationList] = useState(false);
+  const [editCompanyLocation, setEditCompanyLocation] = useState(true);
+  const [locationCompanyList, setLocationCompanyList] = useState([]);
+  const [filteredCompanyLocationList, setFilteredCompanyLocationList] = useState([]);
+  const [selectedCompanyLocation, setSelectedCompanyLocation] = useState('');
+  const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState(0);
+
+  
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
 
@@ -153,6 +162,7 @@ const Cart = () => {
     };
 
     fetchInitialSelectedCompany();
+    getLocations();
   }, []);
 
   const companyId = selectedCompany
@@ -489,6 +499,61 @@ const Cart = () => {
   const handleCommentsChange = text => {
     setComments(text);
   };
+  const getLocations = () => {
+
+    if (comp_flag === 0) {
+      const apiUrl0 = `${global?.userData?.productURL}${API.GET_LOCATION_C0_LIST}`;
+      setIsLoading(true);
+      const requestData = {
+        styleName: ""
+      }
+      console.log('GET_LOCATION_C0_LIST', apiUrl0);
+      axios
+        .post(apiUrl0, requestData, {
+          headers: {
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          },
+        })
+        .then(response => {
+          setLocationCompanyList(response?.data?.locationList || []);
+          setFilteredCompanyLocationList(response?.data?.locationList || []);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          setIsLoading(false);
+        });
+
+    } else if (comp_flag === 1) {
+      const apiUrl1 = `${global?.userData?.productURL}${API.GET_LOCATION_C1_LIST}${companyId}`;
+      setIsLoading(true);
+      console.log('GET_LOCATION_C1_LIST', apiUrl1);
+      axios
+        .get(apiUrl1, {
+          headers: {
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          },
+        })
+        .then(response => {
+          const locationList = response?.data?.response?.locationList || [];
+
+          const filteredLocationList = locationList?.filter(c =>
+            c.customerType === 2 && c.customerId === companyId
+          );
+
+          setLocationCompanyList(filteredLocationList);
+          setFilteredCompanyLocationList(filteredLocationList);
+          setIsLoading(false);
+
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          setIsLoading(false); // Set loading to false in case of error
+        });
+
+    }
+
+  }
 
   useEffect(() => {
     if (clicked) {
@@ -726,6 +791,10 @@ const Cart = () => {
       Alert.alert('Alert', 'Please select a Shipping to location.');
       return;
     }
+    if (!selectedCompanyLocationId) {
+      Alert.alert('Alert', 'Please select a Company Location.');
+      return;
+    }
     if (cartItems.length === 0) {
       Alert.alert('Alert', 'No items selected. Please add items to the cart.');
       return;
@@ -860,6 +929,7 @@ const Cart = () => {
       gTranspExp: 0,
       gOtherExp: 0,
       companyId: companyId,
+      companyLocId:selectedCompanyLocationId,
       linkType: 3
     };
     console.log('requestData', requestData);
@@ -1242,6 +1312,19 @@ const Cart = () => {
     console.log('User Roleeeeee:', userRole);
   }, []); // Run only once when component mounts
 
+
+  const handleSelectLocation = (item) => {
+    setSelectedCompanyLocation(item.locationName);
+    setSelectedCompanyLocationId(item.locationId);
+    console.log("Company Location details, ", item.locationName, item.locationId)
+    setShowCompanyLocationList(false);
+  }
+
+  const filterLocation = text => {
+    const filtered = locationCompanyList.filter((item) => item?.locationName?.toUpperCase().includes(text?.toUpperCase()));
+    setFilteredCompanyLocationList(filtered);
+  }
+
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   return (
     <KeyboardAvoidingView
@@ -1435,6 +1518,7 @@ const Cart = () => {
             {/* )} */}
           </View>
         </View>
+
         <View style={{ flexDirection: 'row' }}>
           <View style={{ flex: 1 }}>
             <TouchableOpacity
@@ -1584,6 +1668,96 @@ const Cart = () => {
             </TouchableOpacity>
           </View>
         </View>
+
+
+        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+            <TouchableOpacity
+              style={{
+                width: '82%',
+                height: 50,
+                borderRadius: 10,
+                borderWidth: 0.5,
+                alignSelf: 'center',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingLeft: 15,
+                paddingRight: 15,
+                marginHorizontal: 20,
+                backgroundColor: editCompanyLocation ? '#fff' : '#f1e8e6',
+              }}
+              onPress={()=>setShowCompanyLocationList(!showCompanyLocationList)}>
+              <Text style={{ fontWeight: '600', color: "#000" }}>
+                {selectedCompanyLocationId ? selectedCompanyLocation : "Company Location*"}
+              </Text>
+
+              <Image
+                source={require('../../../assets/dropdown.png')}
+                style={{ width: 20, height: 20 }}
+              />
+            </TouchableOpacity>
+          </View>
+          {showCompanyLocationList && editCompanyLocation && (
+            <View
+              style={{
+                elevation: 5,
+                height: 300,
+                alignSelf: 'center',
+                width: '90%',
+                backgroundColor: '#fff',
+                borderRadius: 10,
+              }}>
+              <TextInput
+                style={{
+                  marginTop: 10,
+                  borderRadius: 10,
+                  height: 40,
+                  borderColor: 'gray',
+                  borderWidth: 1,
+                  marginHorizontal: 10,
+                  paddingLeft: 10,
+                  marginBottom: 10,
+                  color: '#000000',
+                }}
+                placeholderTextColor="#000"
+                placeholder="Search"
+                onChangeText={filterLocation}
+              />
+
+              {filteredCompanyLocationList.length === 0 && !isLoading ? (
+                <Text style={style.noCategoriesText}>
+                  Sorry, no results found!
+                </Text>
+              ) : (
+                <ScrollView nestedScrollEnabled={true}>
+                  {filteredCompanyLocationList?.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        width: '100%',
+                        height: 50,
+                        justifyContent: 'center',
+                        borderBottomWidth: 0.5,
+                        borderColor: '#8e8e8e',
+                      }}
+                      onPress={() => handleSelectLocation(item)
+                      }>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          marginHorizontal: 15,
+                          color: '#000',
+                        }}>
+                        {item?.locationName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+          )}
+          <View  style={{marginBottom:10}}/>
+
         <ScrollView style={style.container}>
           {/* <View style={style.header}>
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
