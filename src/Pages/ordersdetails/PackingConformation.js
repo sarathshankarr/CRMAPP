@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -221,8 +222,8 @@ const PackingConformation = ({route}) => {
 
     const checkboxColor = getCheckboxColor(item.statusFlag);
 
-   const grosss = item.qty * (item.unitPrice - item.discountPercentageThird);
-    
+    const grosss = item.qty * (item.unitPrice - item.discountPercentageThird);
+
     return (
       <View style={styles.orderItem}>
         <View
@@ -232,33 +233,36 @@ const PackingConformation = ({route}) => {
             marginLeft: 8,
           }}>
           <CustomCheckBoxStatus
-            isChecked={!!selectedItems[item.orderLineitemId]}
+            isChecked={
+              !!selectedItems[item.orderLineitemId] || checkboxColor === 'green'
+            } // Check if either condition is true
             onToggle={() =>
-              handleCheckboxToggle(item.orderLineitemId, item.statusFlag)
+              handleCheckboxToggle(item.orderLineitemId, item?.statusFlag)
             }
             disabled={item.statusFlag !== 0} // Disable if statusFlag is not 0
             borderColor={checkboxColor} // Pass the color to change the border color
           />
-          <Text style={styles.orderstylenametxt}>{item.styleName}</Text>
-          <Text style={styles.orderqtytxt}>Qty: {item.qty}</Text>
-          <Text style={styles.ordertotaltxt}>Total: {item.gross}</Text>
+
+          <Text style={styles.orderstylenametxt}>{item?.styleName}</Text>
+          <Text style={styles.orderqtytxt}>Qty: {item?.qty}</Text>
+          <Text style={styles.ordertotaltxt}>Total: {item?.gross}</Text>
         </View>
         <View style={{marginVertical: 8}}>
-          <Text style={styles.sizetxt}>Size : {item.size}</Text>
+          <Text style={styles.sizetxt}>Size : {item?.size}</Text>
         </View>
         <View>
-          <Text style={styles.sizetxt}>Price : {item.unitPrice}</Text>
+          <Text style={styles.sizetxt}>Price : {item?.unitPrice}</Text>
         </View>
         <View style={{flexDirection: 'row', marginTop: 3}}>
-          <Text style={styles.sizedistxt}>Disc Amnt : {item.discAmnt}</Text>
+          <Text style={styles.sizedistxt}>Disc Amnt : {item?.discAmnt}</Text>
           <Text style={styles.Fixedtxt}>
             Fixed Disc : {item.discountPercentage}
           </Text>
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <Text style={styles.sizegrosstxt}>Gross : {grosss} </Text>
-          <Text style={styles.sizegsttxt}>GST : {item.gst}</Text>
-          <Text style={styles.sizegstAmnttxt}>GST AMT : {item.gstAmnt}</Text>
+          <Text style={styles.sizegsttxt}>GST : {item?.gst}</Text>
+          <Text style={styles.sizegstAmnttxt}>GST AMT : {item?.gstAmnt}</Text>
         </View>
       </View>
     );
@@ -300,7 +304,9 @@ const PackingConformation = ({route}) => {
       </View>
 
       {loading ? (
-        <Text style={{color: '#000'}}>Loading...</Text>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
       ) : (
         <View>
           {order?.orderLineItems?.map(item => (
@@ -308,14 +314,16 @@ const PackingConformation = ({route}) => {
               {renderOrderLineItem({item})}
             </View>
           ))}
-          <View style={{marginHorizontal: 15, alignItems: 'flex-end'}}>
+          <View
+            style={{
+              marginHorizontal: 15,
+              alignItems: 'flex-end',
+              marginBottom: 15,
+            }}>
             <OrderDetailRow label="Total Qty" value={order?.totalQty} />
             <OrderDetailRow label="Total Gst" value={order?.totalGst} />
             <OrderDetailRow label="IGST" value={order?.igst} />
-            <OrderDetailRow
-              label="Total Disc 1"
-              value={order?.totalDiscount}
-            />
+            <OrderDetailRow label="Total Disc 1" value={order?.totalDiscount} />
             <OrderDetailRow
               label="Total Disc 2"
               value={order?.totalDiscountSec}
@@ -330,7 +338,7 @@ const PackingConformation = ({route}) => {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  marginTop: 30,
+                  marginTop: 20,
                 }}>
                 <Text style={{color: '#000', marginLeft: 10, marginRight: 50}}>
                   Remarks:
@@ -469,11 +477,11 @@ const styles = StyleSheet.create({
   orderstylenametxt: {
     color: '#000',
     flex: 1.4,
-    marginLeft: 7,
+    marginLeft: 13,
   },
   orderqtytxt: {
     color: '#000',
-    flex: 1,
+    flex: 1.1,
   },
   ordertotaltxt: {
     color: '#000',
@@ -487,23 +495,28 @@ const styles = StyleSheet.create({
   sizedistxt: {
     color: '#000',
     marginLeft: 40,
+    flex: 1,
   },
   Fixedtxt: {
     color: '#000',
-    marginLeft: 53,
+    marginLeft: 23,
+    flex: 2,
   },
   sizegsttxt: {
     color: '#000',
-    marginLeft: 40,
+    marginLeft: 27,
+    flex: 0.8,
   },
   sizegstAmnttxt: {
     color: '#000',
     marginLeft: 40,
     marginRight: 10,
+    flex: 0.8,
   },
   sizegrosstxt: {
     color: '#000',
     marginLeft: 40,
+    flex: 1,
     marginTop: 3,
     marginBottom: 5,
   },
