@@ -287,7 +287,7 @@ const PackingConformation = ({route}) => {
               fontSize: 20,
               marginVertical: 10,
             }}>
-            Orders Details
+            Order Details
           </Text>
         </View>
       </View>

@@ -321,7 +321,7 @@ const TaskDetails = ({ route }) => {
   };
 
   const handleTakeSelfie = () => {
-    const MAX_SELFIES = 10;
+    const MAX_SELFIES = 1;
 
     if (selfieImages.length >= MAX_SELFIES) {
       Alert.alert('Limit Reached', `You can only upload up to ${MAX_SELFIES} selfies.`);
@@ -392,6 +392,12 @@ const TaskDetails = ({ route }) => {
 
 
   const handleDocumentPicker = async () => {
+    const MAX_DOCUMENT = 3;
+
+    if (documents.length >= MAX_DOCUMENT) {
+      Alert.alert('Limit Reached', `You can only upload up to ${MAX_DOCUMENT} document.`);
+      return;
+    }
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.allFiles],
@@ -408,10 +414,10 @@ const TaskDetails = ({ route }) => {
   
 
   const handleImagePicker = () => {
-    const MAX_SELFIES = 10;
+    const MAX_IMAGES = 3;
 
-    if (galleryImages.length >= MAX_SELFIES) {
-      Alert.alert('Limit Reached', `You can only upload up to ${MAX_SELFIES} selfies.`);
+    if (galleryImages.length >= MAX_IMAGES) {
+      Alert.alert('Limit Reached', `You can only upload up to ${MAX_IMAGES} images.`);
       return;
     }
     ImagePicker.openPicker({
