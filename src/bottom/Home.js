@@ -263,6 +263,8 @@ function Home() {
 
 export default Home;
 
+
+
 // import React, { useState, useEffect } from 'react';
 // import {
 //   View,
@@ -287,6 +289,7 @@ export default Home;
 //   const [dropdownVisible, setDropdownVisible] = useState(false);
 //   const [selectedCompany, setSelectedCompany] = useState(null);
 //   const [companyLogo, setCompanyLogo] = useState(null);
+  
 //   const loggedInUser = useSelector(state => state.loggedInUser);
 //   const dispatch = useDispatch();
 
@@ -464,4 +467,5 @@ export default Home;
 // });
 
 // export default Home;
+
 
