@@ -39,7 +39,7 @@ const Cart = () => {
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
-  const comp_flag= selectedCompany?.comp_flag;
+  const comp_flag = selectedCompany?.comp_flag;
   const [isLoading, setIsLoading] = useState(false);
 
   const [inputValuess, setInputValuess] = useState({});
@@ -84,7 +84,7 @@ const Cart = () => {
   const [selectedCompanyLocation, setSelectedCompanyLocation] = useState('');
   const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState(0);
 
-  
+
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
 
@@ -791,10 +791,10 @@ const Cart = () => {
       Alert.alert('Alert', 'Please select a Shipping to location.');
       return;
     }
-    if (!selectedCompanyLocationId) {
-      Alert.alert('Alert', 'Please select a Company Location.');
-      return;
-    }
+    // if (!selectedCompanyLocationId) {
+    //   Alert.alert('Alert', 'Please select a Company Location.');
+    //   return;
+    // }
     if (cartItems.length === 0) {
       Alert.alert('Alert', 'No items selected. Please add items to the cart.');
       return;
@@ -804,31 +804,31 @@ const Cart = () => {
 
     setIsSubmitting(true);
 
-    console.log('loggedInUser:', loggedInUser);
-    console.log('userRole:', userRole);
+    // console.log('loggedInUser:', loggedInUser);
+    // console.log('userRole:', userRole);
 
-    if (!loggedInUser || !userRole) {
-      // Redirect to login screen or handle not logged in scenario
-      return;
-    }
+    // if (!loggedInUser || !userRole) {
+    //   // Redirect to login screen or handle not logged in scenario
+    //   return;
+    // }
 
-    console.log('userRole type:', typeof userRole);
+    // console.log('userRole type:', typeof userRole);
 
-    let roleId = ''; // Initialize roleId
+    // let roleId = ''; // Initialize roleId
 
     // Check if userRole is an array and not empty
-    if (Array.isArray(userRole) && userRole.length > 0) {
-      roleId = userRole[0].id; // Using the first id from userRole array
-      console.log('roleId from userRole:', roleId);
-    } else {
-      console.log('userRole is not an array or is empty');
-    }
+    // if (Array.isArray(userRole) && userRole.length > 0) {
+    //   roleId = userRole[0].id; // Using the first id from userRole array
+    //   console.log('roleId from userRole:', roleId);
+    // } else {
+    //   console.log('userRole is not an array or is empty');
+    // }
 
     // Extract roleId from loggedInUser if userRole is not an array or is empty
-    if (!roleId && loggedInUser.role && loggedInUser.role.length > 0) {
-      roleId = loggedInUser.role[0].id;
-      console.log('roleId from loggedInUser:', roleId);
-    }
+    // if (!roleId && loggedInUser.role && loggedInUser.role.length > 0) {
+    //   roleId = loggedInUser.role[0].id;
+    //   console.log('roleId from loggedInUser:', roleId);
+    // }
 
     const selectedCustomerObj = customers.find(customer => {
       return `${customer.firstName} ${customer.lastName}` === selectedCustomer;
@@ -929,7 +929,7 @@ const Cart = () => {
       gTranspExp: 0,
       gOtherExp: 0,
       companyId: companyId,
-      companyLocId:selectedCompanyLocationId,
+      // companyLocId: selectedCompanyLocationId,
       linkType: 3
     };
     console.log('requestData', requestData);
@@ -1670,7 +1670,7 @@ const Cart = () => {
         </View>
 
 
-        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+        {/* <View style={{ flexDirection: 'row', marginTop: 10 }}>
             <TouchableOpacity
               style={{
                 width: '82%',
@@ -1696,8 +1696,8 @@ const Cart = () => {
                 style={{ width: 20, height: 20 }}
               />
             </TouchableOpacity>
-          </View>
-          {showCompanyLocationList && editCompanyLocation && (
+          </View> */}
+        {/* {showCompanyLocationList && editCompanyLocation && (
             <View
               style={{
                 elevation: 5,
@@ -1755,8 +1755,8 @@ const Cart = () => {
                 </ScrollView>
               )}
             </View>
-          )}
-          <View  style={{marginBottom:10}}/>
+          )} */}
+        <View style={{ marginBottom: 10 }} />
 
         <ScrollView style={style.container}>
           {/* <View style={style.header}>
@@ -1994,7 +1994,7 @@ const Cart = () => {
             style={{
               borderBottomWidth: 1,
               borderBottomColor: 'gray',
-              paddingVertical: 10,
+              paddingVertical: 7,
             }}></View>
         </ScrollView>
 
@@ -2466,7 +2466,7 @@ const style = StyleSheet.create({
   },
   bottomContainer: {
     alignItems: 'flex-start',
-    paddingVertical: 10,
+    paddingVertical: 3,
     backgroundColor: '#faf7f6',
     alignSelf: 'center',
   },

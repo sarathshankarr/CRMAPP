@@ -1,5 +1,5 @@
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -13,15 +13,18 @@ import {
   View,
   Alert
 } from 'react-native';
-import {RadioButton} from 'react-native-radio-buttons-group';
-import {API} from '../../config/apiConfig';
+import { RadioButton } from 'react-native-radio-buttons-group';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ImagePicker from 'react-native-image-crop-picker';
+import DocumentPicker from 'react-native-document-picker';
 
-const TaskDetails = ({route}) => {
-  const {locationName, state, status, dueDateStr, label, id, desc,task} =
+
+const TaskDetails = ({ route }) => {
+  const { locationName, state, status, dueDateStr, label, id, desc, task } =
     route.params;
   const navigation = useNavigation();
   const [selectedRadioButtonId, setSelectedRadioButtonId] = useState(null);
@@ -40,6 +43,12 @@ const TaskDetails = ({route}) => {
   const [loading, setLoading] = useState(true);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imageToUpload, setImageToUpload] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selfieImages, setSelfieImages] = useState([]); // State for captured images
+  const [galleryImages, setGalleryImages] = useState([]); // State for picked images
+  const [documents, setDocuments] = useState([]); // State for selected documents
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -183,7 +192,7 @@ const TaskDetails = ({route}) => {
             reject(error);
           }
         },
-        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
       );
     });
   };
@@ -311,8 +320,120 @@ const TaskDetails = ({route}) => {
     setShipFromToClickedStatus(false);
   };
 
+  const handleTakeSelfie = () => {
+    const MAX_SELFIES = 10;
+
+    if (selfieImages.length >= MAX_SELFIES) {
+      Alert.alert('Limit Reached', `You can only upload up to ${MAX_SELFIES} selfies.`);
+      return;
+    }
+
+    ImagePicker.openCamera({
+      cropping: true,
+      mediaType: 'photo',
+      compressImageQuality: 0.8,
+    }).then(image => {
+      setSelfieImages(prevImages => [
+        ...prevImages,
+        {
+          uri: image.path,
+          width: image.width,
+          height: image.height,
+          mime: image.mime,
+        }
+      ]);
+    }).catch(error => {
+      console.error('Image capture error:', error);
+      Alert.alert('Error', 'Failed to capture image.');
+    });
+  };
+
+
+  const removeImage = (index, imageType) => {
+    if (imageType === 'selfie') {
+      setSelfieImages(selfieImages.filter((_, i) => i !== index));
+    } else if (imageType === 'gallery') {
+      setGalleryImages(galleryImages.filter((_, i) => i !== index));
+    } else if (imageType === 'document') {
+      setDocuments(documents.filter((_, i) => i !== index));
+    }
+  };
+  
+
+  const handleUploadImage = async () => {
+    const imagesToUpload = [...selfieImages, ...galleryImages];
+    if (!imagesToUpload.length) {
+      Alert.alert('No Image', 'Please select an image to upload.');
+      return;
+    }
+
+    const data = new FormData();
+    imagesToUpload.forEach(image => {
+      data.append('photos[]', {
+        uri: image.uri,
+        type: image.mime,
+        name: 'selfie.jpg',
+      });
+    });
+
+    try {
+      const response = await axios.post('YOUR_UPLOAD_URL', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Upload response:', response.data);
+      Alert.alert('Success', 'Image uploaded successfully.');
+    } catch (error) {
+      console.error('Upload error:', error);
+      Alert.alert('Error', 'Failed to upload image.');
+    }
+  };
+
+
+  const handleDocumentPicker = async () => {
+    try {
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.allFiles],
+      });
+      setDocuments((prevDocuments) => [...prevDocuments, ...res]);
+    } catch (error) {
+      if (DocumentPicker.isCancel(error)) {
+        console.log('User canceled the picker');
+      } else {
+        console.error('Error picking document:', error);
+      }
+    }
+  };
+  
+
+  const handleImagePicker = () => {
+    const MAX_SELFIES = 10;
+
+    if (galleryImages.length >= MAX_SELFIES) {
+      Alert.alert('Limit Reached', `You can only upload up to ${MAX_SELFIES} selfies.`);
+      return;
+    }
+    ImagePicker.openPicker({
+      multiple: true,
+      mediaType: 'photo',
+    }).then(images => {
+      setGalleryImages(prevImages => [
+        ...prevImages,
+        ...images.map(image => ({
+          uri: image.path,
+          width: image.width,
+          height: image.height,
+          mime: image.mime,
+        })),
+      ]);
+    }).catch(error => {
+      console.error('Error picking images:', error);
+    });
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
@@ -406,31 +527,96 @@ const TaskDetails = ({route}) => {
           </View>
         )}
         <Switch
-          trackColor={{false: '#767577', true: '#81b0ff'}}
+          trackColor={{ false: '#767577', true: '#81b0ff' }}
           ios_backgroundColor="#3e3e3e"
           value={isSwitchOn}
           onValueChange={handleSwitchToggle}
         />
       </View>
       <View style={styles.imgheader}>
-        <TouchableOpacity>
-          <Image
-            style={styles.uploadselimg}
-            source={require('../../../assets/uploadsel.png')}
-          />
+        <TouchableOpacity style={styles.uploadimg} onPress={handleTakeSelfie}>
+          <Image style={{ height: 80, width: 80 }} source={require('../../../assets/uploadsel.png')} />
+          <Text style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold', color: '#000' }}>
+            Upload Selfie
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+
+        <TouchableOpacity onPress={handleImagePicker}>
           <Image
             style={styles.uploadanyimg}
             source={require('../../../assets/uploadany.png')}
           />
+          <Text style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold', color: '#000' }}>
+            Upload Images
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleDocumentPicker}>
+          <Image
+            style={styles.uploadanyimg}
+            source={require('../../../assets/file.png')}
+          />
+          <Text style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold', color: '#000' }}>
+            Upload Files
+          </Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.uploadTextContainer}>
-        <Text style={styles.uploadText}>Upload Selfie</Text>
-        <Text style={styles.uploadText}>Upload Anything</Text>
-      </View>
+      {selfieImages.length > 0 && (
+        <ScrollView horizontal style={styles.imagePreviewContainer}>
+          {selfieImages.map((image, index) => (
+            <View key={index} style={styles.imageContainer}>
+              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeImage(index, 'selfie')}
+              >
+                <Text style={styles.removeButtonText}>x</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+      {galleryImages.length > 0 && (
+        <ScrollView horizontal style={styles.imagePreviewContainer}>
+          {galleryImages.map((image, index) => (
+            <View key={index} style={styles.imageContainer}>
+              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeImage(index, 'gallery')}
+              >
+                <Text style={styles.removeButtonText}>x</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+    <View style={styles.uploadSection}>
+  {documents.length > 0 && (
+    <View>
+      {documents.map((doc, index) => (
+        <View key={index} style={styles.documentItem}>
+          <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>{doc.name}</Text>
+          <TouchableOpacity
+            style={styles.removeButton1}
+            onPress={() => removeImage(index, 'document')}
+          >
+            <Text>x</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
     </View>
+  )}
+</View>
+
+      {/* <View style={styles.uploadedFilesContainer}>
+        {selectedFiles.length > 0 &&
+          selectedFiles.map((file, index) => (
+            <View key={index} style={styles.filePreview}>
+              <Text>{file.name}</Text>
+            </View>
+          ))}
+      </View> */}
+    </ScrollView>
   );
 };
 
@@ -606,6 +792,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   imgheader: {
+    alignItems:'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: 30,
@@ -615,11 +802,7 @@ const styles = StyleSheet.create({
     height: 60,
     width: 60,
   },
-  uploadanyimg: {
-    height: 50,
-    width: 50,
-    marginRight: 15,
-  },
+
   uploadTextContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -632,6 +815,86 @@ const styles = StyleSheet.create({
   textInput: {
     color: '#000',
   },
+  uploadimg: {
+    alignItems: 'center',
+  },
+  imagePreviewContainer: {
+    flexDirection: 'row',
+    marginVertical:5
+  },
+  imagePreview: {
+    width: 70,
+    height: 70,
+    marginHorizontal: 5,
+    borderRadius: 10,
+    backgroundColor: '#f0f0f0',
+  },
+  uploadButton: {
+    backgroundColor: '#1F74BA',
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  uploadButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  removeButton: {
+    position: 'absolute',
+    top: 0, // Position the button at the top edge of the image
+    right: 0, // Align the button to the right edge
+    backgroundColor: 'gray',
+    borderRadius: 15,
+    width: 25,
+    height: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeButton1: {
+    position: 'absolute',
+    top: 0, // Position the button at the top edge of the image
+    right: 5, // Align the button to the right edge
+    backgroundColor: 'gray',
+    borderRadius: 15,
+    width: 25,
+    height: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  uploadSection: {
+    marginTop: 16,
+    marginBottom:20,
+    marginHorizontal:10,
+    borderWidth:1,
+    paddingVertical:5,
+    borderRadius:5
+  },
+  uploadButton: {
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 4,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  uploadButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+  },
+  uploadimg: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadanyimg: {
+    width: 70,
+    height: 70,
+  },
+  documentItem:{
+    justifyContent:"center"
+  }
 });
 
 export default TaskDetails;

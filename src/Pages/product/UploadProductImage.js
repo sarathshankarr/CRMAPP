@@ -11,13 +11,13 @@ const UploadProductImage = ({ route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [saveBtn, setSaveBtn] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]); // State to hold selected images
-  const [styleId, setStyleId]=useState(0);
+  const [styleId, setStyleId] = useState(0);
 
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const companyId = selectedCompany?.id;
 
- 
+
   // useEffect(() => {
   //   if (route.params && route?.params?.productStyle) {
   //     const styleDetails = route?.params?.productStyle;
@@ -44,10 +44,10 @@ const UploadProductImage = ({ route }) => {
 
   useEffect(() => {
     const styleDetails = route?.params?.productStyle || route?.params?.styleDetails;
-  
+    console.log("sizesListReq========================>>>>", route?.params?.productStyle?.sizesListReq)
     if (styleDetails) {
       setProductStyle(styleDetails);
-  
+
       // If images exist in styleDetails, set them to selectedImages
       if (styleDetails.imageUrls && styleDetails.imageUrls.length > 0) {
         const imageArray = styleDetails.imageUrls.map((url, index) => ({
@@ -65,10 +65,10 @@ const UploadProductImage = ({ route }) => {
       setSaveBtn(true);
       console.log("route params from upload inside =======> ", styleDetails);
     }
-  
+
     getStyleList();
   }, [route]);
-  
+
 
   const getStyleList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_LIST}${companyId}`;
@@ -95,7 +95,7 @@ const UploadProductImage = ({ route }) => {
       Alert.alert('Image Limit Reached', 'You can only upload a maximum of 10 images.');
       return;
     }
-  
+
     ImagePicker.openPicker({
       multiple: true,
       maxFiles: 10 - selectedImages.length,
@@ -109,11 +109,11 @@ const UploadProductImage = ({ route }) => {
           height: image.height,
           mime: image.mime,
         }));
-  
+
         if (selectedImages.length + imageArray.length > 10) {
           Alert.alert('Image Limit Exceeded', 'You can only upload a maximum of 10 images.');
         } else {
-          setSelectedImages([...selectedImages, ...imageArray]); 
+          setSelectedImages([...selectedImages, ...imageArray]);
           console.log('Selected images: ', imageArray);
         }
       })
@@ -126,8 +126,8 @@ const UploadProductImage = ({ route }) => {
         }
       });
   };
-  
-  
+
+
 
   const removeImage = (index) => {
     const updatedImages = selectedImages.filter((_, i) => i !== index);
@@ -137,10 +137,10 @@ const UploadProductImage = ({ route }) => {
   const handleSave = () => {
 
 
-    if(styleId){
+    if (styleId) {
       console.log("EDit Page ", styleId)
       handleSaving();
-    }else{
+    } else {
       if (ValidateStyle()) {
         console.log("Validation true");
         handleSaving();
@@ -150,7 +150,7 @@ const UploadProductImage = ({ route }) => {
         return;
       }
     }
-   
+
   };
 
   const ValidateStyle = () => {
@@ -171,11 +171,11 @@ const UploadProductImage = ({ route }) => {
     }
   };
 
-  const handleSaving = () => {
+  const handleSaveNewStyle = () => {
     let formData = new FormData();
 
 
-    formData.append("styleId", productStyle.styleId ? productStyle.styleId : 0);
+    formData.append("styleId", 0);
     formData.append("styleName", productStyle.styleName);
     formData.append("styleDesc", productStyle.styleDesc);
     formData.append("colorId", productStyle.colorId);
@@ -202,7 +202,7 @@ const UploadProductImage = ({ route }) => {
     formData.append("compFlag", productStyle.compFlag);
     formData.append("companyName", productStyle.companyName);
 
-  
+
     selectedImages.forEach((image, index) => {
       formData.append('files', {
         uri: image.uri,
@@ -210,17 +210,16 @@ const UploadProductImage = ({ route }) => {
         name: `image_${index}.jpg`,
       });
     });
-  
-    
-    
+
+
+
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_STYLE}`;
-    const apiUrl1 = `${global?.userData?.productURL}${API.EDIT_NEW_STYLE}`;
-    const URL= styleId ? apiUrl1 : apiUrl0;
+    const URL = apiUrl0
     console.log("URL===> ", URL);
-    
+
     setIsLoading(true);
     console.log("formdata before saving  in Upload page ===========> ", formData);
-  
+
     axios
       .post(URL, formData, {
         headers: {
@@ -238,24 +237,126 @@ const UploadProductImage = ({ route }) => {
         setIsLoading(false);
       });
   };
-  
+
+
+  const handleEditStyle = () => {
+    let formData = new FormData();
+
+    // Append fields to FormData
+    formData.append("styleId", productStyle.styleId.toString());
+    formData.append("styleName", productStyle.styleName);
+    formData.append("styleDesc", productStyle.styleDesc);
+    formData.append("colorId", productStyle.colorId.toString());
+    formData.append("price", productStyle.price.toString());
+    formData.append("typeId", productStyle.typeId.toString());
+    formData.append("sizeGroupId", productStyle.sizeGroupId.toString());
+    formData.append("scaleId", productStyle.scaleId.toString());
+
+    // Change sizeList to sizesListReq
+    formData.append("sizesListReq", productStyle.sizesListReq);
+
+    formData.append("styleQuality", productStyle.styleQuality || '');
+    formData.append("fabricQuality", productStyle.fabricQuality || '');
+    // formData.append("gst", productStyle.gst.toString() || '');
+    formData.append("gsm", productStyle.gsm || '');
+    formData.append("customerLevel", productStyle.customerLevel.toString());
+    formData.append("publishType", productStyle.publishType || '');
+    formData.append("customerLevelPrice", productStyle.customerLevelPrice.toString() || '0');
+    formData.append("discount", (productStyle.discount || 0).toString());
+    formData.append("retailerPrice", productStyle.retailerPrice.toString());
+    formData.append("mrp", productStyle.mrp.toString());
+    formData.append("hsn", productStyle.hsn || '');
+    formData.append("categoryId", productStyle.categoryId.toString());
+    formData.append("locationId", productStyle.locationId.toString());
+    formData.append("fixDisc", (productStyle.fixDisc || 0).toString());
+    formData.append("companyId", productStyle.companyId.toString());
+    formData.append("cedgeStyleId", (productStyle.cedgeStyleId || 0).toString());
+    formData.append("cedgeColorId", (productStyle.cedgeColorId || 0).toString());
+    formData.append("cedgeTypeId", (productStyle.cedgeTypeId || 0).toString());
+    formData.append("cedgeSizeGroupId", (productStyle.cedgeSizeGroupId || 0).toString());
+    formData.append("cedgeScaleId", (productStyle.cedgeScaleId || 0).toString());
+    formData.append("pub_to_jakya", (productStyle.pub_to_jakya || 0).toString());
+    formData.append("styleNum", (productStyle.styleNum || 0).toString());
+    formData.append("closureId", (productStyle.closureId || 0).toString());
+    formData.append("peakId", (productStyle.peakId || 0).toString());
+    formData.append("logoId", (productStyle.logoId || 0).toString());
+    formData.append("decId", (productStyle.decId || 0).toString());
+    formData.append("trimId", (productStyle.trimId || 0).toString());
+    formData.append("processId", (productStyle.processId || 0).toString());
+    // formData.append("imgUrls", JSON.stringify(productStyle.imageUrls) || '[]');
+
+    formData.append("imgUrls",productStyle.imageUrls)
+    // Append image files
+    // selectedImages.forEach((image, index) => {
+    //   if (image.uri && image.mime) {
+    //     formData.append('files', {
+    //       uri: image.uri,
+    //       type: image.mime,
+    //       name: `image_${index}.jpg`,
+    //     });
+    //   }
+    // });
+
+    // Log FormData contents in a readable format
+    // const formDataObject = {};
+    // formData.forEach((value, key) => {
+    //   if (Array.isArray(value)) {
+    //     formDataObject[key] = value.map(item => (typeof item === 'object' ? JSON.stringify(item) : item));
+    //   } else {
+    //     formDataObject[key] = value;
+    //   }
+    // });
+    // console.log("FormData Object===> ", formDataObject);
+
+    // URL for API
+    const apiUrl = 'https://crm.codeverse.co/erpportal/api/style/editstyle';
+    console.log("URL===> ", apiUrl);
+    console.log("formData====================>", formData)
+    setIsLoading(true);
+    axios
+      .put(apiUrl, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        Alert.alert('Style edited successfully');
+        console.log("Response===> ", response);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error:', error.response ? error.response.data : error.message);
+        setIsLoading(false);
+      });
+  };
+
+
+
+
+
+
+
+
+
+
 
   return (
     <View>
-     
+
       <TouchableOpacity style={styles.uploadimg} onPress={selectImages}>
-        <Image style={{height:80,width:80}} source={require('../../../assets/uploadsel.png')} />
+        <Image style={{ height: 80, width: 80 }} source={require('../../../assets/uploadsel.png')} />
 
         <Text
-        style={{textAlign:'center', marginVertical:20, fontWeight:'bold'}}
-      >
-        Upload Product Image
-      </Text>
+          style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold' }}
+        >
+          Upload Product Image
+        </Text>
       </TouchableOpacity>
 
-      <View style={{ marginVertical: 10,flexWrap:"wrap",flexDirection:"row",justifyContent:"space-evenly" }}>
+      <View style={{ marginVertical: 10, flexWrap: "wrap", flexDirection: "row", justifyContent: "space-evenly" }}>
         {selectedImages.map((image, index) => (
-          <View key={index} style={{ position: 'relative',paddingVertical:10 }}>
+          <View key={index} style={{ position: 'relative', paddingVertical: 10 }}>
 
             <Image
               source={{ uri: image.uri }}
@@ -282,10 +383,11 @@ const UploadProductImage = ({ route }) => {
           marginHorizontal: 20
         }}
         disabled={!saveBtn}
-        onPress={handleSave}
+        onPress={styleId ? handleEditStyle : handleSaveNewStyle} // Call the appropriate function based on styleId
       >
-        <Text style={styles.saveButtonText}>Save</Text>
+        <Text style={styles.saveButtonText}>{styleId ? 'Update' : 'Save'}</Text>
       </TouchableOpacity>
+
     </View>
   );
 };
@@ -314,9 +416,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-  uploadimg:{
-    justifyContent:"center",
-    alignItems:"center",
-    marginTop:20,
+  uploadimg: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
   }
 });
