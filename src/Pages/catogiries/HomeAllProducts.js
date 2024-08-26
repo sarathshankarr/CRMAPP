@@ -171,7 +171,7 @@ const HomeAllProducts = ({navigation}) => {
         categoryId: '',
         companyId: companyId,
       };
-
+      console.log("REquest daTA ===> ", requestData)
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -237,7 +237,7 @@ const HomeAllProducts = ({navigation}) => {
 
   useEffect(() => {
     if (pageNo > 1) {
-      getAllProducts();
+      getAllProducts(companyId);
     }
   }, [pageNo]);
 

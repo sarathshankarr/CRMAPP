@@ -32,6 +32,9 @@ import NewStyleDetail from '../Pages/product/NewStyleDetail';
 import UploadProductImage from '../Pages/product/UploadProductImage';
 import TaskDetails from '../Pages/loc/TaskDetails';
 import NewCategoryUi from '../Pages/newCategoriesUi/NewCategoryUi';
+import Packorders from '../Pages/ordersdetails/Packorders';
+import PackingConformation from '../Pages/ordersdetails/PackingConformation';
+import CustomCheckBoxStatus from '../components/CustomCheckBoxStatus';
 
 const Stack = createNativeStackNavigator();
 
@@ -239,6 +242,21 @@ const Routes = () => {
        <Stack.Screen
         name="TaskDetails"
         component={TaskDetails}
+        options={{headerShown: false}}
+      />
+       <Stack.Screen
+        name="Packorders"
+        component={Packorders}
+        options={{headerShown: false}}
+      />
+          <Stack.Screen
+        name="PackingConformation"
+        component={PackingConformation}
+        options={{headerShown: false}}
+      />
+           <Stack.Screen
+        name="CustomCheckBoxStatus"
+        component={CustomCheckBoxStatus}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

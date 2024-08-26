@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -11,19 +11,19 @@ import {
   Keyboard,
   ScrollView,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {useDispatch} from 'react-redux';
-import {encode as base64Encode} from 'base-64';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { encode as base64Encode } from 'base-64';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {isValidString} from '../../Helper/Helper';
+import { isValidString } from '../../Helper/Helper';
 import {
   API,
   CUSTOMER_URL,
   USER_ID,
   USER_PASSWORD,
 } from '../../config/apiConfig';
-import {setLoggedInUser, setUserRole} from '../../redux/actions/Actions';
+import { setLoggedInUser, setUserRole } from '../../redux/actions/Actions';
 import CustomCheckBox from '../../components/CheckBox';
 
 const Login = () => {
@@ -132,6 +132,30 @@ const Login = () => {
     }
   };
 
+  const LoginAudit = () => {
+    const globalUserData = global?.userData;
+
+    // Extract userId and companyId from global user data
+    const userId = globalUserData?.token?.userId;
+    const companyId = globalUserData?.token?.companyId;
+
+    const apiUrl = `${global?.userData?.productURL}${API.LOGINAUDIT}/${userId}/${companyId}/${0}/${2}`;
+    console.log('Constructed API URL:', apiUrl);
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        console.log('Logged in user:', response.data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+
+  };
+
   const handleEmptyInputs = () => {
     setErrorMsg([]);
 
@@ -165,7 +189,7 @@ const Login = () => {
       );
       return;
     }
-  
+
     if (!password) {
       Alert.alert(
         'crm.codeverse.co.says',
@@ -194,12 +218,15 @@ const Login = () => {
         },
       );
       if (isValidString(response.data)) {
-        let data = {token: response.data, productURL: productURL};
+        let data = { token: response.data, productURL: productURL };
         await saveToken(data);
         await getUsers(response.data, productURL);
+
+        LoginAudit(data);
+
         navigation.reset({
           index: 0,
-          routes: [{name: 'Main'}],
+          routes: [{ name: 'Main' }],
         });
       } else {
         console.log('Response:', JSON.stringify(response.data));
@@ -227,7 +254,7 @@ const Login = () => {
       if (isChecked) {
         const existingCredentials =
           JSON.parse(await AsyncStorage.getItem('credentials')) || [];
-        const newCredential = {username, password, code};
+        const newCredential = { username, password, code };
         const updatedCredentials = [...existingCredentials, newCredential];
         await AsyncStorage.setItem(
           'credentials',
@@ -249,11 +276,11 @@ const Login = () => {
     console.log('apurl', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
-        headers: {Authorization: `Bearer ${userData.access_token}`},
+        headers: { Authorization: `Bearer ${userData.access_token}` },
       });
       const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
       if (loggedInUser) {
-        // console.log('Logged in user:', loggedInUser);
+        console.log('Logged in user:', loggedInUser);
         dispatch(setLoggedInUser(loggedInUser));
         dispatch(setUserRole(loggedInUser.role));
         await saveUserDataToStorage(loggedInUser);
@@ -303,7 +330,7 @@ const Login = () => {
     }
   };
 
-  const saveRoleToStorage = async ({roleName, roleId}) => {
+  const saveRoleToStorage = async ({ roleName, roleId }) => {
     try {
       await AsyncStorage.setItem('userRole', roleName);
       await AsyncStorage.setItem('userRoleId', roleId.toString());
@@ -323,7 +350,7 @@ const Login = () => {
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image
-          style={{height: 103, width: 103, marginTop: 30}}
+          style={{ height: 103, width: 103, marginTop: 30 }}
           source={require('../../../assets/loginbg.png')}
         />
       </View>
@@ -380,7 +407,7 @@ const Login = () => {
                 key={index}
                 onPress={() => handleSuggestionClick(suggestion)}
                 style={styles.suggestionItem}>
-                <Text style={{color:"#000"}}>{suggestion.username}</Text>
+                <Text style={{ color: "#000" }}>{suggestion.username}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -409,10 +436,10 @@ const Login = () => {
         {errorMsg?.includes('no_Password') && (
           <Text style={styles.errorText}>Password is required</Text>
         )}
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {/* <CheckBox onClick={handleCheckBoxToggle} isChecked={isChecked} /> */}
           <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
-          <Text style={{padding: 5,color:'#000',color:"#000"}}>Remember Me</Text>
+          <Text style={{ padding: 5, color: '#000', color: "#000" }}>Remember Me</Text>
         </View>
         <View style={styles.rowContainer}>
           {/* <TouchableOpacity onPress={handleForgotPassword}>
@@ -454,11 +481,11 @@ const Login = () => {
           </View>
         </View> */}
       </View>
-      <View style={{justifyContent: 'flex-end', flex: 1, marginVertical: 10}}>
+      <View style={{ justifyContent: 'flex-end', flex: 1, marginVertical: 10 }}>
         {/* <TouchableOpacity onPress={goingToSignUp}>
                 <Text style={{textAlign:'center'}}>Don’t have an account? Sign Up</Text>
         </TouchableOpacity> */}
-        <Text style={{textAlign: 'center',color:"#000"}}>
+        <Text style={{ textAlign: 'center', color: "#000" }}>
           All rights with Codeverse Technologies
         </Text>
       </View>
@@ -560,7 +587,7 @@ const styles = StyleSheet.create({
     marginBottom: 13,
   },
   suggestionsContainer: {
-    top:20,
+    top: 20,
     position: 'absolute',
     left: 20,
     right: 20,

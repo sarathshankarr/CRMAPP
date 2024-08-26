@@ -69,7 +69,7 @@ console.log("styleDetails",styleDetails)
             fontWeight: 'bold',
             color: "#000",
           }}>
-            {styleDetails?.styleDesc ? styleDetails?.styleDesc : "New Style"}
+            {styleDetails?.styleName ? styleDetails?.styleName : "New Style"}
           </Text>
         </View>
       </View>

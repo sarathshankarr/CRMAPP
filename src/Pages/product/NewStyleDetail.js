@@ -12,7 +12,7 @@ const NewStyleDetail = ({ route }) => {
 
   const navigation = useNavigation();
   const selectedCompany = useSelector(state => state.selectedCompany);
-  const userId=useSelector(state=>state?.loggedInUser?.userId);
+  const userId = useSelector(state => state?.loggedInUser?.userId);
 
   // const userData=useSelector(state=>state.loggedInUser);
   // const userId=userData?.userId;
@@ -105,7 +105,7 @@ const NewStyleDetail = ({ route }) => {
 
   const [selectedSizes, setSelectedSizes] = useState([]);
 
-  const [styleId, setStyleId]=useState(0);
+  const [styleId, setStyleId] = useState(0);
 
 
 
@@ -261,6 +261,8 @@ const NewStyleDetail = ({ route }) => {
   }, [])
 
 
+
+
   // useEffect(() => {
   //   console.log(selectedCategory?.length, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevel?.length, selectedColorIds?.length, selectedType?.length, selectedSeasonGroup?.length, selectedProcessWorkflow?.length, selectedLocation?.length, selectedScale?.length)
   //   if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
@@ -271,7 +273,7 @@ const NewStyleDetail = ({ route }) => {
   useEffect(() => {
     console.log(selectedCategoryId, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevelId, selectedColorIds?.length, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId)
     // if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
-    if (selectedCategoryId  && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevelId+1 && selectedColorIds.length > 0 && selectedTypeId && selectedSeasonGroupId && (cedge_flag === 0 || selectedProcessWorkflowId) && selectedLocationId && selectedScaleId) {
+    if (selectedCategoryId && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevelId + 1 && selectedColorIds.length > 0 && selectedTypeId && selectedSeasonGroupId && (cedge_flag === 0 || selectedProcessWorkflowId) && selectedLocationId && selectedScaleId) {
       setNextButton(true);
     }
   }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedCustomerLevelId, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
@@ -673,11 +675,24 @@ const NewStyleDetail = ({ route }) => {
     }
   };
 
+  // const handleSelectallSizesInScales = (item) => {
+  //   setSelectedModalSizeInSeasonListIds([...selectedModalSizeInSeasonListIds, item.id])
+  //   // console.log("season selected ", selectedModalSeasonGroupId, selectedModalSeasonGroup)
+  //   // console.log("sizes",selectedModalSizeInSeasonListIds.length, item.size );
+  // }
+
   const handleSelectallSizesInScales = (item) => {
-    setSelectedModalSizeInSeasonListIds([...selectedModalSizeInSeasonListIds, item.id])
-    // console.log("season selected ", selectedModalSeasonGroupId, selectedModalSeasonGroup)
-    // console.log("sizes",selectedModalSizeInSeasonListIds.length, item.size );
-  }
+    if (selectedModalSizeInSeasonListIds.includes(item.id)) {
+      setSelectedModalSizeInSeasonListIds(
+        selectedModalSizeInSeasonListIds.filter(id => id !== item.id)
+      );
+    } else {
+      setSelectedModalSizeInSeasonListIds([
+        ...selectedModalSizeInSeasonListIds,
+        item.id
+      ]);
+    }
+  };
 
 
   const filterColors = text => {
@@ -881,7 +896,7 @@ const NewStyleDetail = ({ route }) => {
         // Alert.alert(`Category Created Successfully ${response?.data?.category}`);
         // console.log("Response==> ", response.data);
         // setSelectedCategory(response?.data?.category)
-        console.log("response.data=======>",response.data)
+        console.log("response.data=======>", response.data)
         setSelectedCategoryId(response?.data?.categoryId)
         getCategoriesList();
         setIsLoading(false);
@@ -917,11 +932,11 @@ const NewStyleDetail = ({ route }) => {
       colorDesc: mColorDesc,
       colorCode: mColorCode,
       companyId: companyId,
-      linkType:2,
-      userId:userId,
+      linkType: 2,
+      userId: userId,
     }
 
-    console.log('ADD_COLOR======>', apiUrl0,requestData);
+    console.log('ADD_COLOR======>', apiUrl0, requestData);
     axios
       .post(apiUrl0, requestData, {
         headers: {
@@ -962,8 +977,8 @@ const NewStyleDetail = ({ route }) => {
       typeName: mTypeName,
       typeDesc: mTypeDesc,
       companyId: companyId,
-      linkType:2,
-      userId:userId,
+      linkType: 2,
+      userId: userId,
     }
 
     console.log('ADD_TYPE', apiUrl0);
@@ -1006,8 +1021,8 @@ const NewStyleDetail = ({ route }) => {
       sizeGroup: mSeasonGroupName,
       sizeGroupDesc: mSeasonGroupDesc,
       companyId: companyId,
-      linkType:2,
-      userId:userId,
+      linkType: 2,
+      userId: userId,
     }
 
     console.log('ADD_SEASON_GROUP', apiUrl0);
@@ -1054,8 +1069,8 @@ const NewStyleDetail = ({ route }) => {
       size: mSize,
       sizeDesc: mSize,
       companyId: companyId,
-      linkType:2,
-      userId:userId,
+      linkType: 2,
+      userId: userId,
     }
 
     console.log('ADD_SCALE', apiUrl0);
@@ -1066,8 +1081,9 @@ const NewStyleDetail = ({ route }) => {
         },
       })
       .then(response => {
-        Alert.alert(`Size Created Successfully : ${response?.data?.response?.sizeList[0]?.size}`);
-        setSelectedScale(response?.data?.response?.sizeList[0]?.size)
+        setTimeout(() => {
+          Alert.alert('Size Created Successfully'); // This will effectively close the alert
+        }, 5000); setSelectedScale(response?.data?.response?.sizeList[0]?.size)
         setSelectedScaleId(response?.data?.response?.sizeList[0]?.scaleId)
         setIsLoading(false);
         getAllSizesInScale();
@@ -1281,6 +1297,7 @@ const NewStyleDetail = ({ route }) => {
       myItemsStringify: JSON.stringify(colorsArray),
       imageUrls: imageUrls
     };
+    console.log("styleDetails====================>", styleDetails)
     navigation.navigate('Product Images', { productStyle: styleDetails });
   }
 
@@ -1310,7 +1327,10 @@ const NewStyleDetail = ({ route }) => {
       })
       .then(response => {
         // Alert.alert(`Sizes Created Successfully`);
-         getScales();
+        getScales();
+        setSelectedScaleId(0)
+        setSelectedScale('')
+        setShowScaleTable(false)
         // console.log("Response after creating ===> ", response?.data?.response?.scaleAddRequest[0]?.scaleId);
         // setSelectedScaleId(response?.data?.response?.scaleAddRequest[0]?.scaleId);
         // const item={
@@ -1329,7 +1349,7 @@ const NewStyleDetail = ({ route }) => {
         Alert.alert('Error', error.response ? error.response.data.message : 'An unknown error occurred');
         setIsLoading(false);
       });
-      toggleScalesModal(false);
+    toggleScalesModal(false);
   };
 
 
@@ -1451,7 +1471,7 @@ const NewStyleDetail = ({ route }) => {
           <Text style={{ marginHorizontal: 20, marginVertical: 3, color: "#000" }}>{"Style Name *"}</Text>
           <View style={style.inputContainer}>
             <TextInput
-              style={[style.txtinput,{backgroundColor:editColor?'#fff':'#f1e8e6'} ]}
+              style={[style.txtinput, { backgroundColor: editColor ? '#fff' : '#f1e8e6' }]}
               placeholder="Style name"
               placeholderTextColor="#000"
               value={styleName}
@@ -1778,7 +1798,7 @@ const NewStyleDetail = ({ route }) => {
               <View
               >
                 <TouchableOpacity onPress={handleSelectAll} style={{ flexDirection: 'row', alignItems: 'center', margin: 10 }}>
-                  <CustomCheckBox isChecked={isSelectAll} />
+                  <CustomCheckBox isChecked={isSelectAll} onToggle={handleSelectAll} />
                   <Text style={{ color: '#000', marginLeft: 10 }}>Select All</Text>
                 </TouchableOpacity>
               </View>
@@ -1813,23 +1833,27 @@ const NewStyleDetail = ({ route }) => {
                         borderBottomWidth: 0.5,
                         borderColor: '#8e8e8e',
                       }}
-                      onPress={() => handleSelectColor(item)}>
+                      onPress={() => handleSelectColor(item)}
+                    >
                       <View
                         style={{
                           flexDirection: 'row',
                           alignItems: 'center',
                           marginHorizontal: 10,
-                        }}>
+                        }}
+                      >
                         <CustomCheckBox
-                          isChecked={selectedColorIds?.includes(item?.colorId)}
+                          isChecked={selectedColorIds.includes(item.colorId)}
+                          onToggle={() => handleSelectColor(item)}
                         />
                         <Text
                           style={{
                             fontWeight: '600',
                             color: '#000',
                             marginLeft: 10,
-                          }}>
-                          {item?.colorName}
+                          }}
+                        >
+                          {item.colorName}
                         </Text>
                       </View>
                     </TouchableOpacity>
@@ -1899,7 +1923,7 @@ const NewStyleDetail = ({ route }) => {
                 onChangeText={filterTypes}
               />
 
-              {filteredTypesList.length === 0 || (filteredTypesList?.length === 1 && !filteredTypesList[0] ) && !isLoading ? (
+              {filteredTypesList.length === 0 || (filteredTypesList?.length === 1 && !filteredTypesList[0]) && !isLoading ? (
                 <Text style={style.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -1992,7 +2016,7 @@ const NewStyleDetail = ({ route }) => {
                 onChangeText={filterSeasonGroups}
               />
 
-              {filteredSeasonGroupsList.length === 0 || (filteredSeasonGroupsList?.length === 1 && !filteredSeasonGroupsList[0] ) && !isLoading ? (
+              {filteredSeasonGroupsList.length === 0 || (filteredSeasonGroupsList?.length === 1 && !filteredSeasonGroupsList[0]) && !isLoading ? (
                 <Text style={style.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -2646,7 +2670,7 @@ const NewStyleDetail = ({ route }) => {
                         onChangeText={filterModalSeasonGroups}
                       />
 
-                      {filteredModalSeasonGroupsList.length === 0|| (filteredModalSeasonGroupsList?.length === 1 && !filteredModalSeasonGroupsList[0] ) && !isLoading ? (
+                      {filteredModalSeasonGroupsList.length === 0 || (filteredModalSeasonGroupsList?.length === 1 && !filteredModalSeasonGroupsList[0]) && !isLoading ? (
                         <Text style={style.noCategoriesText}>
                           Sorry, no results found!
                         </Text>
@@ -2682,44 +2706,45 @@ const NewStyleDetail = ({ route }) => {
                   <Text style={{ fontWeight: 'bold', marginTop: 10 }}>{"Sizes :"}</Text>
 
                   <View style={{ height: 180, width: '90%', marginTop: 10 }}>
-                    
-                  {allSizesInScales.length === 0 || (allSizesInScales?.length === 1 && !allSizesInScales[0] )&& !isLoading ? (
-                        <Text style={style.noCategoriesText}>
-                          Sorry, no results found!
-                        </Text>
-                      ) : (
 
-                    <ScrollView nestedScrollEnabled={true}>
-                      {allSizesInScales?.map((item, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          style={{
-                            width: '100%',
-                            height: 50,
-                            // justifyContent: 'center',
-                            borderBottomWidth: 0.5,
-                            borderColor: '#8e8e8e',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            marginHorizontal: 10,
-                          }}
-                          onPress={() => handleSelectallSizesInScales(item)
-                          }>
-                          <CustomCheckBox
-                            isChecked={selectedModalSizeInSeasonListIds?.includes(item?.id)}
-                          />
-                          <Text
+                    {allSizesInScales.length === 0 || (allSizesInScales?.length === 1 && !allSizesInScales[0]) && !isLoading ? (
+                      <Text style={style.noCategoriesText}>
+                        Sorry, no results found!
+                      </Text>
+                    ) : (
+
+                      <ScrollView nestedScrollEnabled={true}>
+                        {allSizesInScales?.map((item, index) => (
+                          <TouchableOpacity
+                            key={index}
                             style={{
-                              fontWeight: '600',
-                              marginHorizontal: 15,
-                              color: '#000',
-                            }}>
-                            {item?.size}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                      )}
+                              width: '100%',
+                              height: 50,
+                              borderBottomWidth: 0.5,
+                              borderColor: '#8e8e8e',
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              marginHorizontal: 10,
+                            }}
+                            onPress={() => handleSelectallSizesInScales(item)}
+                          >
+                            <CustomCheckBox
+                              isChecked={selectedModalSizeInSeasonListIds.includes(item.id)}
+                              onToggle={() => handleSelectallSizesInScales(item)}
+                            />
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                marginHorizontal: 15,
+                                color: '#000',
+                              }}
+                            >
+                              {item.size}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )}
                   </View>
                   <TouchableOpacity
                     style={style.saveButton}

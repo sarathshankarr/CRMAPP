@@ -109,12 +109,16 @@ const Order = () => {
     }
   };
 
+  // const handleOrderPress = item => {
+  //   if (item.packedStts === 'YET TO PACK') {
+  //     setSelectedOrder(item);
+  //   } else {
+  //     navigation.navigate('PackingOrders', {orderId: item.orderNum});
+  //   }
+  // };
+
   const handleOrderPress = item => {
-    if (item.packedStts === 'YET TO PACK') {
-      setSelectedOrder(item);
-    } else {
-      navigation.navigate('PackingOrders', {orderId: item.orderNum});
-    }
+      navigation.navigate('PackingConformation', {orderId: item.orderId});
   };
 
   const toggleSearchInput = () => {
@@ -264,21 +268,21 @@ const Order = () => {
         <Text style={style.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
         <FlatList
-        data={filteredOrders}
-        renderItem={renderItem}
-        keyExtractor={(item, index) =>
-          item && item.orderId ? item.orderId.toString() : index.toString()
-        }
-        onEndReached={loadMoreOrders}
-        onEndReachedThreshold={0.1}
-        refreshing={refreshingOrders}
-        onRefresh={() => {
-          setRefreshingOrders(true);
-          setPageNo(1);
-          setRefreshingOrders(false);
-        }}
-        contentContainerStyle={{ paddingBottom: 70 }} // Add padding to ensure space at the bottom
-      />      
+          data={filteredOrders}
+          renderItem={renderItem}
+          keyExtractor={(item, index) =>
+            item && item.orderId ? item.orderId.toString() : index.toString()
+          }
+          onEndReached={loadMoreOrders}
+          onEndReachedThreshold={0.1}
+          refreshing={refreshingOrders}
+          onRefresh={() => {
+            setRefreshingOrders(true);
+            setPageNo(1);
+            setRefreshingOrders(false);
+          }}
+          contentContainerStyle={{paddingBottom: 70}} // Add padding to ensure space at the bottom
+        />
       )}
       {selectedOrder && (
         <Modal visible={true} transparent={true} animationType="fade">

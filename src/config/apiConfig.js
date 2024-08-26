@@ -66,7 +66,14 @@ export const API = {
 
   ADD_NEW_STYLE:'erpportal/api/style/addstyle',
   EDIT_NEW_STYLE:'erpportal/api/style/editstyle',
+  LOGINAUDIT:'erpportal/api/master/addLoginoutAudit',
+  GET_ALL_STATUS:'erpportal/api/ordermgmt/getAllStatus',
+  UPDATE_DIS_ORDERl:'erpportal/api/ordermgmt/updateDisOrder'
 };
 
 export const USER_ID = 'adminClientId';
 export const USER_PASSWORD = 'erpPortalAdmin';
+
+
+
+
