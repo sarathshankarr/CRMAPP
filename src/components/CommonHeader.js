@@ -1,7 +1,11 @@
-import React from 'react';
-import {View, TouchableOpacity, Image, Text, StyleSheet} from 'react-native';
-import {useSelector} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
+import React, { useRef, useState } from 'react';
+import { View, TouchableOpacity, Image, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import NotificationModal from './NotificationModal';
+
+const { width } = Dimensions.get('window');
+
 
 const CommonHeader = ({
   title,
@@ -12,12 +16,48 @@ const CommonHeader = ({
 }) => {
   const navigation = useNavigation();
   const cartItems = useSelector(state => state.cartItems);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const slideAnim = useRef(new Animated.Value(width)).current;
+
+  const toggleModal = () => {
+    if (!isModalVisible) {
+      setModalVisible(true);
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: width,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setModalVisible(false));
+    }
+  };
 
   const goToCart = () => {
     navigation.navigate('Cart');
   };
 
+  const notifications = [
+    { id: 1, icon: '🔔', message: 'Notification 1' },
+    { id: 2, icon: '🔔', message: 'Notification 2' },
+    { id: 3, icon: '🔔', message: 'Notification 3' },
+    { id: 4, icon: '🔔', message: 'Notification 4' },
+    { id: 5, icon: '🔔', message: 'Notification 5' },
+    { id: 6, icon: '🔔', message: 'Notification 6' },
+  ];
+
   const cartItemCount = cartItems.length;
+
+  const truncateTitle = (title, wordLimit = 3) => {
+    const words = title.trim().replace(/\s+/g, ' ').split(' ');
+    if (words.length > wordLimit) {
+      return words.slice(0, wordLimit).join(' ') + '...';
+    }
+    return title.trim();
+  };
 
   return (
     <View style={styles.header}>
@@ -38,7 +78,7 @@ const CommonHeader = ({
           />
         </TouchableOpacity>
       )}
-      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title}>{truncateTitle(title)}</Text>
       <View style={styles.rightContainer}>
         {showLocationIcon && (
           <TouchableOpacity style={styles.iconWrapper}>
@@ -50,10 +90,11 @@ const CommonHeader = ({
           </TouchableOpacity>
         )}
         {showMessageIcon && (
-          <TouchableOpacity style={styles.iconWrapper}>
+          // <TouchableOpacity style={styles.iconWrapper} onPress={toggleModal}>
+          <TouchableOpacity style={styles.iconWrapper} onPress={() => navigation.navigate('Notifications')}>
             <Image
               style={styles.msgimg}
-              source={require('../../assets/chat.png')}
+              source={require('../../assets/bell.png')}
             />
           </TouchableOpacity>
         )}
@@ -72,6 +113,13 @@ const CommonHeader = ({
           </TouchableOpacity>
         )}
       </View>
+
+      <NotificationModal
+        isModalVisible={isModalVisible}
+        toggleModal={toggleModal}
+        slideAnim={slideAnim}
+        notifications={notifications}
+      />
     </View>
   );
 };
@@ -85,12 +133,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: 'white',
-    elevation:5,
+    elevation: 5,
   },
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'left',
-    justifyContent:'space-between',
+    justifyContent: 'space-between',
   },
   iconWrapper: {
     marginHorizontal: 5,
@@ -102,7 +150,7 @@ const styles = StyleSheet.create({
   msgimg: {
     height: 20,
     width: 20,
-    
+
   },
   cartContainer: {
     flexDirection: 'row',
@@ -115,7 +163,7 @@ const styles = StyleSheet.create({
   },
   cartItemCount: {
     position: 'absolute',
-    bottom:15 ,
+    bottom: 15,
     left: 15,
     backgroundColor: '#E12948',
     color: 'white',
@@ -131,8 +179,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color:"#000"
-    
+    color: "#000"
+
   },
 });
 

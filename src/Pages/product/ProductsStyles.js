@@ -21,7 +21,7 @@ import CustomCheckBox from '../../components/CheckBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSelector} from 'react-redux';
 
-const ProductsStyles = () => {
+const ProductsStyles = ({route}) => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchQueryStylesData, setSearchQueryStylesData] = useState('');
@@ -89,7 +89,17 @@ const ProductsStyles = () => {
     };
 
     fetchInitialSelectedCompany();
+    
   }, []);
+
+  useEffect(()=>{
+    if(route?.params && route?.params?.reload==="true" ){
+      if(companyId){
+        getAllProducts(companyId)
+      }
+    }
+  }, [route?.params])
+  
 
   const companyId = selectedCompany
     ? selectedCompany.id

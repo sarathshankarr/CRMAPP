@@ -271,12 +271,12 @@ const NewStyleDetail = ({ route }) => {
   // }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedCustomerLevelId, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
 
   useEffect(() => {
-    console.log(selectedCategoryId, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevelId, selectedColorIds?.length, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId)
+    console.log(selectedCategoryId, styleName?.length, styleDesc?.length, dealerPrice, selectedColorIds?.length, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId)
     // if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
-    if (selectedCategoryId && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevelId + 1 && selectedColorIds.length > 0 && selectedTypeId && selectedSeasonGroupId && (cedge_flag === 0 || selectedProcessWorkflowId) && selectedLocationId && selectedScaleId) {
+    if (selectedCategoryId && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0  && selectedColorIds.length > 0 && selectedTypeId && selectedSeasonGroupId && (cedge_flag === 0 || selectedProcessWorkflowId) && selectedLocationId && selectedScaleId) {
       setNextButton(true);
     }
-  }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedCustomerLevelId, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
+  }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
 
 
   useEffect(() => {
@@ -1554,7 +1554,7 @@ const NewStyleDetail = ({ route }) => {
               onChangeText={(text) => setfixedDiscount(text)}
             />
           </View>
-          <Text style={style.headerTxt}>{"Customer Level *"}</Text>
+          <Text style={style.headerTxt}>{"Customer Level "}</Text>
 
           <View style={{ flexDirection: 'row', marginTop: 13 }}>
             <TouchableOpacity

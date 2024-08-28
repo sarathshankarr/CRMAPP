@@ -4,6 +4,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { API } from '../../config/apiConfig';
+import { useNavigation } from '@react-navigation/native';
 
 const UploadProductImage = ({ route }) => {
   const [productStyle, setProductStyle] = useState({});
@@ -13,9 +14,12 @@ const UploadProductImage = ({ route }) => {
   const [selectedImages, setSelectedImages] = useState([]); // State to hold selected images
   const [styleId, setStyleId] = useState(0);
 
+  const navigation = useNavigation();
+
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const companyId = selectedCompany?.id;
+
 
 
   // useEffect(() => {
@@ -136,19 +140,13 @@ const UploadProductImage = ({ route }) => {
 
   const handleSave = () => {
 
-
-    if (styleId) {
-      console.log("EDit Page ", styleId)
-      handleSaving();
+    if (ValidateStyle()) {
+      console.log("Validation true");
+      handleSaveNewStyle();
     } else {
-      if (ValidateStyle()) {
-        console.log("Validation true");
-        handleSaving();
-      } else {
-        console.log("Validation false");
-        Alert.alert("Already exist!");
-        return;
-      }
+      console.log("Validation false");
+      Alert.alert("Already exist!");
+      return;
     }
 
   };
@@ -229,6 +227,7 @@ const UploadProductImage = ({ route }) => {
       })
       .then(response => {
         Alert.alert('New style created successfully');
+        navigation.navigate('ProductsStyles', {reload:"true"});
         console.log("Response===> ", response);
         setIsLoading(false);
       })
@@ -237,6 +236,7 @@ const UploadProductImage = ({ route }) => {
         setIsLoading(false);
       });
   };
+
 
 
   const handleEditStyle = () => {
@@ -285,7 +285,7 @@ const UploadProductImage = ({ route }) => {
     formData.append("processId", (productStyle.processId || 0).toString());
     // formData.append("imgUrls", JSON.stringify(productStyle.imageUrls) || '[]');
 
-    formData.append("imgUrls",productStyle.imageUrls)
+    formData.append("imgUrls", productStyle.imageUrls)
     // Append image files
     // selectedImages.forEach((image, index) => {
     //   if (image.uri && image.mime) {
@@ -322,6 +322,7 @@ const UploadProductImage = ({ route }) => {
       })
       .then(response => {
         Alert.alert('Style edited successfully');
+        navigation.navigate('ProductsStyles', {reload:"true"});
         console.log("Response===> ", response);
         setIsLoading(false);
       })
@@ -330,16 +331,6 @@ const UploadProductImage = ({ route }) => {
         setIsLoading(false);
       });
   };
-
-
-
-
-
-
-
-
-
-
 
   return (
     <View>
@@ -383,7 +374,7 @@ const UploadProductImage = ({ route }) => {
           marginHorizontal: 20
         }}
         disabled={!saveBtn}
-        onPress={styleId ? handleEditStyle : handleSaveNewStyle} // Call the appropriate function based on styleId
+        onPress={styleId ? handleEditStyle : handleSave}
       >
         <Text style={styles.saveButtonText}>{styleId ? 'Update' : 'Save'}</Text>
       </TouchableOpacity>

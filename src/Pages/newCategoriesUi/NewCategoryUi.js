@@ -5,8 +5,12 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API } from '../../config/apiConfig';
 import { RefreshControl } from 'react-native';
+import ModalComponent from '../../components/ModelComponent';
+import { useNavigation } from '@react-navigation/native';
+// import NotificationModal from '../../components/NotificationModal';
 
 const NewCategoryUi = () => {
+  const navigation = useNavigation();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [selectedDetails, setSelectedDetails] = useState([]);
@@ -23,6 +27,8 @@ const NewCategoryUi = () => {
   const [totalItems, setTotalItems] = useState(0); // New state for total items
   const [isFetching, setIsFetching] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
 
   const selectedCompany = useSelector(state => state.selectedCompany);
@@ -52,9 +58,14 @@ const NewCategoryUi = () => {
 
   useEffect(() => {
     if (pageNo > 1) {
-      getAllProducts(companyId).finally(() => setIsFetching(false));
+      if (selectedCategory === "All Products") {
+        getAllProducts(companyId).finally(() => setIsFetching(false));
+      } else {
+        getSelectedCategoryAllProducts(activeCategoryId, companyId).finally(() => setIsFetching(false));
+
+      }
     }
-        console.log("pageNo===> ",pageNo,  totalPages)
+    console.log("pageNo===> ", pageNo, totalPages);
   }, [pageNo]);
 
   const fetchCategories = (companyId) => {
@@ -81,6 +92,7 @@ const NewCategoryUi = () => {
 
   const handleCategory = (category) => {
     setIsLoading(true);
+    setPageNo(1);
     setProductsList([]);
     setSelectedCategory(category.category);
     setActiveCategoryId(category.categoryId);
@@ -109,12 +121,12 @@ const NewCategoryUi = () => {
       const userDetails = JSON.parse(userData);
 
       const requestData = {
-        pageNo: "1",
-        pageSize: "20",
+        pageNo: String(pageNo),
+        pageSize: "10",
         categoryId: categoryId,
         companyId: companyId,
       };
-
+      console.log("Request Data  , Categories List ===> ", requestData);
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -125,7 +137,8 @@ const NewCategoryUi = () => {
       const data = response.data.content;
       setProductsList(data);
       setTotalItems(response.data.totalItems);
-
+      setTotalPages(response.data.totalPages);
+      console.log("reposne in category list ===> ", response.data)
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -149,7 +162,7 @@ const NewCategoryUi = () => {
         categoryId: '',
         companyId: companyId,
       };
-      console.log("Request Data  ===> ", requestData);
+      console.log("Request Data  , all products ===> ", requestData);
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -173,9 +186,14 @@ const NewCategoryUi = () => {
     }
   };
 
+  const openModal = item => {
+    setSelectedItem(item);
+    setModalVisible(true);
+  };
+
   const renderProductItem = ({ item, index }) => (
     <>
-      <View style={styles.productCard}>
+      <TouchableOpacity style={styles.productCard} onPress={() => navigation.navigate('Details', { item })}>
         {/* Product Image */}
         <Image
           style={styles.productImage}
@@ -188,41 +206,37 @@ const NewCategoryUi = () => {
           <View style={styles.priceContainer}>
             <Text style={styles.productPrice}>₹{item.mrp}</Text>
           </View>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={() => openModal(item)}>
             <Text style={styles.addButtonText}>ADD</Text>
           </TouchableOpacity>
         </View>
-      </View>
-      {/* {index === productsList.length - 1 && (
+      </TouchableOpacity>
+      {index === productsList.length - 1 && (
         <View style={{ marginBottom: 100 }} />
-      )} */}
+      )}
     </>
   );
 
 
   const handleEndReached = () => {
     if (pageNo < totalPages && !isFetching) {
-      setIsFetching(true);  //n
+      setIsFetching(true);
       setPageNo(prevPageNo => prevPageNo + 1);
     }
   };
 
 
-
   const onRefresh = async () => {
+    setPageNo(1);
     setRefreshing(true);
-    setPageNo(1); // Reset the page number to 1
-    await getAllProducts(companyId); // Refetch the first page of data
+    setProductsList([]);
+    if (selectedCategory === 'All Products') {
+      await getAllProducts(companyId);
+    } else {
+      await getSelectedCategoryAllProducts(activeCategoryId, companyId);
+    }
     setRefreshing(false);
   };
-
-  // useEffect(() => {
-  //   if (pageNo > 1) {
-  //     getAllProducts(companyId);
-  //   }
-  // }, [pageNo]);
-
-
 
 
 
@@ -358,7 +372,7 @@ const NewCategoryUi = () => {
                       ? searchQueryProducts
                       : totalItems
                         ? totalItems + ' Products Listed'
-                        : ''
+                        : "Search"
                   }
                   placeholderTextColor="#000"
                 />
@@ -389,44 +403,66 @@ const NewCategoryUi = () => {
             <View style={styles.noProductsContainer}>
               <Text style={styles.noProductsText}>There are no products available.</Text>
             </View>) :
+            // <FlatList
+            //   ref={flatListRef}
+            //   data={productsList}
+            //   renderItem={renderProductItem}
+            //   keyExtractor={(item, index) => `item.toString()+${index}`}
+            //   contentContainerStyle={styles.flatListContainer}
+            //   removeClippedSubviews={true}
+            //   initialNumToRender={10}
+            //   maxToRenderPerBatch={10}
+            //   updateCellsBatchingPeriod={100}
+            //   windowSize={7}
+            //   onEndReached={handleEndReached}
+            //   onEndReachedThreshold={0.5}
+            //   // onScroll={handleScroll}
+            //   // scrollEventThrottle={16}
+            //   // getItemLayout={(data, index) => ({
+            //   //   length: 350,
+            //   //   offset: 350 * index,
+            //   //   index,
+            //   // })}
+            //   // onContentSizeChange={() => {
+            //   //   if (scrollPosition !== 0) {
+            //   //     flatListRef.current.scrollToOffset({
+            //   //       offset: scrollPosition,
+            //   //       animated: false,
+            //   //     });
+            //   //   }
+            //   // }}
+            //   refreshControl={
+            //     <RefreshControl
+            //       refreshing={refreshing}
+            //       onRefresh={onRefresh}
+            //       colors={['#000', '#689F38']}
+            //     />
+            //   }
+            // />
+
             <FlatList
-              ref={flatListRef}
               data={productsList}
               renderItem={renderProductItem}
-              keyExtractor={(item, index) => index.toString()}
+              keyExtractor={(item, index) => `item.toString()+${index}`}
               contentContainerStyle={styles.flatListContainer}
-              removeClippedSubviews={true}
-              initialNumToRender={10}
-              maxToRenderPerBatch={10}
-              updateCellsBatchingPeriod={100}
-              windowSize={7}
-              onEndReached={handleEndReached}
-              onEndReachedThreshold={0.1}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              getItemLayout={(data, index) => ({
-                length: 350,
-                offset: 350 * index,
-                index,
-              })}
-              onContentSizeChange={() => {
-                if (scrollPosition !== 0) {
-                  flatListRef.current.scrollToOffset({
-                    offset: scrollPosition,
-                    animated: false,
-                  });
-                }
-              }}
+
               refreshControl={
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={onRefresh}
                   colors={['#000', '#689F38']}
-                />
-              }
+                />}
+              onEndReached={handleEndReached}
+              onEndReachedThreshold={0.1}
             />}
         </View>
       </View>
+
+      <ModalComponent
+        modalVisible={modalVisible}
+        closeModal={() => setModalVisible(false)}
+        selectedItem={selectedItem}
+      />
     </View>
   );
 };

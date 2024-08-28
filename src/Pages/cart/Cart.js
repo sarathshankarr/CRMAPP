@@ -888,8 +888,10 @@ const Cart = () => {
         sizeDesc: item.sizeDesc,
         gsCode: '8907536002462',
         availQty: item.quantity.toString(),
-        price: item.price.toString(),
-        gross: (parseFloat(item.price) * parseInt(item.quantity)).toString(),
+        // price: item.price.toString(),
+        // gross: (parseFloat(item.price) * parseInt(item.quantity)).toString(),
+        price: isEnabled ?item?.retailerPrice.toString():item?.dealerPrice.toString(),
+        gross: (parseFloat(isEnabled ? item?.retailerPrice.toString():item?.dealerPrice.toString()) * parseInt(item.quantity)).toString(),
         discountPercentage: '0',
         discountAmount: '0',
         gst: 5,
@@ -933,6 +935,7 @@ const Cart = () => {
       linkType: 3
     };
     console.log('requestData', requestData);
+    return;
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
         headers: {
@@ -1046,7 +1049,12 @@ const Cart = () => {
     const parsedPrice = parseFloat(text);
 
     if (!isNaN(parsedPrice) || text === '') {
-      updatedItems[index].price = text === '' ? '' : text;
+
+      if (isEnabled) {
+        updatedItems[index].retailerPrice = text === '' ? '' : text;
+      } else {
+        updatedItems[index].dealerPrice = text === '' ? '' : text;
+      }
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
@@ -1138,7 +1146,7 @@ const Cart = () => {
     let totalPrice = 0;
     for (let item of cartItems) {
       if (item.styleId === styleId && item.colorId === colorId) {
-        totalPrice += item.price * item.quantity;
+        totalPrice += (isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString()) * item.quantity;
       }
     }
     return totalPrice;
@@ -1151,7 +1159,7 @@ const Cart = () => {
   const totalPrice = cartItems
     .reduce((total, item) => {
       // Parse price and quantity to floats and integers respectively
-      const parsedPrice = parseFloat(item.price);
+      const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString());
       const parsedQuantity = parseInt(item.quantity);
 
       // Check if parsedPrice and parsedQuantity are valid numbers
@@ -1768,7 +1776,7 @@ const Cart = () => {
             </Text>
           ) : (
             <View>
-              {console.log('cartItems.length===>', cartItems.length)}
+              {console.log('cartItems.length===>', cartItems)}
               {cartItems.map((item, index) => (
                 <View
                   key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
@@ -1791,7 +1799,17 @@ const Cart = () => {
                                 }}
                               />
                             )}
+
                             <View style={{ flex: 1 }}>
+                              <Text
+                                style={{
+                                  fontSize: 15,
+                                  fontWeight: 'bold',
+                                  marginLeft: 5,
+                                  color: '#000',
+                                }}>
+                                {item.styleName}
+                              </Text>
                               <Text
                                 style={{
                                   fontSize: 15,
@@ -1889,7 +1907,8 @@ const Cart = () => {
                       <View style={{ flex: 0.3, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
                         <TextInput
                           style={{ color: '#000', alignSelf: "center" }}
-                          value={item.price.toString()}
+                          value={isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString()}
+                          // value={item.price}
                           onChangeText={text => handlePriceChange(index, text)}
                           keyboardType="numeric"
                         />
@@ -1897,7 +1916,7 @@ const Cart = () => {
                       <View style={{ flex: 0.3, marginLeft: 30 }}>
                         <Text style={{ color: '#000' }}>
                           {(
-                            Number(item.price) * Number(item.quantity)
+                            Number(isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString()) * Number(item.quantity)
                           ).toString()}
                         </Text>
                       </View>
@@ -2232,11 +2251,19 @@ const Cart = () => {
             </View>
           </Modal>
 
+          {/* <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={handleDateConfirm}
+            onCancel={hideDatePicker}
+          /> */}
           <DateTimePickerModal
             isVisible={isDatePickerVisible}
             mode="date"
             onConfirm={handleDateConfirm}
             onCancel={hideDatePicker}
+            date={new Date()}  // Default parameter for `date`
+            onHide={() => { }}
           />
           <View>
             <Modal
@@ -2270,153 +2297,153 @@ const Cart = () => {
                       />
                     </TouchableOpacity>
                   </View>
+                  <ScrollView style={{ width: '100%', height: '65%' }}>
+                    <TextInput
+                      style={[
+                        style.input,
+                        { color: '#000' },
+                        locationErrorFields.includes('locationName')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholder="Location Name *"
+                      placeholderTextColor="#000"
+                      onChangeText={text =>
+                        setLocationInputValues({
+                          ...locationInputValues,
+                          locationName: text,
+                        })
+                      }
+                      value={locationInputValues.locationName}
+                    />
+                    {locationErrorFields.includes('locationName') && (
+                      <Text style={style.errorText}>
+                        Please Enter Location Name
+                      </Text>
+                    )}
 
-
-                  <TextInput
-                    style={[
-                      style.input,
-                      { color: '#000' },
-                      locationErrorFields.includes('locationName')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholder="Location Name *"
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setLocationInputValues({
-                        ...locationInputValues,
-                        locationName: text,
-                      })
-                    }
-                    value={locationInputValues.locationName}
-                  />
-                  {locationErrorFields.includes('locationName') && (
-                    <Text style={style.errorText}>
-                      Please Enter Location Name
-                    </Text>
-                  )}
-
-                  <TextInput
-                    style={[
-                      style.input,
-                      { color: '#000' },
-                      errorFields.includes('state') ? style.errorBorder : null,
-                      locationErrorFields.includes('phoneNumber')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholder="Phone Number *"
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setLocationInputValues({
-                        ...locationInputValues,
-                        phoneNumber: text,
-                      })
-                    }
-                  />
-                  {locationErrorFields.includes('phoneNumber') && (
-                    <Text style={style.errorText}>
-                      Please Enter Phone Number
-                    </Text>
-                  )}
-                  <TextInput
-                    style={[style.input, { color: '#000' }]}
-                    placeholder="Locality"
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setLocationInputValues({
-                        ...locationInputValues,
-                        locality: text,
-                      })
-                    }
-                  />
-                  <TextInput
-                    style={[
-                      style.input,
-                      { color: '#000' },
-                      locationErrorFields.includes('cityOrTown')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholder="City or Town *"
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setLocationInputValues({
-                        ...locationInputValues,
-                        cityOrTown: text,
-                      })
-                    }
-                  />
-                  {locationErrorFields.includes('cityOrTown') && (
-                    <Text style={style.errorText}>
-                      Please Enter City Or Town
-                    </Text>
-                  )}
-                  <TextInput
-                    style={[
-                      style.input,
-                      { color: '#000' },
-                      locationErrorFields.includes('state')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="State *"
-                    onChangeText={text =>
-                      setLocationInputValues({
-                        ...locationInputValues,
-                        state: text,
-                      })
-                    }
-                  />
-                  {locationErrorFields.includes('state') && (
-                    <Text style={style.errorText}>Please Enter State</Text>
-                  )}
-                  <TextInput
-                    style={[
-                      style.input,
-                      { color: '#000' },
-                      locationErrorFields.includes('pincode')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="Pincode *"
-                    onChangeText={text =>
-                      setLocationInputValues({
-                        ...locationInputValues,
-                        pincode: text,
-                      })
-                    }
-                  />
-                  {locationErrorFields.includes('pincode') && (
-                    <Text style={style.errorText}>Please Enter Pincode</Text>
-                  )}
-                  <TextInput
-                    style={[
-                      style.input,
-                      { color: '#000' },
-                      locationErrorFields.includes('country')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="Country *"
-                    onChangeText={text =>
-                      setLocationInputValues({
-                        ...locationInputValues,
-                        country: text,
-                      })
-                    }
-                  />
-                  {locationErrorFields.includes('country') && (
-                    <Text style={style.errorText}>Please Enter Country</Text>
-                  )}
-                  <TouchableOpacity
-                    onPress={handleSaveLocationButtonPress}
-                    style={style.saveButton}>
-                    <Text style={style.saveButtonText}>Save</Text>
-                  </TouchableOpacity>
+                    <TextInput
+                      style={[
+                        style.input,
+                        { color: '#000' },
+                        errorFields.includes('state') ? style.errorBorder : null,
+                        locationErrorFields.includes('phoneNumber')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholder="Phone Number *"
+                      placeholderTextColor="#000"
+                      onChangeText={text =>
+                        setLocationInputValues({
+                          ...locationInputValues,
+                          phoneNumber: text,
+                        })
+                      }
+                    />
+                    {locationErrorFields.includes('phoneNumber') && (
+                      <Text style={style.errorText}>
+                        Please Enter Phone Number
+                      </Text>
+                    )}
+                    <TextInput
+                      style={[style.input, { color: '#000' }]}
+                      placeholder="Locality"
+                      placeholderTextColor="#000"
+                      onChangeText={text =>
+                        setLocationInputValues({
+                          ...locationInputValues,
+                          locality: text,
+                        })
+                      }
+                    />
+                    <TextInput
+                      style={[
+                        style.input,
+                        { color: '#000' },
+                        locationErrorFields.includes('cityOrTown')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholder="City or Town *"
+                      placeholderTextColor="#000"
+                      onChangeText={text =>
+                        setLocationInputValues({
+                          ...locationInputValues,
+                          cityOrTown: text,
+                        })
+                      }
+                    />
+                    {locationErrorFields.includes('cityOrTown') && (
+                      <Text style={style.errorText}>
+                        Please Enter City Or Town
+                      </Text>
+                    )}
+                    <TextInput
+                      style={[
+                        style.input,
+                        { color: '#000' },
+                        locationErrorFields.includes('state')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="State *"
+                      onChangeText={text =>
+                        setLocationInputValues({
+                          ...locationInputValues,
+                          state: text,
+                        })
+                      }
+                    />
+                    {locationErrorFields.includes('state') && (
+                      <Text style={style.errorText}>Please Enter State</Text>
+                    )}
+                    <TextInput
+                      style={[
+                        style.input,
+                        { color: '#000' },
+                        locationErrorFields.includes('pincode')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="Pincode *"
+                      onChangeText={text =>
+                        setLocationInputValues({
+                          ...locationInputValues,
+                          pincode: text,
+                        })
+                      }
+                    />
+                    {locationErrorFields.includes('pincode') && (
+                      <Text style={style.errorText}>Please Enter Pincode</Text>
+                    )}
+                    <TextInput
+                      style={[
+                        style.input,
+                        { color: '#000' },
+                        locationErrorFields.includes('country')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="Country *"
+                      onChangeText={text =>
+                        setLocationInputValues({
+                          ...locationInputValues,
+                          country: text,
+                        })
+                      }
+                    />
+                    {locationErrorFields.includes('country') && (
+                      <Text style={style.errorText}>Please Enter Country</Text>
+                    )}
+                    <TouchableOpacity
+                      onPress={handleSaveLocationButtonPress}
+                      style={style.saveButton}>
+                      <Text style={style.saveButtonText}>Save</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
                 </View>
               </View>
             </Modal>
