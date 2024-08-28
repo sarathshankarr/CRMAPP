@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Keyboard,
   ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
@@ -25,6 +26,7 @@ import {
 } from '../../config/apiConfig';
 import { setLoggedInUser, setUserRole } from '../../redux/actions/Actions';
 import CustomCheckBox from '../../components/CheckBox';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const Login = () => {
   const navigation = useNavigation();
@@ -347,6 +349,13 @@ const Login = () => {
   };
 
   return (
+    // <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }}>
+    <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on the platform
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Adjust this offset if necessary
+  >
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image
@@ -490,6 +499,9 @@ const Login = () => {
         </Text>
       </View>
     </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
+    // </KeyboardAwareScrollView>
   );
 };
 

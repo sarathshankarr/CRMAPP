@@ -104,6 +104,8 @@ const ModalComponent = ({
 
       style.sizeList.forEach(size => {
         const sizeDesc = size.sizeDesc;
+        const dealerPrice=size.dealerPrice;
+        const retailerPrice=size.retailerPrice;
         const inputValue = inputValues[sizeDesc] || '0';
 
         if (parseInt(inputValue, 10) > 0) {
@@ -123,6 +125,9 @@ const ModalComponent = ({
             sizeDesc: sizeDesc,
             sizeId: size.sizeId,
             quantity: inputValue,
+            dealerPrice:dealerPrice,
+            retailerPrice:retailerPrice,
+            // sizeList:style.sizeList,
           };
 
           const existingItemIndex = cartItems.findIndex(
