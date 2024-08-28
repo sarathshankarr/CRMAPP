@@ -329,7 +329,7 @@ const CustomerLocation = ({ navigation }) => {
           Location
         </Text>
       </View>
-      <View
+      {/* <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
@@ -340,7 +340,7 @@ const CustomerLocation = ({ navigation }) => {
         <Text style={styles.txt}>Visits</Text>
         <Text style={styles.txt}>Events</Text>
         <Text style={styles.txt}>Calls</Text>
-      </View>
+      </View> */}
       <View
         style={{
           paddingVertical: 10,

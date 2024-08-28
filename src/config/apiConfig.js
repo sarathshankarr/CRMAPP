@@ -68,7 +68,9 @@ export const API = {
   EDIT_NEW_STYLE:'erpportal/api/style/editstyle',
   LOGINAUDIT:'erpportal/api/master/addLoginoutAudit',
   GET_ALL_STATUS:'erpportal/api/ordermgmt/getAllStatus',
-  UPDATE_DIS_ORDERl:'erpportal/api/ordermgmt/updateDisOrder'
+  UPDATE_DIS_ORDERl:'erpportal/api/ordermgmt/updateDisOrder',
+  ADD_LOCATION_IMAGES:'erpportal/api/master/addLocation',
+  GET_Location:'erpportal/api/master/getLocation'
 };
 
 export const USER_ID = 'adminClientId';
