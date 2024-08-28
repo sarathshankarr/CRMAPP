@@ -37,6 +37,7 @@ import PackingConformation from '../Pages/ordersdetails/PackingConformation';
 import CustomCheckBoxStatus from '../components/CustomCheckBoxStatus';
 import Location from '../Pages/location/Location';
 import Files from '../Pages/loc/Files';
+import Notifications from '../Pages/notification/Notifications';
 
 const Stack = createNativeStackNavigator();
 
@@ -265,6 +266,11 @@ const Routes = () => {
         name="Files"
         component={Files}
         options={{headerShown: false}}
+      />
+       <Stack.Screen
+        name="Notifications"
+        component={Notifications}
+        options={{ headerShown: true }}
       />
     </Stack.Navigator>
   );
