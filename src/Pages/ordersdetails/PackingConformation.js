@@ -269,7 +269,7 @@ const PackingConformation = ({route}) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={{flexDirection: 'row', backgroundColor: '#f0f0f0'}}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
@@ -291,6 +291,7 @@ const PackingConformation = ({route}) => {
           </Text>
         </View>
       </View>
+      <ScrollView >
       <View style={styles.orderhead}>
         <Text style={styles.orderidtxt}>Order : {order?.orderNum}</Text>
         <Text style={styles.ordercusttxt}>{order?.customerName}</Text>
@@ -431,6 +432,7 @@ const PackingConformation = ({route}) => {
         </View>
       )}
     </ScrollView>
+    </View>
   );
 };
 

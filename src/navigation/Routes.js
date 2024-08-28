@@ -35,6 +35,8 @@ import NewCategoryUi from '../Pages/newCategoriesUi/NewCategoryUi';
 import Packorders from '../Pages/ordersdetails/Packorders';
 import PackingConformation from '../Pages/ordersdetails/PackingConformation';
 import CustomCheckBoxStatus from '../components/CustomCheckBoxStatus';
+import Location from '../Pages/location/Location';
+import Files from '../Pages/loc/Files';
 
 const Stack = createNativeStackNavigator();
 
@@ -257,6 +259,11 @@ const Routes = () => {
            <Stack.Screen
         name="CustomCheckBoxStatus"
         component={CustomCheckBoxStatus}
+        options={{headerShown: false}}
+      />
+           <Stack.Screen
+        name="Files"
+        component={Files}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

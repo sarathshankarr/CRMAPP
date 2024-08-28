@@ -1,5 +1,5 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -11,20 +11,19 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert
+  Alert,
 } from 'react-native';
-import { RadioButton } from 'react-native-radio-buttons-group';
-import { API } from '../../config/apiConfig';
+import {RadioButton} from 'react-native-radio-buttons-group';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import DocumentPicker from 'react-native-document-picker';
 
-
-const TaskDetails = ({ route }) => {
-  const { locationName, state, status, dueDateStr, label, id, desc, task } =
+const TaskDetails = ({route}) => {
+  const {locationName, state, status, dueDateStr, label, id, desc, task} =
     route.params;
   const navigation = useNavigation();
   const [selectedRadioButtonId, setSelectedRadioButtonId] = useState(null);
@@ -33,6 +32,7 @@ const TaskDetails = ({ route }) => {
   const [shipFromToClickedStatus, setShipFromToClickedStatus] = useState(false);
   const [selectedStatusOption, setSelectedStatusOption] = useState('');
   const userData = useSelector(state => state.loggedInUser);
+  const userId = userData?.userId;
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -49,8 +49,14 @@ const TaskDetails = ({ route }) => {
   const [selfieImages, setSelfieImages] = useState([]); // State for captured images
   const [galleryImages, setGalleryImages] = useState([]); // State for picked images
   const [documents, setDocuments] = useState([]); // State for selected documents
+  const [remark, setRemark] = useState('');
+  const [loadingg, setLoadingg] = useState(false);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
+
+  const goToFiles = id => {
+    navigation.navigate('Files', {id}); // Pass the id as a parameter
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -192,7 +198,7 @@ const TaskDetails = ({ route }) => {
             reject(error);
           }
         },
-        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
+        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
       );
     });
   };
@@ -324,7 +330,10 @@ const TaskDetails = ({ route }) => {
     const MAX_SELFIES = 1;
 
     if (selfieImages.length >= MAX_SELFIES) {
-      Alert.alert('Limit Reached', `You can only upload up to ${MAX_SELFIES} selfies.`);
+      Alert.alert(
+        'Limit Reached',
+        `You can only upload up to ${MAX_SELFIES} selfies.`,
+      );
       return;
     }
 
@@ -332,22 +341,34 @@ const TaskDetails = ({ route }) => {
       cropping: true,
       mediaType: 'photo',
       compressImageQuality: 0.8,
-    }).then(image => {
-      setSelfieImages(prevImages => [
-        ...prevImages,
-        {
+    })
+      .then(image => {
+        const newSelfie = {
           uri: image.path,
           width: image.width,
           height: image.height,
           mime: image.mime,
-        }
-      ]);
-    }).catch(error => {
-      console.error('Image capture error:', error);
-      Alert.alert('Error', 'Failed to capture image.');
-    });
-  };
+        };
 
+        if (selfieImages.length + 1 > MAX_SELFIES) {
+          Alert.alert(
+            'Limit Exceeded',
+            `You can only upload up to ${MAX_SELFIES} selfies.`,
+          );
+          return;
+        }
+
+        setSelfieImages(prevImages => [...prevImages, newSelfie]);
+      })
+      .catch(error => {
+        if (error.code === 'E_PICKER_CANCELLED') {
+          console.log('User canceled the camera');
+        } else {
+          console.error('Image capture error:', error);
+          Alert.alert('Error', 'Failed to capture image.');
+        }
+      });
+  };
 
   const removeImage = (index, imageType) => {
     if (imageType === 'selfie') {
@@ -358,51 +379,119 @@ const TaskDetails = ({ route }) => {
       setDocuments(documents.filter((_, i) => i !== index));
     }
   };
-  
 
-  const handleUploadImage = async () => {
-    const imagesToUpload = [...selfieImages, ...galleryImages];
-    if (!imagesToUpload.length) {
-      Alert.alert('No Image', 'Please select an image to upload.');
-      return;
+  const handleSave = async () => {
+    if (loading) return; // Prevent further actions if already loading
+    setLoadingg(true); // Set loading state to true
+
+    let formData = new FormData();
+
+    formData.append('id', id || '');
+    formData.append('taskName', label || '');
+    formData.append('desc', description || '');
+    formData.append('userId', userId || '');
+    formData.append('comanyId', companyId || '');
+    formData.append('remark', remark || '');
+    formData.append('status', selectedStatusOption ||status|| '');
+
+    if (selfieImages.length > 0) {
+      formData.append('selfieImgs', {
+        uri: selfieImages[0].uri,
+        type: selfieImages[0].mime || 'image/jpeg', // Default MIME type
+        name: `selfie_${Date.now()}.jpg`,
+      });
     }
 
-    const data = new FormData();
-    imagesToUpload.forEach(image => {
-      data.append('photos[]', {
+    galleryImages.forEach((image, index) => {
+      formData.append('Imgfiles', {
         uri: image.uri,
-        type: image.mime,
-        name: 'selfie.jpg',
+        type: image.mime || 'image/jpeg', // Default MIME type
+        name: `image_${index}_${Date.now()}.jpg`,
       });
     });
 
-    try {
-      const response = await axios.post('YOUR_UPLOAD_URL', data, {
+    documents.forEach((document, index) => {
+      formData.append('PDFfiles', {
+        uri: document.uri,
+        type: document.type || 'application/pdf', // Default MIME type for PDFs
+        name:
+          document.name ||
+          `document_${index}_${Date.now()}.${document.name.split('.').pop()}`,
+      });
+    });
+    console.log('formData==================>', formData);
+
+    const apiUrl0 = `${global?.userData?.productURL}${API.ADD_LOCATION_IMAGES}`;
+    console.log('ADD_LOCATION_IMAGES', apiUrl0);
+
+    axios
+      .post(apiUrl0, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
+      })
+      .then(response => {
+        console.log('response.data=======>', response.data);
+        Alert.alert('Success', 'added successfully.', [
+          {text: 'OK', onPress: () => navigation.navigate('CustomerLocation')}, // Navigate to Location screen on OK
+        ]);
+      })
+      .catch(error => {
+        console.error(
+          'Error:',
+          error.response ? error.response.data : error.message,
+        );
+        Alert.alert('Error', 'Failed to add location.');
       });
-      console.log('Upload response:', response.data);
-      Alert.alert('Success', 'Image uploaded successfully.');
-    } catch (error) {
-      console.error('Upload error:', error);
-      Alert.alert('Error', 'Failed to upload image.');
-    }
   };
-
 
   const handleDocumentPicker = async () => {
     const MAX_DOCUMENT = 3;
 
     if (documents.length >= MAX_DOCUMENT) {
-      Alert.alert('Limit Reached', `You can only upload up to ${MAX_DOCUMENT} document.`);
+      Alert.alert(
+        'Limit Reached',
+        `You can only upload up to ${MAX_DOCUMENT} documents.`,
+      );
       return;
     }
+
     try {
       const res = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
+        type: [
+          DocumentPicker.types.pdf,
+          DocumentPicker.types.doc,
+          DocumentPicker.types.docx,
+          DocumentPicker.types.allFiles,
+        ],
       });
-      setDocuments((prevDocuments) => [...prevDocuments, ...res]);
+
+      // Handle multiple document selections if res is an array
+      if (Array.isArray(res)) {
+        const newDocuments = [...documents, ...res];
+
+        if (newDocuments.length > MAX_DOCUMENT) {
+          Alert.alert(
+            'Limit Exceeded',
+            `You can only upload up to ${MAX_DOCUMENT} documents.`,
+          );
+          return;
+        }
+
+        setDocuments(newDocuments);
+      } else {
+        // Handle single document selection
+        if (documents.length + 1 > MAX_DOCUMENT) {
+          Alert.alert(
+            'Limit Exceeded',
+            `You can only upload up to ${MAX_DOCUMENT} documents.`,
+          );
+          return;
+        }
+
+        setDocuments(prevDocuments => [...prevDocuments, res]);
+      }
     } catch (error) {
       if (DocumentPicker.isCancel(error)) {
         console.log('User canceled the picker');
@@ -411,35 +500,46 @@ const TaskDetails = ({ route }) => {
       }
     }
   };
-  
 
   const handleImagePicker = () => {
     const MAX_IMAGES = 3;
 
     if (galleryImages.length >= MAX_IMAGES) {
-      Alert.alert('Limit Reached', `You can only upload up to ${MAX_IMAGES} images.`);
+      Alert.alert(
+        'Limit Reached',
+        `You can only upload up to ${MAX_IMAGES} images.`,
+      );
       return;
     }
     ImagePicker.openPicker({
       multiple: true,
       mediaType: 'photo',
-    }).then(images => {
-      setGalleryImages(prevImages => [
-        ...prevImages,
-        ...images.map(image => ({
+    })
+      .then(images => {
+        const newImages = images.map(image => ({
           uri: image.path,
           width: image.width,
           height: image.height,
           mime: image.mime,
-        })),
-      ]);
-    }).catch(error => {
-      console.error('Error picking images:', error);
-    });
+        }));
+
+        // Check if adding these images would exceed the limit
+        if (galleryImages.length + newImages.length > MAX_IMAGES) {
+          Alert.alert(
+            'Limit Exceeded',
+            `You can only upload up to ${MAX_IMAGES} images in total.`,
+          );
+        } else {
+          setGalleryImages(prevImages => [...prevImages, ...newImages]);
+        }
+      })
+      .catch(error => {
+        console.error('Error picking images:', error);
+      });
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
@@ -449,172 +549,217 @@ const TaskDetails = ({ route }) => {
         </TouchableOpacity>
         <Text style={styles.headerText}>Location</Text>
       </View>
-      <View style={styles.navTabs}>
-        <Text style={styles.txt}>Visits</Text>
-        <Text style={styles.txt}>Events</Text>
-        <Text style={styles.txt}>Calls</Text>
-      </View>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionHeaderText}>Visits</Text>
-      </View>
-      <View style={styles.dateContainer}>
-        <Text style={styles.dateText}>{dueDateStr}</Text>
-      </View>
-      <View style={styles.taskContainer}>
-        <TouchableOpacity onPress={() => handleRadioButtonPress(id)}>
-          <RadioButton
-            selected={selectedRadioButtonId === id}
-            onPress={() => handleRadioButtonPress(id)}
-          />
-        </TouchableOpacity>
-        <View style={styles.taskDetails}>
-          <Text style={styles.dropdownItemText}>{label}</Text>
-          <Text style={styles.loctxt}>{locationName}</Text>
-          <Text style={styles.statetxt}>{state}</Text>
+      <ScrollView>
+        <View style={styles.navTabs}>
+          <Text style={styles.txt}>Visits</Text>
+          <TouchableOpacity onPress={() => goToFiles(id)}>
+            <Text style={styles.txt}>Visited Files</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => handleTaskSelect(task)}>
-          <Image
-            style={styles.locationImg}
-            source={require('../../../assets/location-pin.png')}
-          />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.taskDescription}>
-        <Text style={styles.boldText}>Task Description</Text>
-        <Text style={styles.boldText}>Due Date: {dueDateStr}</Text>
-      </View>
-      <View style={styles.textInputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Task Description"
-          placeholderTextColor="#000"
-          value={description}
-          onChangeText={text => setDescription(text)}
-        />
-      </View>
-      <View>
-        <Text style={styles.remarksText}>Remarks</Text>
-      </View>
-      <View style={styles.textInputContainerremarks}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Remarks"
-          placeholderTextColor="#000"
-        />
-      </View>
-      <View style={styles.switchContainer}>
-        <TouchableOpacity
-          onPress={handleShipDropdownClickStatus}
-          style={styles.dropdownButton}>
-          <Text style={styles.dropdownText}>
-            {selectedStatusOption || status || 'Status'}
-          </Text>
-          <Image
-            source={require('../../../assets/dropdown.png')}
-            style={styles.dropdownImage}
-          />
-        </TouchableOpacity>
-
-        {shipFromToClickedStatus && (
-          <View style={styles.dropdownContainer}>
-            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-              {statusOptions.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.dropdownOption,
-                    selectedStatusOption === option && styles.selectedOption,
-                  ]}
-                  onPress={() => handleDropdownSelectStatus(option)}>
-                  <Text style={styles.dropdownOptionText}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+        {/* <View style={styles.sectionHeader}>
+          <Text style={styles.sectionHeaderText}>Visits</Text>
+        </View> */}
+        <View style={styles.dateContainer}>
+          <Text style={styles.dateText}>{dueDateStr}</Text>
+        </View>
+        <View style={styles.taskContainer}>
+          <TouchableOpacity onPress={() => handleRadioButtonPress(id)}>
+            <RadioButton
+              selected={selectedRadioButtonId === id}
+              onPress={() => handleRadioButtonPress(id)}
+            />
+          </TouchableOpacity>
+          <View style={styles.taskDetails}>
+            <Text style={styles.dropdownItemText}>{label}</Text>
+            <Text style={styles.loctxt}>{locationName}</Text>
+            <Text style={styles.statetxt}>{state}</Text>
           </View>
-        )}
-        <Switch
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
+          <TouchableOpacity onPress={() => handleTaskSelect(task)}>
+            <Image
+              style={styles.locationImg}
+              source={require('../../../assets/location-pin.png')}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.taskDescription}>
+          <Text style={styles.boldText}>Task Description</Text>
+          <Text style={styles.boldText}>Due Date: {dueDateStr}</Text>
+        </View>
+        <View style={styles.textInputContainer}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Task Description"
+            placeholderTextColor="#000"
+            value={description}
+            onChangeText={text => setDescription(text)}
+          />
+        </View>
+        <View>
+          <Text style={styles.remarksText}>Remarks</Text>
+        </View>
+        <View style={styles.textInputContainerremarks}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Remarks"
+            placeholderTextColor="#000"
+            value={remark}
+            onChangeText={text => setRemark(text)}
+          />
+        </View>
+        <View style={styles.switchContainer}>
+          <TouchableOpacity
+            onPress={handleShipDropdownClickStatus}
+            style={styles.dropdownButton}>
+            <Text style={styles.dropdownText}>
+              {selectedStatusOption || status || 'Status'}
+            </Text>
+            <Image
+              source={require('../../../assets/dropdown.png')}
+              style={styles.dropdownImage}
+            />
+          </TouchableOpacity>
+
+          {shipFromToClickedStatus && (
+            <View style={styles.dropdownContainer}>
+              <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+                {statusOptions.map((option, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.dropdownOption,
+                      selectedStatusOption === option && styles.selectedOption,
+                    ]}
+                    onPress={() => handleDropdownSelectStatus(option)}>
+                    <Text style={styles.dropdownOptionText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+          {/* <Switch
+          trackColor={{false: '#767577', true: '#81b0ff'}}
           ios_backgroundColor="#3e3e3e"
           value={isSwitchOn}
           onValueChange={handleSwitchToggle}
-        />
-      </View>
-      <View style={styles.imgheader}>
-        <TouchableOpacity style={styles.uploadimg} onPress={handleTakeSelfie}>
-          <Image style={{ height: 80, width: 80 }} source={require('../../../assets/uploadsel.png')} />
-          <Text style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold', color: '#000' }}>
-            Upload Selfie
-          </Text>
-        </TouchableOpacity>
+        /> */}
+        </View>
+        <View style={styles.imgheader}>
+          <TouchableOpacity style={styles.uploadimg} onPress={handleTakeSelfie}>
+            <Image
+              style={{height: 80, width: 80}}
+              source={require('../../../assets/uploadsel.png')}
+            />
+            <Text
+              style={{
+                textAlign: 'center',
+                marginVertical: 20,
+                fontWeight: 'bold',
+                color: '#000',
+              }}>
+              Upload Selfie
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleImagePicker}>
-          <Image
-            style={styles.uploadanyimg}
-            source={require('../../../assets/uploadany.png')}
-          />
-          <Text style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold', color: '#000' }}>
-            Upload Images
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleDocumentPicker}>
-          <Image
-            style={styles.uploadanyimg}
-            source={require('../../../assets/file.png')}
-          />
-          <Text style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold', color: '#000' }}>
-            Upload Files
-          </Text>
-        </TouchableOpacity>
-      </View>
-      {selfieImages.length > 0 && (
-        <ScrollView horizontal style={styles.imagePreviewContainer}>
-          {selfieImages.map((image, index) => (
-            <View key={index} style={styles.imageContainer}>
-              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeImage(index, 'selfie')}
-              >
-                <Text style={styles.removeButtonText}>x</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-      {galleryImages.length > 0 && (
-        <ScrollView horizontal style={styles.imagePreviewContainer}>
-          {galleryImages.map((image, index) => (
-            <View key={index} style={styles.imageContainer}>
-              <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeImage(index, 'gallery')}
-              >
-                <Text style={styles.removeButtonText}>x</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-    <View style={styles.uploadSection}>
-  {documents.length > 0 && (
-    <View>
-      {documents.map((doc, index) => (
-        <View key={index} style={styles.documentItem}>
-          <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>{doc.name}</Text>
-          <TouchableOpacity
-            style={styles.removeButton1}
-            onPress={() => removeImage(index, 'document')}
-          >
-            <Text>x</Text>
+          <TouchableOpacity onPress={handleImagePicker}>
+            <Image
+              style={styles.uploadanyimg}
+              source={require('../../../assets/uploadany.png')}
+            />
+            <Text
+              style={{
+                textAlign: 'center',
+                marginVertical: 20,
+                fontWeight: 'bold',
+                color: '#000',
+              }}>
+              Upload Images
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDocumentPicker}>
+            <Image
+              style={styles.uploadanyimg}
+              source={require('../../../assets/file.png')}
+            />
+            <Text
+              style={{
+                textAlign: 'center',
+                marginVertical: 20,
+                fontWeight: 'bold',
+                color: '#000',
+              }}>
+              Upload Files
+            </Text>
           </TouchableOpacity>
         </View>
-      ))}
-    </View>
-  )}
-</View>
-
-      {/* <View style={styles.uploadedFilesContainer}>
+        {selfieImages.length > 0 && (
+          <ScrollView horizontal style={styles.imagePreviewContainer}>
+            {selfieImages.map((image, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image source={{uri: image.uri}} style={styles.imagePreview} />
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeImage(index, 'selfie')}>
+                  <Text style={styles.removeButtonText}>x</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+        {galleryImages.length > 0 && (
+          <ScrollView horizontal style={styles.imagePreviewContainer}>
+            {galleryImages.map((image, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image source={{uri: image.uri}} style={styles.imagePreview} />
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeImage(index, 'gallery')}>
+                  <Text style={styles.removeButtonText}>x</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+        <View style={styles.uploadSection}>
+          {documents.length > 0 && (
+            <View>
+              {documents.map((doc, index) => (
+                <View key={index} style={styles.documentItem}>
+                  <Text
+                    style={{
+                      color: '#000',
+                      fontSize: 20,
+                      fontWeight: 'bold',
+                      marginHorizontal: 10,
+                    }}>
+                    {doc.name}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.removeButton1}
+                    onPress={() => removeImage(index, 'document')}>
+                    <Text>x</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+        <TouchableOpacity
+          onPress={handleSave}
+          style={{
+            borderWidth: 1,
+            marginTop: 15,
+            marginBottom: 50,
+            marginHorizontal: 20,
+            borderRadius: 10,
+            paddingVertical: 10,
+            backgroundColor: '#F09120',
+            opacity: loadingg ? 0.6 : 1, // Adjust opacity based on loading state
+          }}
+          disabled={loadingg} // Disable button when loading
+        >
+          <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
+        </TouchableOpacity>
+        {/* <View style={styles.uploadedFilesContainer}>
         {selectedFiles.length > 0 &&
           selectedFiles.map((file, index) => (
             <View key={index} style={styles.filePreview}>
@@ -622,7 +767,8 @@ const TaskDetails = ({ route }) => {
             </View>
           ))}
       </View> */}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -798,7 +944,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   imgheader: {
-    alignItems:'center',
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: 30,
@@ -826,7 +972,7 @@ const styles = StyleSheet.create({
   },
   imagePreviewContainer: {
     flexDirection: 'row',
-    marginVertical:5
+    marginVertical: 5,
   },
   imagePreview: {
     width: 70,
@@ -873,11 +1019,8 @@ const styles = StyleSheet.create({
   },
   uploadSection: {
     marginTop: 16,
-    marginBottom:20,
-    marginHorizontal:10,
-    borderWidth:1,
-    paddingVertical:5,
-    borderRadius:5
+    marginBottom: 20,
+    marginHorizontal: 10,
   },
   uploadButton: {
     backgroundColor: '#007bff',
@@ -897,10 +1040,11 @@ const styles = StyleSheet.create({
   uploadanyimg: {
     width: 70,
     height: 70,
+    marginLeft:10
   },
-  documentItem:{
-    justifyContent:"center"
-  }
+  documentItem: {
+    justifyContent: 'center',
+  },
 });
 
 export default TaskDetails;
