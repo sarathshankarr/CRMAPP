@@ -895,7 +895,7 @@ const Cart = () => {
         discountPercentage: '0',
         discountAmount: '0',
         gst: 5,
-        total: (parseFloat(item.price) * parseInt(item.quantity)).toString(),
+        total: (parseFloat(isEnabled ? item?.retailerPrice.toString():item?.dealerPrice.toString()) * parseInt(item.quantity)).toString(),
         itemStatus: 'OPEN',
         pcqty: '0',
         pack_qty: 0,
@@ -935,7 +935,7 @@ const Cart = () => {
       linkType: 3
     };
     console.log('requestData', requestData);
-    return;
+    // return;
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
         headers: {
