@@ -9,6 +9,7 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -26,6 +27,7 @@ const PackingConformation = ({route}) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedItems, setSelectedItems] = useState({});
+  const [triggerUpdate, setTriggerUpdate] = useState(false);
   const loggedInUser = useSelector(state => state.loggedInUser);
   const [comments, setComments] = useState(''); // Add this state variable
 
@@ -89,8 +91,21 @@ const PackingConformation = ({route}) => {
         },
       });
       if (response.data.status.success) {
-        setOrder(response.data.response.ordersList[0]);
-        // setSelectedStatus(response.data.response.ordersList[0].orderStatus); // Set initial status
+        const orderData = response.data.response.ordersList[0];
+        setOrder(orderData);
+
+        // Set the initial comments value
+        setComments(orderData.appComments || '');
+
+        // Check if any product is confirmed or canceled
+        const hasConfirmedOrCanceled = orderData.orderLineItems.some(
+          item => item.statusFlag === 1 || item.statusFlag === 2,
+        );
+
+        // Set status to "Select" if any product is confirmed or canceled
+        setSelectedStatus(
+          hasConfirmedOrCanceled ? 'Select' : orderData.orderStatus,
+        );
       } else {
         console.error('Failed to fetch order:', response.data.status);
       }
@@ -116,17 +131,17 @@ const PackingConformation = ({route}) => {
     setDropdownVisible(!dropdownVisible); // Toggle dropdown visibility
   };
 
-  const filteredStatusOptions =
-    orderApproval === 1
-      ? statusOptions.filter(
-          option =>
-            option.stts === 'Open' ||
-            option.stts === 'Confirmed' ||
-            option.stts === 'Cancelled',
-        )
-      : statusOptions.filter(
-          option => option.stts === 'Open' || option.stts === 'Cancelled',
-        );
+  const filteredStatusOptions = statusOptions.filter(option => {
+    if (selectedStatus === 'Select') {
+      // Include 'Open', 'Select', 'Confirmed', and 'Cancelled' when selectedStatus is 'Select'
+      return ['Open', 'Select', 'Confirmed', 'Cancelled'].includes(option.stts);
+    }
+
+    // For other selectedStatus values, filter based on orderApproval
+    return orderApproval === 1
+      ? ['Open', 'Confirmed', 'Cancelled'].includes(option.stts)
+      : ['Open', 'Cancelled'].includes(option.stts);
+  });
 
   const handleDropdownSelectStatus = status => {
     setSelectedStatus(status.stts); // Update selected status
@@ -143,17 +158,108 @@ const PackingConformation = ({route}) => {
     </View>
   );
 
-  const handleCheckboxToggle = (itemId, statusFlag) => {
-    // Only toggle if statusFlag is 0
-    if (statusFlag === 0) {
-      setSelectedItems(prevSelectedItems => ({
+  // Function to handle checkbox toggle
+
+  const handleCheckboxToggle = itemId => {
+    setSelectedItems(prevSelectedItems => {
+      const updated = {
         ...prevSelectedItems,
         [itemId]: !prevSelectedItems[itemId],
-      }));
-    }
+      };
+      console.log('Checkbox Toggled:', updated); // Debug log
+      return updated;
+    });
   };
 
+  const updateStatusForNonCanceledItems = status => {
+    setSelectedItems(prevSelectedItems => {
+      const updatedItems = {...prevSelectedItems};
+
+      order?.orderLineItems.forEach(item => {
+        // Only update items that are not manually canceled and are not already confirmed
+        if (
+          item.statusFlag !== 2 &&
+          prevSelectedItems[item.orderLineitemId] !== false
+        ) {
+          updatedItems[item.orderLineitemId] = status === 'Confirmed';
+        }
+      });
+
+      return updatedItems;
+    });
+  };
+
+  const updateStatusForNonCanceledWhenCancelled = status => {
+    setSelectedItems(prevSelectedItems => {
+      const updatedItems = {...prevSelectedItems};
+
+      order?.orderLineItems.forEach(item => {
+        // Only update items that are not manually canceled and are not already canceled
+        if (
+          item.statusFlag !== 1 &&
+          prevSelectedItems[item.orderLineitemId] !== true
+        ) {
+          updatedItems[item.orderLineitemId] = status === 'Cancelled';
+        }
+      });
+
+      return updatedItems;
+    });
+  };
+
+  const handleUpdateOrderStatus = () => {
+    // If the status is 'Open', directly update without showing the alert
+    if (selectedStatus === 'Open') {
+      setTriggerUpdate(true);
+      return;
+    }
+  
+    // Check if any items are selected
+    const anySelected = Object.values(selectedItems).some(item => item === true);
+  
+    // If no items are selected, show the alert
+    if (!anySelected) {
+      Alert.alert(
+        'crm.codeverse.co says',
+        `Since you haven't checked any styles, the ${selectedStatus.toLowerCase()} status will be assigned to all styles. If you are certain, please click on OK`,
+        [
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Action Cancelled'),
+            style: 'cancel',
+          },
+          {
+            text: 'OK',
+            onPress: () => {
+              // Perform the update based on the selected status
+              if (selectedStatus === 'Cancelled') {
+                updateStatusForNonCanceledWhenCancelled(selectedStatus);
+              } else {
+                updateStatusForNonCanceledItems(selectedStatus);
+              }
+              setTriggerUpdate(true);
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    } else {
+      // If items are selected, proceed to update without showing the alert
+      setTriggerUpdate(true);
+    }
+  };
+  
+
+  // useEffect to handle order update when triggerUpdate changes
+  useEffect(() => {
+    if (triggerUpdate) {
+      updateDisOrder();
+      setTriggerUpdate(false); // Reset trigger
+    }
+  }, [triggerUpdate]);
+
   const updateDisOrder = () => {
+    console.log('Selected Items (Before API Call):', selectedItems);
     const requestData = {
       orderId: order?.orderId || 0,
       totalGst: order?.totalGst || 0,
@@ -165,9 +271,9 @@ const PackingConformation = ({route}) => {
       totalQty: order?.totalQty || 0,
       updateStatus: selectedStatus || '',
       appComments: comments,
-      orderLineItems: order?.orderLineItems
-        // .filter(item => selectedItems[item.orderLineitemId])
-        .map(item => ({
+      orderLineItems: order?.orderLineItems.map(item => {
+        const isManuallyCanceled = item.statusFlag === 2;
+        return {
           orderLineitemId: item.orderLineitemId,
           orderId: item.orderId,
           qty: item.qty,
@@ -181,8 +287,11 @@ const PackingConformation = ({route}) => {
           gstAmnt: item.gstAmnt,
           discountPercentageThird: item.discountPercentageThird,
           statusFlag: item.statusFlag,
-          sttsFlag: selectedItems[item.orderLineitemId] || false,
-        })),
+          sttsFlag: isManuallyCanceled
+            ? false
+            : selectedItems[item.orderLineitemId] || false,
+        };
+      }),
     };
 
     axios
@@ -247,16 +356,22 @@ const PackingConformation = ({route}) => {
           <Text style={styles.orderqtytxt}>Qty: {item?.qty}</Text>
           <Text style={styles.ordertotaltxt}>Total: {item?.gross}</Text>
         </View>
-        <View style={{marginVertical: 8}}>
-          <Text style={styles.sizetxt}>Size : {item?.size}</Text>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{marginVertical: 8}}>
+            <Text style={styles.sizetxt}>Size : {item?.size}</Text>
+          </View>
+          <View style={{marginVertical: 8}}>
+            <Text style={styles.colortxt}>Color : {item?.colorName}</Text>
+          </View>
         </View>
+
         <View>
           <Text style={styles.sizetxt}>Price : {item?.unitPrice}</Text>
         </View>
         <View style={{flexDirection: 'row', marginTop: 3}}>
           <Text style={styles.sizedistxt}>Disc Amnt : {item?.discAmnt}</Text>
           <Text style={styles.Fixedtxt}>
-            Fixed Disc : {item.discountPercentage}
+            Disc 1 : {item.discountPercentage}
           </Text>
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -291,61 +406,68 @@ const PackingConformation = ({route}) => {
           </Text>
         </View>
       </View>
-      <ScrollView >
-      <View style={styles.orderhead}>
-        <Text style={styles.orderidtxt}>Order : {order?.orderNum}</Text>
-        <Text style={styles.ordercusttxt}>{order?.customerName}</Text>
-      </View>
-      <View style={styles.orderhead}>
-        <Text style={styles.orderDate}>Order Date : {order?.orderDate}</Text>
-        <Text style={styles.ordertotalQty}>Total Qty : {order?.totalQty}</Text>
-      </View>
-      <View style={{marginVertical: 25, marginLeft: 10}}>
-        <Text style={styles.Productdettext}>Product Details</Text>
-      </View>
-
-      {loading ? (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <ActivityIndicator size="large" color="#000" />
+      <ScrollView>
+        <View style={styles.orderhead}>
+          <Text style={styles.orderidtxt}>Order : {order?.orderNum}</Text>
+          <Text style={styles.ordercusttxt}>{order?.customerName}</Text>
         </View>
-      ) : (
-        <View>
-          {order?.orderLineItems?.map(item => (
-            <View key={item.orderLineitemId.toString()}>
-              {renderOrderLineItem({item})}
-            </View>
-          ))}
+        <View style={styles.orderhead}>
+          <Text style={styles.orderDate}>Order Date : {order?.orderDate}</Text>
+          <Text style={styles.ordertotalQty}>
+            Total Qty : {order?.totalQty}
+          </Text>
+        </View>
+        <View style={{marginVertical: 25, marginLeft: 10}}>
+          <Text style={styles.Productdettext}>Product Details</Text>
+        </View>
+
+        {loading ? (
           <View
-            style={{
-              marginHorizontal: 15,
-              alignItems: 'flex-end',
-              marginBottom: 15,
-            }}>
-            <OrderDetailRow label="Total Qty" value={order?.totalQty} />
-            <OrderDetailRow label="Total Gst" value={order?.totalGst} />
-            <OrderDetailRow label="IGST" value={order?.igst} />
-            <OrderDetailRow label="Total Disc 1" value={order?.totalDiscount} />
-            <OrderDetailRow
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            <ActivityIndicator size="large" color="#000" />
+          </View>
+        ) : (
+          <View>
+            {order?.orderLineItems?.map(item => (
+              <View key={item.orderLineitemId.toString()}>
+                {renderOrderLineItem({item})}
+              </View>
+            ))}
+            <View
+              style={{
+                marginHorizontal: 15,
+                alignItems: 'flex-end',
+                marginBottom: 15,
+              }}>
+              <OrderDetailRow label="Total Qty" value={order?.totalQty} />
+              <OrderDetailRow label="Total Gst" value={order?.totalGst} />
+              {/* <OrderDetailRow label="IGST" value={order?.igst} /> */}
+              <OrderDetailRow
+                label="Total Disc 1"
+                value={order?.totalDiscount}
+              />
+              {/* <OrderDetailRow
               label="Total Disc 2"
               value={order?.totalDiscountSec}
-            />
-            <OrderDetailRow label="Transport Exp" value={order?.gTranspExp} />
-            <OrderDetailRow label="Other Exp" value={order?.gOtherExp} />
-            <OrderDetailRow label="Total Cost" value={order?.totalAmount} />
-          </View>
-          {order?.completeFlag === 0 && (
-            <>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: 20,
-                }}>
-                <Text style={{color: '#000', marginLeft: 10, marginRight: 50}}>
-                  Remarks:
-                </Text>
-                <View style={{flex: 1, marginLeft: 10, marginHorizontal: 30}}>
-                  <TextInput
+            /> */}
+              <OrderDetailRow label="Transport Exp" value={order?.gTranspExp} />
+              <OrderDetailRow label="Other Exp" value={order?.gOtherExp} />
+              <OrderDetailRow label="Total Cost" value={order?.totalAmount} />
+            </View>
+            {order?.completeFlag === 0 && (
+              <>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginTop: 20,
+                  }}>
+                  <Text
+                    style={{color: '#000', marginLeft: 10, marginRight: 50}}>
+                    Remarks:
+                  </Text>
+                  <View style={{flex: 1, marginLeft: 10, marginHorizontal: 30}}>
+                    {/* <TextInput
                     style={{
                       color: '#000',
                       borderWidth: 1,
@@ -356,82 +478,96 @@ const PackingConformation = ({route}) => {
                     placeholderTextColor={'#000'}
                     value={comments} // Bind the input value to the state
                     onChangeText={text => setComments(text)} // Update the state on text change
-                  />
-                </View>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: 20,
-                }}>
-                <View style={{}}>
-                  <Text style={{color: '#000', marginLeft: 6}}>Status : </Text>
+                  /> */}
+                    <TextInput
+                      style={{
+                        color: '#000',
+                        borderWidth: 1,
+                        paddingVertical: 10,
+                        borderRadius: 5,
+                      }}
+                      placeholder="Status Comments"
+                      placeholderTextColor={'#000'}
+                      value={comments} // Bind the input value to the state
+                      onChangeText={text => setComments(text)} // Update the state on text change
+                    />
+                  </View>
                 </View>
                 <View
                   style={{
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    marginLeft: 60,
+                    marginTop: 20,
                   }}>
-                  <TouchableOpacity
-                    style={styles.dropdownButton}
-                    onPress={handleDropdownToggle}>
-                    <Text style={styles.dropdownText}>
-                      {selectedStatus || 'Select Status'}
+                  <View style={{}}>
+                    <Text style={{color: '#000', marginLeft: 6}}>
+                      Status :{' '}
                     </Text>
-                    <Image
-                      source={require('../../../assets/dropdown.png')}
-                      style={styles.dropdownImage}
-                    />
+                  </View>
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      marginLeft: 60,
+                    }}>
+                    <TouchableOpacity
+                      style={styles.dropdownButton}
+                      onPress={handleDropdownToggle}>
+                      <Text style={styles.dropdownText}>
+                        {selectedStatus || 'Select Status'}
+                      </Text>
+                      <Image
+                        source={require('../../../assets/dropdown.png')}
+                        style={styles.dropdownImage}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {dropdownVisible && (
+                  <View style={styles.dropdownContainer}>
+                    <ScrollView
+                      style={styles.scrollView}
+                      nestedScrollEnabled={true}>
+                      {filteredStatusOptions.map(option => (
+                        <TouchableOpacity
+                          key={option.id}
+                          style={[
+                            styles.dropdownOption,
+                            selectedStatus === option.stts &&
+                              styles.selectedOption,
+                          ]}
+                          onPress={() => handleDropdownSelectStatus(option)}>
+                          <Text style={styles.dropdownOptionText}>
+                            {option.stts}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+
+                <View>
+                  <TouchableOpacity
+                    onPress={handleUpdateOrderStatus}
+                    style={{
+                      borderWidth: 1,
+                      marginTop: 50,
+                      marginBottom: 50,
+                      marginHorizontal: 20,
+                      borderRadius: 10,
+                      paddingVertical: 10,
+                      backgroundColor: '#F09120',
+                    }}>
+                    <Text style={{color: '#000', alignSelf: 'center'}}>
+                      Update Order Status
+                    </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
-
-              {dropdownVisible && (
-                <View style={styles.dropdownContainer}>
-                  <ScrollView
-                    style={styles.scrollView}
-                    nestedScrollEnabled={true}>
-                    {filteredStatusOptions.map(option => (
-                      <TouchableOpacity
-                        key={option.id}
-                        style={[
-                          styles.dropdownOption,
-                          selectedStatus === option.stts &&
-                            styles.selectedOption,
-                        ]}
-                        onPress={() => handleDropdownSelectStatus(option)}>
-                        <Text style={styles.dropdownOptionText}>
-                          {option.stts}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-              <View>
-                <TouchableOpacity
-                  onPress={updateDisOrder}
-                  style={{
-                    borderWidth: 1,
-                    marginTop: 50,
-                    marginBottom: 50,
-                    marginHorizontal: 20,
-                    borderRadius: 10,
-                    paddingVertical: 10,
-                    backgroundColor: '#F09120',
-                  }}>
-                  <Text style={{color: '#000', alignSelf: 'center'}}>
-                    Update Order Status
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
-      )}
-    </ScrollView>
+              </>
+            )}
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -493,6 +629,12 @@ const styles = StyleSheet.create({
   sizetxt: {
     color: '#000',
     marginLeft: 40,
+    flex: 1,
+  },
+  colortxt: {
+    color: '#000',
+    marginLeft: 78,
+    flex: 2,
   },
   sizedistxt: {
     color: '#000',

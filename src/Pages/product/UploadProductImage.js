@@ -339,7 +339,7 @@ const UploadProductImage = ({ route }) => {
         <Image style={{ height: 80, width: 80 }} source={require('../../../assets/uploadsel.png')} />
 
         <Text
-          style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold' }}
+          style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold',color:"#000" }}
         >
           Upload Product Image
         </Text>

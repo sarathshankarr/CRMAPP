@@ -2937,6 +2937,7 @@ const style = StyleSheet.create({
     padding: 10,
     marginBottom: 5,
     width: '100%',
+    color:"black"
   },
   inputContainer: {
     borderWidth: 1,
