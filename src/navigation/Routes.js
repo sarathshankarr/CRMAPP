@@ -270,7 +270,7 @@ const Routes = () => {
        <Stack.Screen
         name="Notifications"
         component={Notifications}
-        options={{ headerShown: true }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

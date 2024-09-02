@@ -1,5 +1,5 @@
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -13,18 +13,20 @@ import {
   View,
   Alert,
 } from 'react-native';
-import {RadioButton} from 'react-native-radio-buttons-group';
-import {API} from '../../config/apiConfig';
+import { RadioButton } from 'react-native-radio-buttons-group';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import DocumentPicker from 'react-native-document-picker';
 
-const TaskDetails = ({route}) => {
-  const {locationName, state, status, dueDateStr, label, id, desc, task} =
-    route.params;
+const TaskDetails = ({ route }) => {
+
+  
+  const { locationName, state, status, dueDateStr, label, id, desc, task, distance } =route.params;
+  
   const navigation = useNavigation();
   const [selectedRadioButtonId, setSelectedRadioButtonId] = useState(null);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
@@ -51,11 +53,12 @@ const TaskDetails = ({route}) => {
   const [documents, setDocuments] = useState([]); // State for selected documents
   const [remark, setRemark] = useState('');
   const [loadingg, setLoadingg] = useState(false);
-
+  const [editStatus, setEditStatus] = useState(false);
+  
   const selectedCompany = useSelector(state => state.selectedCompany);
 
   const goToFiles = id => {
-    navigation.navigate('Files', {id}); // Pass the id as a parameter
+    navigation.navigate('Files', { id }); // Pass the id as a parameter
   };
 
   useFocusEffect(
@@ -88,6 +91,17 @@ const TaskDetails = ({route}) => {
 
     fetchInitialSelectedCompany();
   }, []);
+
+  useEffect(()=>{
+    if (distance) {
+      if (parseFloat(distance) * 1000 > 100) {
+        setEditStatus(false);
+      } else {
+        setEditStatus(true);
+      }
+    }
+    // console.log("useeffect",(parseFloat(distance)*1000)-100 )
+  }, [distance])
 
   const companyId = selectedCompany
     ? selectedCompany.id
@@ -198,7 +212,7 @@ const TaskDetails = ({route}) => {
             reject(error);
           }
         },
-        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
       );
     });
   };
@@ -317,6 +331,8 @@ const TaskDetails = ({route}) => {
     'Completed',
   ];
 
+ 
+
   const handleShipDropdownClickStatus = () => {
     setShipFromToClickedStatus(!shipFromToClickedStatus);
   };
@@ -327,6 +343,14 @@ const TaskDetails = ({route}) => {
   };
 
   const handleTakeSelfie = () => {
+
+    if (parseFloat(distance)*1000 >= 100) {
+      Alert.alert("You must be within 100 meters of the destination to upload a selfie");
+      console.log("upload",(parseFloat(distance)*1000)-100 );
+      return;
+    }
+    // console.log("out", parseFloat(distance));
+
     const MAX_SELFIES = 1;
 
     if (selfieImages.length >= MAX_SELFIES) {
@@ -392,7 +416,7 @@ const TaskDetails = ({route}) => {
     formData.append('userId', userId || '');
     formData.append('comanyId', companyId || '');
     formData.append('remark', remark || '');
-    formData.append('status', selectedStatusOption ||status|| '');
+    formData.append('status', selectedStatusOption || status || '');
 
     if (selfieImages.length > 0) {
       formData.append('selfieImgs', {
@@ -434,7 +458,7 @@ const TaskDetails = ({route}) => {
       .then(response => {
         console.log('response.data=======>', response.data);
         Alert.alert('Success', 'added successfully.', [
-          {text: 'OK', onPress: () => navigation.navigate('CustomerLocation')}, // Navigate to Location screen on OK
+          { text: 'OK', onPress: () => navigation.navigate('CustomerLocation') }, // Navigate to Location screen on OK
         ]);
       })
       .catch(error => {
@@ -606,10 +630,12 @@ const TaskDetails = ({route}) => {
             onChangeText={text => setRemark(text)}
           />
         </View>
+        <Text style={{ fontWeight: 'bold', textAlign: 'center', padding: 5 }}>{` Distance btw 2 Locations is : ${distance} `}</Text>
+
         <View style={styles.switchContainer}>
           <TouchableOpacity
             onPress={handleShipDropdownClickStatus}
-            style={styles.dropdownButton}>
+            style={[styles.dropdownButton, {backgroundColor:editStatus? '#fff' : '#dedede'}]}>
             <Text style={styles.dropdownText}>
               {selectedStatusOption || status || 'Status'}
             </Text>
@@ -619,7 +645,7 @@ const TaskDetails = ({route}) => {
             />
           </TouchableOpacity>
 
-          {shipFromToClickedStatus && (
+          {shipFromToClickedStatus && editStatus && (
             <View style={styles.dropdownContainer}>
               <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
                 {statusOptions.map((option, index) => (
@@ -646,7 +672,7 @@ const TaskDetails = ({route}) => {
         <View style={styles.imgheader}>
           <TouchableOpacity style={styles.uploadimg} onPress={handleTakeSelfie}>
             <Image
-              style={{height: 80, width: 80}}
+              style={{ height: 80, width: 80 }}
               source={require('../../../assets/uploadsel.png')}
             />
             <Text
@@ -695,7 +721,7 @@ const TaskDetails = ({route}) => {
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {selfieImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{uri: image.uri}} style={styles.imagePreview} />
+                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'selfie')}>
@@ -709,7 +735,7 @@ const TaskDetails = ({route}) => {
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {galleryImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{uri: image.uri}} style={styles.imagePreview} />
+                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'gallery')}>
@@ -757,7 +783,7 @@ const TaskDetails = ({route}) => {
           }}
           disabled={loadingg} // Disable button when loading
         >
-          <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
+          <Text style={{ color: '#000', alignSelf: 'center' }}>Update</Text>
         </TouchableOpacity>
         {/* <View style={styles.uploadedFilesContainer}>
         {selectedFiles.length > 0 &&
@@ -1040,7 +1066,7 @@ const styles = StyleSheet.create({
   uploadanyimg: {
     width: 70,
     height: 70,
-    marginLeft:10
+    marginLeft: 10
   },
   documentItem: {
     justifyContent: 'center',
