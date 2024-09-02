@@ -969,14 +969,13 @@ const CustomerLocation = ({ navigation }) => {
                   </View>
                 </View>
               </TouchableOpacity>
-              <View>
-                {/* {selectedTask && distance && <Text>{distance}</Text>} */}
+              {/* <View>
                 {selectedTaskId === task.id && distance && (
                   <View>
                     <Text>{distance}</Text>
                   </View>
                 )}
-              </View>
+              </View> */}
 
             </View>
           ))}
