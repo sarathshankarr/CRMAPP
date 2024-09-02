@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,8 +12,8 @@ import {
   PermissionsAndroid,
 } from 'react-native';
 import axios from 'axios';
-import {API} from '../../config/apiConfig';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import { API } from '../../config/apiConfig';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Pdf from 'react-native-pdf';
 
@@ -25,7 +25,7 @@ const PackingOrders = () => {
   const [packingOrders, setPackingOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const route = useRoute();
-  const {orderId} = route.params;
+  const { orderId } = route.params;
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -48,7 +48,7 @@ const PackingOrders = () => {
       })
       .then(response => {
         setPackingOrders(response.data);
-        console.log(response.data)
+        console.log("response.data ===> ", response.data)
         setLoading(false);
       })
       .catch(error => {
@@ -82,8 +82,8 @@ const PackingOrders = () => {
         Alert.alert(
           'Permission Denied',
           'Storage permission is required to save the PDF. Please enable it in the app settings.',
-          [{text: 'OK', onPress: () => console.log('OK Pressed')}],
-          {cancelable: false},
+          [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+          { cancelable: false },
         );
         return false;
       } else {
@@ -92,8 +92,8 @@ const PackingOrders = () => {
         Alert.alert(
           'Permission Denied',
           'Storage permission is required to save the PDF. Please grant the permission.',
-          [{text: 'OK', onPress: () => console.log('OK Pressed')}],
-          {cancelable: false},
+          [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+          { cancelable: false },
         );
         return false;
       }
@@ -181,13 +181,13 @@ const PackingOrders = () => {
     }
   };
 
-  const renderOrder = ({item}) => (
-    <View style={{borderBottomWidth: 1, borderBottomColor: '#ccc'}}>
-      
+  const renderOrder = ({ item }) => (
+    <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc' }}>
+
       <View style={styles.orderContainer}>
         <Text style={styles.text}>{item.p_id}</Text>
         <Text style={styles.text1}>{item.totQty}</Text>
-        <Text style={{textAlign: 'center',flex:0.4,color:"#000"}}>{item.shipQty}</Text>
+        <Text style={{ textAlign: 'center', flex: 0.4, color: "#000" }}>{item.shipQty}</Text>
         <Text style={styles.text2}>{item.totAmnt}</Text>
         <Text style={styles.text3}>{item.packNo}</Text>
         <Text style={styles.text4}>{item.packUserName}</Text>
@@ -201,48 +201,52 @@ const PackingOrders = () => {
         }}>
         <TouchableOpacity onPress={() => getInvoice(orderId, item.p_id)}>
           <Image
-            style={{height: 30, width: 30, alignSelf: 'center'}}
+            style={{ height: 30, width: 30, alignSelf: 'center' }}
             source={require('../../../assets/packagelist.png')}
           />
-          <Text style={{marginHorizontal: 10,color:"#000"}}>Invoice</Text>
+          <Text style={{ marginHorizontal: 10, color: "#000" }}>Invoice</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=> getPackingList (orderId, item.p_id)} style={{marginHorizontal: 10}}>
+        <TouchableOpacity onPress={() => getPackingList(orderId, item.p_id)} style={{ marginHorizontal: 10 }}>
           <Image
-            style={{height: 30, width: 30, alignSelf: 'center'}}
+            style={{ height: 30, width: 30, alignSelf: 'center' }}
             source={require('../../../assets/invoice.png')}
           />
-          <Text style={{color:"#000"}}>PackingList</Text>
+          <Text style={{ color: "#000" }}>PackingList</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
+  // if (loading) {
+  //   return <ActivityIndicator size="large" color="#0000ff" />;
+  // }
 
   return (
     <View style={styles.container}>
-        <TouchableOpacity style={{backgroundColor:"#f0f0f0",}} onPress={handleGoBack}>
-          <Image
-            style={{height: 25, width: 25,marginHorizontal:10,marginVertical:5}}
-            source={require('../../../assets/back_arrow.png')}
-          />
-        </TouchableOpacity>
+      <TouchableOpacity style={{ backgroundColor: "#f0f0f0", }} onPress={handleGoBack}>
+        <Image
+          style={{ height: 25, width: 25, marginHorizontal: 10, marginVertical: 5 }}
+          source={require('../../../assets/back_arrow.png')}
+        />
+      </TouchableOpacity>
       <View style={styles.header}>
         <Text style={styles.headerText}>ID</Text>
         <Text style={styles.headerText1}>Packed Qty</Text>
-        <Text style={{  textAlign: 'center',flex: 0.5,    color:"#000"}}>ship Qty</Text>
+        <Text style={{ textAlign: 'center', flex: 0.5, color: "#000" }}>ship Qty</Text>
         <Text style={styles.headerText5}>Total Amnt</Text>
         <Text style={styles.headerText2}>Packing Slip No</Text>
         <Text style={styles.headerText3}>Pack By</Text>
         <Text style={styles.headerText4}>Ship By</Text>
       </View>
-      <FlatList
-        data={packingOrders}
-        renderItem={renderOrder}
-        keyExtractor={item => item.p_id.toString()}
-      />
+      {loading ? (<ActivityIndicator size="large" color="#0000ff"  />) : (
+
+        <FlatList
+          data={packingOrders}
+          renderItem={renderOrder}
+          keyExtractor={item => item.p_id.toString()}
+        />
+      )
+      }
     </View>
   );
 };
@@ -261,33 +265,33 @@ const styles = StyleSheet.create({
   headerText: {
     textAlign: 'center',
     flex: 0.4,
-    color:"#000"
+    color: "#000"
   },
   headerText1: {
     textAlign: 'center',
     flex: 0.6,
-    color:"#000"
+    color: "#000"
   },
   headerText5: {
     textAlign: 'center',
     flex: 0.6,
-    color:"#000"
+    color: "#000"
   },
   headerText2: {
     textAlign: 'center',
     flex: 0.8,
-    marginLeft:5,
-    color:"#000"
+    marginLeft: 5,
+    color: "#000"
   },
   headerText3: {
     textAlign: 'center',
     flex: 1,
-    color:"#000"
+    color: "#000"
   },
   headerText4: {
     textAlign: 'center',
     flex: 0.8,
-    color:"#000"
+    color: "#000"
   },
   orderContainer: {
     flexDirection: 'row',
@@ -298,33 +302,33 @@ const styles = StyleSheet.create({
   text: {
     textAlign: 'center',
     flex: 0.4,
-    color:"#000"
+    color: "#000"
   },
   text1: {
     textAlign: 'center',
     flex: 0.8,
-    color:"#000"
+    color: "#000"
   },
   text2: {
     textAlign: 'center',
     flex: 1,
-    color:"#000"
+    color: "#000"
   },
   text3: {
     textAlign: 'center',
     flex: 1,
-    color:"#000"
+    color: "#000"
   },
   text4: {
     textAlign: 'center',
     flex: 1,
-    color:"#000"
+    color: "#000"
   },
   text5: {
     textAlign: 'center',
     flex: 1,
     marginLeft: 3,
-    color:"#000"
+    color: "#000"
   },
   pdf: {
     flex: 8,

@@ -70,7 +70,10 @@ export const API = {
   GET_ALL_STATUS:'erpportal/api/ordermgmt/getAllStatus',
   UPDATE_DIS_ORDERl:'erpportal/api/ordermgmt/updateDisOrder',
   ADD_LOCATION_IMAGES:'erpportal/api/master/addLocation',
-  GET_Location:'erpportal/api/master/getLocation'
+  GET_Location:'erpportal/api/master/getLocation',
+  GET_NOTIFICATION_LIST:'erpportal/api/master/getMessages',
+  UPDATE_READ_MSG:'erpportal/api/master/updateRead',
+
 };
 
 export const USER_ID = 'adminClientId';
