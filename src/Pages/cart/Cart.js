@@ -908,6 +908,7 @@ const Cart = () => {
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
+        
       })),
       comments: comments,
       customerType: customerType,
@@ -931,6 +932,7 @@ const Cart = () => {
       gTranspExp: 0,
       gOtherExp: 0,
       companyId: companyId,
+      d_pkg_flag:0,
       // companyLocId: selectedCompanyLocationId,
       linkType: 3
     };
