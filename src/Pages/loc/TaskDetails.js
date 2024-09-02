@@ -630,7 +630,7 @@ const TaskDetails = ({ route }) => {
             onChangeText={text => setRemark(text)}
           />
         </View>
-        <Text style={{ fontWeight: 'bold', textAlign: 'center', padding: 5 }}>{` Distance btw 2 Locations is : ${distance} `}</Text>
+        <Text style={{ fontWeight: 'bold',color:'#000', textAlign: 'center', padding: 5 }}>{` Distance btw 2 Locations is : ${distance} `}</Text>
 
         <View style={styles.switchContainer}>
           <TouchableOpacity
