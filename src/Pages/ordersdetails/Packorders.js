@@ -115,7 +115,7 @@ const Packorders = () => {
         if (item.packedStts === 'YET TO PACK') {
             setSelectedOrder(item);
         } else {
-            navigation.navigate('PackingOrders', { orderId: item.orderNum });
+            navigation.navigate('PackingOrders', { orderId: item.orderId });
         }
     };
 

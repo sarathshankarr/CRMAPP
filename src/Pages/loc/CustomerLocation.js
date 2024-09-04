@@ -73,11 +73,9 @@
 //     ? selectedCompany.id
 //     : initialSelectedCompany?.id;
 
-
 //   const handleGoBack = () => {
 //     navigation.goBack();
 //   };
-
 
 //   const getTasksAccUser = () => {
 //     setLoading(true);
@@ -286,8 +284,6 @@
 //     }));
 //   };
 
-
-
 //   const openGoogleMaps = (
 //     startLat,
 //     startLong,
@@ -491,7 +487,8 @@
 // });
 
 // export default CustomerLocation;
-import React, { useEffect, useState } from 'react';
+
+import React, {useEffect, useState} from 'react';
 import {
   Text,
   TouchableOpacity,
@@ -508,13 +505,13 @@ import {
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
-import { API } from '../../config/apiConfig';
-import { RadioButton } from 'react-native-radio-buttons-group';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../config/apiConfig';
+import {RadioButton} from 'react-native-radio-buttons-group';
 
-const CustomerLocation = ({ navigation }) => {
+const CustomerLocation = ({navigation}) => {
   const userData = useSelector(state => state.loggedInUser);
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
@@ -529,8 +526,9 @@ const CustomerLocation = ({ navigation }) => {
   const [switchState, setSwitchState] = useState(false); // State for switch
   const [switchStates, setSwitchStates] = useState({});
   const [distance, setDistance] = useState(null);
+  const [traveledDistance, setTraveledDistance] = useState('0 km');
   const [selectedTaskId, setSelectedTaskId] = useState(null);
-
+  const [previousLocation, setPreviousLocation] = useState(null);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -676,7 +674,7 @@ const CustomerLocation = ({ navigation }) => {
             reject(error);
           }
         },
-        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
+        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
       );
     });
   };
@@ -738,11 +736,9 @@ const CustomerLocation = ({ navigation }) => {
   };
 
   const handleTaskSelect = async task => {
-    // console.log('Selected Task:', task, mLat, mLong);
     setSelectedTask(task);
     setSearchQuery(task.label);
     setClicked(false);
-
 
     if (!mLat || !mLong) {
       console.error('Current location not available');
@@ -753,17 +749,14 @@ const CustomerLocation = ({ navigation }) => {
     const address = createAddressString(task);
     const location = await geocodeAddress(address);
 
-
     if (location) {
-      // console.log("details for road distance ===> ",address, "lat and lng ==>", mLat,mLong,location.lat,location.lng)
-      const roadDistance = await getRoadDistance(
+      const distance = await getRoadDistance(
         mLat,
         mLong,
         location.lat,
         location.lng,
       );
-      // console.log("roadDistance===> ", roadDistance)
-      setDistance(roadDistance);
+      setDistance(distance); // Update the actual distance state
       setSelectedTaskId(task.id);
       openGoogleMaps(mLat, mLong, location.lat, location.lng);
     }
@@ -776,8 +769,8 @@ const CustomerLocation = ({ navigation }) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
-      console.log("DATA========> ", url, data?.rows[0].elements[0]);
-      if (data.status === "OK" && data.rows[0].elements[0].status === 'OK') {
+      console.log('DATA========> ', url, data?.rows[0].elements[0]);
+      if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
         const distance = data.rows[0].elements[0].distance.text;
         return distance;
       } else {
@@ -795,7 +788,7 @@ const CustomerLocation = ({ navigation }) => {
     }
   };
 
-  const handleTaskSelectt = async (task) => {
+  const handleTaskSelectt = async task => {
     setLoading(true);
     // console.log('Selected Task:', task);
     setSelectedTask(task);
@@ -812,14 +805,9 @@ const CustomerLocation = ({ navigation }) => {
     const address = createAddressString(task);
     const location = await geocodeAddress(address);
 
-
-    const roadDistance = location ? await getRoadDistance(
-      mLat,
-      mLong,
-      location.lat,
-      location.lng,
-    ) : 0;
-
+    const roadDistance = location
+      ? await getRoadDistance(mLat, mLong, location.lat, location.lng)
+      : 0;
 
     setLoading(false);
 
@@ -833,7 +821,8 @@ const CustomerLocation = ({ navigation }) => {
       id: task.id,
       label: task.label,
       desc: task.desc,
-      distance: roadDistance,
+      distance: roadDistance || '0 km',
+      traveledDistance: traveledDistance,
     });
 
     // Reset switch state for the task
@@ -865,14 +854,46 @@ const CustomerLocation = ({ navigation }) => {
       .catch(err => console.error('An error occurred', err));
   };
 
-  // console.log('Filtered Tasks:', filteredTasks);
+  useFocusEffect(
+    React.useCallback(() => {
+      trackDistance(); // Track the distance when the user returns to the app
+    }, [selectedTaskId]),
+  );
+
+  const trackDistance = async () => {
+    try {
+      const currentPosition = await getLocation();
+      
+      if (previousLocation) {
+        const distance = await getRoadDistance(
+          previousLocation.latitude,
+          previousLocation.longitude,
+          currentPosition.coords.latitude,
+          currentPosition.coords.longitude
+        );
+        
+        // Add the new distance to the existing traveledDistance
+        const newDistance = parseFloat(distance.replace(' km', '')) + parseFloat(traveledDistance.replace(' km', ''));
+        setTraveledDistance(`${newDistance.toFixed(2)} km`);
+      }
+      
+      // Update previous location with the current position
+      setPreviousLocation({
+        latitude: currentPosition.coords.latitude,
+        longitude: currentPosition.coords.longitude
+      });
+    } catch (error) {
+      console.error('Error tracking distance:', error);
+      setTraveledDistance(traveledDistance); // Keep the previous traveled distance
+    }
+  };
 
   return (
     <ScrollView style={styles.Container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
-            style={{ height: 25, width: 25 }}
+            style={{height: 25, width: 25}}
             source={require('../../../assets/back_arrow.png')}
           />
         </TouchableOpacity>
@@ -886,18 +907,6 @@ const CustomerLocation = ({ navigation }) => {
           Location
         </Text>
       </View>
-      {/* <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          paddingVertical: 10,
-          backgroundColor: '#f0f0f0',
-          marginVertical: 5,
-        }}>
-        <Text style={styles.txt}>Visits</Text>
-        <Text style={styles.txt}>Events</Text>
-        <Text style={styles.txt}>Calls</Text>
-      </View> */}
       <View
         style={{
           paddingVertical: 10,
@@ -916,7 +925,7 @@ const CustomerLocation = ({ navigation }) => {
       </View>
       {loading ? (
         <ActivityIndicator
-          style={{ justifyContent: 'center', alignItems: 'center' }}
+          style={{justifyContent: 'center', alignItems: 'center'}}
           size="large"
           color="#390050"
         />
@@ -926,57 +935,51 @@ const CustomerLocation = ({ navigation }) => {
         <ScrollView style={styles.Content}>
           {filteredTasks.map(task => (
             <View key={task.value}>
-              <View style={{ marginHorizontal: 10, marginVertical: 5 }}>
-                <Text style={{ color: '#000', fontWeight: 'bold' }}>
-                  {task.dueDateStr}
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => handleTaskSelectt(task)}>
-                <View style={styles.taskContainer}>
-                  <RadioButton
-                    selected={selectedId === task.id}
-                    onPress={() => handleTaskSelectt(task)}
-                  />
-                  <View style={styles.taskDetails}>
-                    <Text style={styles.dropdownItemText}>{task.label}</Text>
-                    <Text style={styles.loctxt}>{task.locationName}</Text>
-                    <Text style={styles.statetxt}>{task.state}</Text>
-                  </View>
-                  <View style={{ flex: 0.6 }}>
-                    <TouchableOpacity onPress={() => handleTaskSelect(task)}>
-                      <Image
-                        style={styles.locatioimg}
-                        source={require('../../../assets/location-pin.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={{ flex: 0.6 }}>
-                    <Text style={styles.statustxt}>{task.status}</Text>
-                    <View style={{}}>
-                      {/* <Switch
-                         trackColor={{false: '#767577', true: '#81b0ff'}}
-                         ios_backgroundColor="#3e3e3e"
-                          value={switchState}
-                          onValueChange={value => {
-                            setSwitchState(value);
-                            if (value) handleTaskSelectt(task);
-                          }}
-                        /> */}
-                    </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-              {/* <View>
+              <View
+                style={{position: 'absolute', right: 0, top: 10, right: 15}}>
                 {selectedTaskId === task.id && distance && (
                   <View>
-                    <Text>{distance}</Text>
+                    <Text style={{color: '#000'}}>{distance}</Text>
                   </View>
                 )}
-              </View> */}
+              </View>
+              <View>
+                <View style={{marginHorizontal: 10, marginVertical: 5}}>
+                  <Text style={{color: '#000', fontWeight: 'bold'}}>
+                    {task.dueDateStr}
+                  </Text>
+                </View>
 
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => handleTaskSelectt(task)}>
+                  <View style={styles.taskContainer}>
+                    <RadioButton
+                      selected={selectedId === task.id}
+                      onPress={() => handleTaskSelectt(task)}
+                    />
+                    <View style={styles.taskDetails}>
+                      <Text style={styles.dropdownItemText}>{task.label}</Text>
+                      <Text style={styles.loctxt}>{task.locationName}</Text>
+                      <Text style={styles.statetxt}>{task.state}</Text>
+                    </View>
+                    <View style={{flex: 0.6}}>
+                      <TouchableOpacity onPress={() => handleTaskSelect(task)}>
+                        <Image
+                          style={styles.locatioimg}
+                          source={require('../../../assets/location-pin.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View style={{flex: 0.6}}>
+                      <Text style={styles.statustxt}>{task.status}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <Text style={{color: '#000',marginLeft:10}}>
+                  Distance Traveled: {traveledDistance}
+                </Text>
+              </View>
             </View>
           ))}
         </ScrollView>
