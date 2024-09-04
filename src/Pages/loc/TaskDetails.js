@@ -1,5 +1,5 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -13,20 +13,29 @@ import {
   View,
   Alert,
 } from 'react-native';
-import { RadioButton } from 'react-native-radio-buttons-group';
-import { API } from '../../config/apiConfig';
+import {RadioButton} from 'react-native-radio-buttons-group';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import DocumentPicker from 'react-native-document-picker';
 
-const TaskDetails = ({ route }) => {
+const TaskDetails = ({route}) => {
+  const {
+    locationName,
+    state,
+    status,
+    dueDateStr,
+    label,
+    id,
+    desc,
+    task,
+    distance,
+    traveledDistance,
+  } = route.params;
 
-  
-  const { locationName, state, status, dueDateStr, label, id, desc, task, distance } =route.params;
-  
   const navigation = useNavigation();
   const [selectedRadioButtonId, setSelectedRadioButtonId] = useState(null);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
@@ -35,6 +44,7 @@ const TaskDetails = ({ route }) => {
   const [selectedStatusOption, setSelectedStatusOption] = useState('');
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
+  const isAdmin = userData?.role?.some(roleObj => roleObj.role === 'admin') || false;
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -54,18 +64,25 @@ const TaskDetails = ({ route }) => {
   const [remark, setRemark] = useState('');
   const [loadingg, setLoadingg] = useState(false);
   const [editStatus, setEditStatus] = useState(false);
-  
-  const selectedCompany = useSelector(state => state.selectedCompany);
+  const [selfieImageName, setSelfieImageName] = useState(null);
+  const [imageUrls, setImageUrls] = useState([]);
+  const [pdfUrls, setPdfUrls] = useState([]);
+  const [traveleDis, setTraveledDis] = useState('0 km');
 
+  const selectedCompany = useSelector(state => state.selectedCompany);
   const goToFiles = id => {
-    navigation.navigate('Files', { id }); // Pass the id as a parameter
+    navigation.navigate('Files', {id}); // Pass the id as a parameter
   };
+
+  useEffect(() => {
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
       const initialize = async () => {
         await requestLocationPermission();
         await getLocation();
+        getDetails();
         getTasksAccUser();
       };
 
@@ -92,7 +109,7 @@ const TaskDetails = ({ route }) => {
     fetchInitialSelectedCompany();
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (distance) {
       if (parseFloat(distance) * 1000 > 100) {
         setEditStatus(false);
@@ -101,7 +118,7 @@ const TaskDetails = ({ route }) => {
       }
     }
     // console.log("useeffect",(parseFloat(distance)*1000)-100 )
-  }, [distance])
+  }, [distance]);
 
   const companyId = selectedCompany
     ? selectedCompany.id
@@ -212,7 +229,7 @@ const TaskDetails = ({ route }) => {
             reject(error);
           }
         },
-        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
+        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
       );
     });
   };
@@ -331,8 +348,6 @@ const TaskDetails = ({ route }) => {
     'Completed',
   ];
 
- 
-
   const handleShipDropdownClickStatus = () => {
     setShipFromToClickedStatus(!shipFromToClickedStatus);
   };
@@ -343,10 +358,11 @@ const TaskDetails = ({ route }) => {
   };
 
   const handleTakeSelfie = () => {
-
-    if (parseFloat(distance)*1000 >= 100) {
-      Alert.alert("You must be within 100 meters of the destination to upload a selfie");
-      console.log("upload",(parseFloat(distance)*1000)-100 );
+    if (parseFloat(distance) * 1000 >= 100) {
+      Alert.alert(
+        'You must be within 100 meters of the destination to upload a selfie',
+      );
+      console.log('upload', parseFloat(distance) * 1000 - 100);
       return;
     }
     // console.log("out", parseFloat(distance));
@@ -417,6 +433,8 @@ const TaskDetails = ({ route }) => {
     formData.append('comanyId', companyId || '');
     formData.append('remark', remark || '');
     formData.append('status', selectedStatusOption || status || '');
+    formData.append('Actual_distance', distance || '');
+    formData.append('distance_travelled', traveledDistance || traveleDis || '');
 
     if (selfieImages.length > 0) {
       formData.append('selfieImgs', {
@@ -458,7 +476,7 @@ const TaskDetails = ({ route }) => {
       .then(response => {
         console.log('response.data=======>', response.data);
         Alert.alert('Success', 'added successfully.', [
-          { text: 'OK', onPress: () => navigation.navigate('CustomerLocation') }, // Navigate to Location screen on OK
+          {text: 'OK', onPress: () => navigation.navigate('CustomerLocation')}, // Navigate to Location screen on OK
         ]);
       })
       .catch(error => {
@@ -562,6 +580,87 @@ const TaskDetails = ({ route }) => {
       });
   };
 
+  const getDetails = async () => {
+    try {
+      const apiUrl = `${global?.userData?.productURL}${API.GET_Location}/${id}/${companyId}`;
+      console.log('apiUrl=====>', apiUrl);
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      // Extract selfie image name from response
+      const {selfieImageName, imageUrls, pdfUrls} = response.data;
+      // Update state based on API response
+      setSelfieImageName(selfieImageName);
+      setImageUrls(imageUrls);
+      setPdfUrls(pdfUrls);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  useFocusEffect(
+    React.useCallback(() => {
+      trackDistance(); // Track the distance when the user returns to the app
+    }, []),
+  );
+
+  const getRoadDistance = async (startLat, startLong, endLat, endLong) => {
+    const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${startLat},${startLong}&destinations=${endLat},${endLong}&key=${apiKey}`;
+
+    try {
+      const response = await axios.get(url);
+      const data = response.data;
+      console.log('DATA========> ', url, data?.rows[0].elements[0]);
+      if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
+        const distance = data.rows[0].elements[0].distance.text;
+        return distance;
+      } else {
+        console.error('Distance Matrix API error:', data.error_message);
+        Alert.alert(
+          'Error',
+          `Unable to calculate road distance: ${data.error_message}`,
+        );
+        return null;
+      }
+    } catch (error) {
+      console.error('Distance Matrix request error:', error);
+      Alert.alert('Error', 'Unable to calculate road distance');
+      return null;
+    }
+  };
+  const trackDistance = async () => {
+    try {
+      const currentPosition = await getLocation();
+
+      if (previousLocation) {
+        const distance = await getRoadDistance(
+          previousLocation.latitude,
+          previousLocation.longitude,
+          currentPosition.coords.latitude,
+          currentPosition.coords.longitude,
+        );
+
+        // Add the new distance to the existing traveledDistance
+        const newDistance =
+          parseFloat(distance.replace(' km', '')) +
+          parseFloat(traveledDistance.replace(' km', ''));
+        setTraveledDis(`${newDistance.toFixed(2)} km`);
+      }
+
+      // Update previous location with the current position
+      setPreviousLocation({
+        latitude: currentPosition.coords.latitude,
+        longitude: currentPosition.coords.longitude,
+      });
+    } catch (error) {
+      console.error('Error tracking distance:', error);
+      setTraveledDis(traveledDistance); // Keep the previous traveled distance
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -630,12 +729,29 @@ const TaskDetails = ({ route }) => {
             onChangeText={text => setRemark(text)}
           />
         </View>
-        <Text style={{ fontWeight: 'bold',color:'#000', textAlign: 'center', padding: 5 }}>{` Distance btw 2 Locations is : ${distance} `}</Text>
+        <Text
+          style={{
+            fontWeight: 'bold',
+            color: '#000',
+            textAlign: 'right',
+            marginHorizontal: 10,
+            marginVertical: 10,
+          }}>{` Distance btw 2 Locations is : ${distance} `}</Text>
+        <Text
+          style={{
+            fontWeight: 'bold',
+            color: '#000',
+            textAlign: 'right',
+            marginHorizontal: 10,
+          }}>{` Traveled Distance : ${traveledDistance || traveleDis} `}</Text>
 
         <View style={styles.switchContainer}>
           <TouchableOpacity
             onPress={handleShipDropdownClickStatus}
-            style={[styles.dropdownButton, {backgroundColor:editStatus? '#fff' : '#dedede'}]}>
+            style={[
+              styles.dropdownButton,
+              {backgroundColor: editStatus ? '#fff' : '#dedede'},
+            ]}>
             <Text style={styles.dropdownText}>
               {selectedStatusOption || status || 'Status'}
             </Text>
@@ -645,83 +761,91 @@ const TaskDetails = ({ route }) => {
             />
           </TouchableOpacity>
 
-          {shipFromToClickedStatus && editStatus && (
-            <View style={styles.dropdownContainer}>
-              <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-                {statusOptions.map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.dropdownOption,
-                      selectedStatusOption === option && styles.selectedOption,
-                    ]}
-                    onPress={() => handleDropdownSelectStatus(option)}>
-                    <Text style={styles.dropdownOptionText}>{option}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-          {/* <Switch
-          trackColor={{false: '#767577', true: '#81b0ff'}}
-          ios_backgroundColor="#3e3e3e"
-          value={isSwitchOn}
-          onValueChange={handleSwitchToggle}
-        /> */}
+          {shipFromToClickedStatus &&
+            editStatus &&
+            (status !== 'Completed' || isAdmin) && (
+              <View style={styles.dropdownContainer}>
+                <ScrollView
+                  style={styles.scrollView}
+                  nestedScrollEnabled={true}>
+                  {statusOptions.map((option, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.dropdownOption,
+                        selectedStatusOption === option &&
+                          styles.selectedOption,
+                      ]}
+                      onPress={() => handleDropdownSelectStatus(option)}>
+                      <Text style={styles.dropdownOptionText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
         </View>
         <View style={styles.imgheader}>
-          <TouchableOpacity style={styles.uploadimg} onPress={handleTakeSelfie}>
-            <Image
-              style={{ height: 80, width: 80 }}
-              source={require('../../../assets/uploadsel.png')}
-            />
-            <Text
-              style={{
-                textAlign: 'center',
-                marginVertical: 20,
-                fontWeight: 'bold',
-                color: '#000',
-              }}>
-              Upload Selfie
-            </Text>
-          </TouchableOpacity>
+          {!selfieImageName && (
+            <TouchableOpacity
+              style={styles.uploadimg}
+              onPress={handleTakeSelfie}>
+              <Image
+                style={{height: 80, width: 80}}
+                source={require('../../../assets/uploadsel.png')}
+              />
+              <Text
+                style={{
+                  textAlign: 'center',
+                  marginVertical: 20,
+                  fontWeight: 'bold',
+                  color: '#000',
+                }}>
+                Upload Selfie
+              </Text>
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity onPress={handleImagePicker}>
-            <Image
-              style={styles.uploadanyimg}
-              source={require('../../../assets/uploadany.png')}
-            />
-            <Text
-              style={{
-                textAlign: 'center',
-                marginVertical: 20,
-                fontWeight: 'bold',
-                color: '#000',
-              }}>
-              Upload Images
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleDocumentPicker}>
-            <Image
-              style={styles.uploadanyimg}
-              source={require('../../../assets/file.png')}
-            />
-            <Text
-              style={{
-                textAlign: 'center',
-                marginVertical: 20,
-                fontWeight: 'bold',
-                color: '#000',
-              }}>
-              Upload Files
-            </Text>
-          </TouchableOpacity>
+          {imageUrls.length === 0 && (
+            <TouchableOpacity onPress={handleImagePicker}>
+              <Image
+                style={styles.uploadanyimg}
+                source={require('../../../assets/uploadany.png')}
+              />
+              <Text
+                style={{
+                  textAlign: 'center',
+                  marginVertical: 20,
+                  fontWeight: 'bold',
+                  color: '#000',
+                }}>
+                Upload Images
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {pdfUrls.length === 0 && (
+            <TouchableOpacity onPress={handleDocumentPicker}>
+              <Image
+                style={styles.uploadanyimg}
+                source={require('../../../assets/file.png')}
+              />
+              <Text
+                style={{
+                  textAlign: 'center',
+                  marginVertical: 20,
+                  fontWeight: 'bold',
+                  color: '#000',
+                }}>
+                Upload Files
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
         {selfieImages.length > 0 && (
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {selfieImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+                <Image source={{uri: image.uri}} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'selfie')}>
@@ -735,7 +859,7 @@ const TaskDetails = ({ route }) => {
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {galleryImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+                <Image source={{uri: image.uri}} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'gallery')}>
@@ -769,22 +893,25 @@ const TaskDetails = ({ route }) => {
             </View>
           )}
         </View>
-        <TouchableOpacity
-          onPress={handleSave}
-          style={{
-            borderWidth: 1,
-            marginTop: 15,
-            marginBottom: 50,
-            marginHorizontal: 20,
-            borderRadius: 10,
-            paddingVertical: 10,
-            backgroundColor: '#F09120',
-            opacity: loadingg ? 0.6 : 1, // Adjust opacity based on loading state
-          }}
-          disabled={loadingg} // Disable button when loading
-        >
-          <Text style={{ color: '#000', alignSelf: 'center' }}>Update</Text>
-        </TouchableOpacity>
+        {/* {!(selfieImageName && imageUrls.length > 0 && pdfUrls.length > 0) && ( */}
+          <TouchableOpacity
+            onPress={handleSave}
+            style={{
+              borderWidth: 1,
+              marginTop: 15,
+              marginBottom: 50,
+              marginHorizontal: 20,
+              borderRadius: 10,
+              paddingVertical: 10,
+              backgroundColor: '#F09120',
+              opacity: loadingg ? 0.6 : 1, // Adjust opacity based on loading state
+            }}
+            disabled={loadingg} // Disable button when loading
+          >
+            <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
+          </TouchableOpacity>
+         {/* )}  */}
+
         {/* <View style={styles.uploadedFilesContainer}>
         {selectedFiles.length > 0 &&
           selectedFiles.map((file, index) => (
@@ -944,7 +1071,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: 'absolute',
-    top: 45, // Adjust this value based on the height of your dropdown button
+    top: 36, // Adjust this value based on the height of your dropdown button
     right: 0,
     marginRight: 8,
     width: '51%',
@@ -955,7 +1082,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     minHeight: 70,
-    maxHeight: 150,
+    maxHeight: 100,
   },
   dropdownOption: {
     paddingHorizontal: 10,
@@ -974,7 +1101,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: 30,
-    marginTop: 20,
+    marginTop: 50,
   },
   uploadselimg: {
     height: 60,
@@ -1066,7 +1193,7 @@ const styles = StyleSheet.create({
   uploadanyimg: {
     width: 70,
     height: 70,
-    marginLeft: 10
+    marginLeft: 10,
   },
   documentItem: {
     justifyContent: 'center',

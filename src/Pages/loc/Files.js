@@ -79,23 +79,22 @@ const Files = ({route}) => {
 
   const requestStoragePermission = async () => {
     try {
-      const granted = await PermissionsAndroid.request(
+      const granted = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Storage Permission Required',
-          message: 'This app needs access to your storage to download PDFs',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
 
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      if (
+        granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+          PermissionsAndroid.RESULTS.GRANTED &&
+        granted['android.permission.READ_EXTERNAL_STORAGE'] ===
+          PermissionsAndroid.RESULTS.GRANTED
+      ) {
         return true;
       } else {
         Alert.alert(
           'Permission Denied',
-          'Storage permission is required to save the PDF. Please grant the permission.',
+          'Storage permission is required to save the file. Please grant the permission.',
         );
         return false;
       }
@@ -107,31 +106,38 @@ const Files = ({route}) => {
 
   const downloadPDF = async (url, fileName) => {
     try {
-      if (Platform.OS === 'android') {
-        const hasPermission = await requestStoragePermission();
-        if (!hasPermission) return;
-      }
+      const hasPermission =
+        Platform.OS === 'android' ? await requestStoragePermission() : true;
+      if (!hasPermission) return;
 
       const {fs} = ReactNativeBlobUtil;
-      const fileExtension = fileName.split('.').pop(); // Get the file extension
+      const fileExtension = fileName.split('.').pop().toLowerCase();
       const filePath = `${fs.dirs.DownloadDir}/${fileName}`;
 
       const res = await ReactNativeBlobUtil.config({
         path: filePath,
         fileCache: true,
-        appendExt: fileExtension, // Use the correct file extension
+        appendExt: fileExtension,
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          path: filePath,
+          description: `Downloading ${fileName}`,
+          mime:
+            fileExtension === 'pdf'
+              ? 'application/pdf'
+              : fileExtension === 'doc' || fileExtension === 'docx'
+              ? 'application/msword'
+              : 'image/*',
+        },
       }).fetch('GET', url);
 
       console.log(`File downloaded to: ${filePath}`);
 
-      // Open the file with the appropriate application
+      Alert.alert('Download Success', `File downloaded to: ${filePath}`);
+
       if (Platform.OS === 'android' || Platform.OS === 'ios') {
         Linking.openURL(`file://${filePath}`);
-      } else {
-        Alert.alert(
-          'Unsupported Platform',
-          'File opening is not supported on this platform.',
-        );
       }
     } catch (error) {
       console.error('Error downloading file:', error);
@@ -176,19 +182,28 @@ const Files = ({route}) => {
         {locationDetails && (
           <>
             <View style={styles.detailsContainer}>
-              <Text style={styles.text}>
-                Task Name: {locationDetails.taskName}
-              </Text>
-              <Text style={styles.text}>
-                Description: {locationDetails.desc}
-              </Text>
+              <View
+                style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text style={styles.text}>
+                  Task Name: {locationDetails.taskName}
+                </Text>
+                <Text style={styles.text}>
+                  Description: {locationDetails.desc}
+                </Text>
+              </View>
+
               <Text style={styles.text}>
                 Remarks: {locationDetails.remarks}
               </Text>
-              <Text style={styles.text}>status: {locationDetails.status}</Text>
+              <Text style={styles.text}>Status: {locationDetails.status}</Text>
+              <Text style={styles.text}>
+                Actual distance: {locationDetails.actual_distance}
+              </Text>
+              <Text style={styles.text}>
+                Travelled distance: {locationDetails.distance_travelled}
+              </Text>
             </View>
 
-            {/* Display Selfie Image */}
             {locationDetails.selfieImageName && (
               <TouchableOpacity
                 onPress={() => openImageModal(locationDetails.selfieImageName)}>
@@ -199,7 +214,6 @@ const Files = ({route}) => {
               </TouchableOpacity>
             )}
 
-            {/* Display Other Images */}
             {locationDetails.imageUrls &&
               locationDetails.imageUrls.length > 0 && (
                 <View style={styles.imageContainer}>
@@ -213,20 +227,110 @@ const Files = ({route}) => {
                 </View>
               )}
 
-            {/* Display PDF File Links */}
             {locationDetails.pdfUrls && locationDetails.pdfUrls.length > 0 && (
               <View style={styles.pdfContainer}>
-                {locationDetails.pdfUrls.map((url, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() =>
-                      downloadPDF(url, `PDF_File_${index + 1}.pdf`)
-                    }>
-                    <Text style={styles.pdfText}>{`PDF File ${
-                      index + 1
-                    }: ${url}`}</Text>
-                  </TouchableOpacity>
-                ))}
+                {locationDetails.pdfUrls.map((url, index) => {
+                  const fileExtension = url.split('.').pop().toLowerCase(); // Get the file extension
+
+                  if (fileExtension === 'pdf') {
+                    // Handle PDF files
+                    return (
+                      // <TouchableOpacity
+                      //   key={index}
+                      //   onPress={() =>
+                      //     downloadPDF(url, `PDF_File_${index + 1}.pdf`)
+                      //   }>
+                      //   <Text style={styles.pdfText}>{`PDF File ${
+                      //     index + 1
+                      //   }`}</Text>
+                      // </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          borderWidth: 1,
+                          borderRadius: 10,
+                          paddingHorizontal: 10,
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginTop:10
+                        }}
+                        onPress={() =>
+                          downloadPDF(
+                            url,
+                            `Document_${index + 1}.${fileExtension}`,
+                          )
+                        }>
+                        <Text style={styles.pdfText}>{`PDF File ${
+                          index + 1
+                        }`}</Text>
+                        <Image
+                          style={{height: 20, width: 20}}
+                          source={require('../../../assets/downloads.png')}
+                        />
+                      </TouchableOpacity>
+                    );
+                  } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                    // Handle image files that are stored as PDFs
+                    return (
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          borderWidth: 1,
+                          borderRadius: 10,
+                          paddingHorizontal: 10,
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginTop:10
+                        }}
+                        key={index}
+                        onPress={() =>
+                          downloadPDF(
+                            url,
+                            `Image_${index + 1}.${fileExtension}`,
+                          )
+                        }>
+                        <Text style={styles.pdfText}>{`Image as PDF ${
+                          index + 1
+                        }`}</Text>
+                        <Image
+                          style={{height: 20, width: 20}}
+                          source={require('../../../assets/downloads.png')}
+                        />
+                      </TouchableOpacity>
+                    );
+                  } else if (['doc', 'docx'].includes(fileExtension)) {
+                    // Handle Word documents
+                    return (
+                      <TouchableOpacity
+                        style={{
+                          flexDirection: 'row',
+                          borderWidth: 1,
+                          borderRadius: 10,
+                          paddingHorizontal: 10,
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          marginTop:10
+                        }}
+                        key={index}
+                        onPress={() =>
+                          downloadPDF(
+                            url,
+                            `Document_${index + 1}.${fileExtension}`,
+                          )
+                        }>
+                        <Text style={styles.pdfText}>{`Word Document ${
+                          index + 1
+                        }`}</Text>
+                        <Image
+                          style={{height: 20, width: 20}}
+                          source={require('../../../assets/downloads.png')}
+                        />
+                      </TouchableOpacity>
+                    );
+                  } else {
+                    return null;
+                  }
+                })}
               </View>
             )}
 
@@ -325,6 +429,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
+    flex: 1,
     marginVertical: 5,
     color: '#000',
   },
