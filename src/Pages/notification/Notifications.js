@@ -13,7 +13,7 @@ const Notifications = () => {
   // const userId = useSelector(state => state?.loggedInUser?.userId);
   const userId = 1;
   const roleId = useSelector(state => state?.loggedInUser?.roleId);
-  console.log("user details=====> ", companyId, userId, roleId);
+  // console.log("user details=====> ", companyId, userId, roleId);
   const [latestId, setLatestId] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +23,8 @@ const Notifications = () => {
   }, [])
 
   const getNotificationsList = () => {
-    const apiUrl = `${global?.userData?.productURL}${API.GET_NOTIFICATION_LIST}/${userId}/${roleId}/${companyId}`;
+    const getFlag=1;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_NOTIFICATION_LIST}/${userId}/${roleId}/${companyId}/${getFlag}`;
     setIsLoading(true);
     console.log('customer api===>', apiUrl);
     axios
@@ -35,7 +36,9 @@ const Notifications = () => {
       .then(response => {
         set_notifications(response?.data || []);
         setIsLoading(false);
-        setLatestId(response?.data[0]?.id);
+        if(response?.data && response?.data[0]?.id){
+          setLatestId(response?.data[0]?.id);
+        }
         console.log(
           'INSIDE CUSTOMERS ===> ',
           response.data,
@@ -48,8 +51,8 @@ const Notifications = () => {
   };
 
   const updateRead = (Id) => {
-    // const latestId = 10;
-    const apiUrl = `${global?.userData?.productURL}${API.UPDATE_READ_MSG}/${Id}/${userId}/${roleId}/${companyId}`;
+    const flag=1;
+    const apiUrl = `${global?.userData?.productURL}${API.UPDATE_READ_MSG}/${latestId}/${userId}/${roleId}/${companyId}/${flag}`;
     setIsLoading(true);
     console.log('customer api===>', apiUrl);
     axios
@@ -114,6 +117,8 @@ const Notifications = () => {
           size="large"
           color="#1F74BA"
         />
+      ) : notifications.length === 0 ? (
+        <Text style={styles.noCategoriesText}>You have no notifications ! </Text>
       ) :
         (<View style={styles.container}>
           <FlatList
@@ -186,6 +191,14 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5, // Make the dot circular
     backgroundColor: '#ff0000', // Red color for the dot
+  },
+  noCategoriesText: {
+    top: 40,
+    textAlign: 'center',
+    color: '#000000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    padding: 5,
   },
 });
 
