@@ -118,10 +118,12 @@ const NewStyleDetail = ({ route }) => {
   const [retailerPrice, setRetailerPrice] = useState(null);
   const [mrp, setMrp] = useState(null);
   const [fixedDiscount, setfixedDiscount] = useState(0);
-  // const [colorCode, setColorCode]=useState('');
+  const [colorCode, setColorCode]=useState('');
 
   // const [styleQuantity, setStyleQuantity]=useState('');
   // const [fabricQuantity, setFabricQuantity]=useState('');
+  const [styleNum, setStyleNum]=useState(0);
+  
   const [gsm, setGsm] = useState('');
   const [hsn, setHsn] = useState('');
   // const [clousures, setClousures]=useState('');
@@ -180,7 +182,7 @@ const NewStyleDetail = ({ route }) => {
   useEffect(() => {
     if (route.params && route?.params?.styleDetails) {
       const styleDetails = route?.params?.styleDetails;
-      console.log("Tab Navigation page =======> ", styleDetails);
+      console.log("DATA TO PREPOPULATE =======> ", styleDetails);
 
       if (styleDetails.categoryId) {
         setSelectedCategoryId(styleDetails?.categoryId);
@@ -210,6 +212,7 @@ const NewStyleDetail = ({ route }) => {
 
       if (styleDetails?.colorId) {
         setSelectedColorIds([styleDetails?.colorId]);
+        // console.log("COLOR ID SETTED");
         setEditColor(false);
       }
 
@@ -246,7 +249,8 @@ const NewStyleDetail = ({ route }) => {
 
       if (styleDetails?.sizeList) {
         setShowScaleTable(true);
-        setSelectedSizes(styleDetails?.sizeList);
+        // setSelectedSizes(styleDetails?.sizeList);
+        handleEditSizeList(styleDetails?.sizeList)
         seteditAvailQty(false);
       }
       if (styleDetails?.imageUrls) {
@@ -255,7 +259,9 @@ const NewStyleDetail = ({ route }) => {
       if (styleDetails?.styleId) {
         setStyleId(styleDetails.styleId);
       }
-
+      if (styleDetails?.styleNum) {
+        setStyleNum(styleDetails?.styleNum);
+      }
     }
 
   }, [])
@@ -273,7 +279,7 @@ const NewStyleDetail = ({ route }) => {
   useEffect(() => {
     console.log(selectedCategoryId, styleName?.length, styleDesc?.length, dealerPrice, selectedColorIds?.length, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId)
     // if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
-    if (selectedCategoryId && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0  && selectedColorIds.length > 0 && selectedTypeId && selectedSeasonGroupId && (cedge_flag === 0 || selectedProcessWorkflowId) && selectedLocationId && selectedScaleId) {
+    if (selectedCategoryId && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedColorIds.length > 0 && selectedTypeId && selectedSeasonGroupId && (cedge_flag === 0 || selectedProcessWorkflowId) && selectedLocationId && selectedScaleId) {
       setNextButton(true);
     }
   }, [selectedCategoryId, styleName, styleDesc, dealerPrice, selectedColorIds, selectedTypeId, selectedSeasonGroupId, selectedProcessWorkflowId, selectedLocationId, selectedScaleId])
@@ -298,6 +304,22 @@ const NewStyleDetail = ({ route }) => {
     }
 
   }, [selectedCustomerLevelId, customerLevelList])
+
+
+
+  useEffect(() => {
+    if (selectedColorIds && selectedColorIds.length > 0) {
+      const l=selectedColorIds?.length;
+      const selectedColorId=selectedColorIds[l-1];
+      const found = colorList?.filter((item) => item.colorId === selectedColorId);
+      // console.log("FOund===> ", found);
+      if (found) {
+        setColorCode(found[0]?.colorCode);
+      }
+    }
+
+  }, [selectedColorIds, colorList])
+
 
   // useEffect(() => {
   //   if (selectedColorId && colorList.length > 0) {
@@ -378,8 +400,6 @@ const NewStyleDetail = ({ route }) => {
 
 
 
-
-
   const getCategoriesList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_CATEGORY_LIST}${companyId}`;
     setIsLoading(true);
@@ -432,6 +452,7 @@ const NewStyleDetail = ({ route }) => {
       })
       .then(response => {
         setColorList(response?.data.response.colorList || []);
+        // console.log("ColorList==> ", response?.data.response.colorList[0]);
         setFilteredColorList(response?.data.response.colorList || []);
         setIsLoading(false); // Set loading to false after receiving the response
       })
@@ -597,6 +618,29 @@ const NewStyleDetail = ({ route }) => {
       });
   }
 
+  const handleEditSizeList = (sizeList) => {
+    const filteredList = sizeList.map(item => ({
+      sizeId: item.sizeId,
+      gsCode: item.gsCode,
+      availQty: item.availQty,
+      gscodeMapId: item.gscodeMapId,
+      sizeDesc: item.sizeDesc,
+      dealerPrice: item.dealerPrice,
+      retailerPrice: item.retailerPrice,
+      mrp: item.mrp,
+      j_item_id: item.j_item_id,
+      article_no: item.article_no,
+    }));
+
+    console.log("filteredList===> ", filteredList)
+  
+    setSelectedSizes(filteredList);
+  };
+
+  // [{"sizeId":157,"gsCode":"8907536011327","availQty":0,"gscodeMapId":2680,"sizeDesc":"SmallJJJ","dealerPrice":383,
+  //   "retailerPrice":400,"mrp":500,"j_item_id":"","article_no":""},{"sizeId":158,"gsCode":"8907536011328","availQty":0,
+  //     "gscodeMapId":2681,"sizeDesc":"LargeJJJ","dealerPrice":383,"retailerPrice":400,"mrp":500,"j_item_id":"","article_no":""}]
+
   // Handle DropDowns Onselecting+showing+filtering till 249
 
   const handleCategoryDropDown = () => {
@@ -655,7 +699,7 @@ const NewStyleDetail = ({ route }) => {
       setSelectedColorIds([...selectedColorIds, item.colorId]);
     } else {
       setSelectedColorIds(selectedColorIds.filter(id => id !== item.colorId));
-      console.log("filtered colors ", selectedColorIds.filter(id => id !== item.colorId))
+      // console.log("filtered colors ", selectedColorIds.filter(id => id !== item.colorId))
     }
 
     if (selectedColorIds.length === filteredColorList.length - 1) {
@@ -878,7 +922,6 @@ const NewStyleDetail = ({ route }) => {
     formData.append("categoryDesc", mCategoryDesc);
     formData.append("companyId", companyId);
     formData.append("linkType", 2);
-
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_CATEGORY}`;
 
@@ -1265,13 +1308,15 @@ const NewStyleDetail = ({ route }) => {
         colorName: item.colorName
       }));
 
-    console.log("colorsArray===>", colorsArray);
+    // console.log("colorsArray===>", colorsArray);
 
     const styleDetails = {
       styleId: styleId,
+      styleNum:styleNum,
       styleName: styleName,
       styleDesc: styleDesc,
-      colorId: selectedColorIds,
+      colorId: selectedColorIds[selectedColorIds.length-1],
+      colorCode:colorCode,
       price: Number(dealerPrice),
       typeId: selectedTypeId,
       retailerPrice: Number(retailerPrice),
@@ -1297,7 +1342,7 @@ const NewStyleDetail = ({ route }) => {
       myItemsStringify: JSON.stringify(colorsArray),
       imageUrls: imageUrls
     };
-    console.log("styleDetails====================>", styleDetails)
+    console.log("Data navigating to Upload ====================>", styleDetails);
     navigation.navigate('Product Images', { productStyle: styleDetails });
   }
 
@@ -1526,13 +1571,13 @@ const NewStyleDetail = ({ route }) => {
           </View>
 
           <Text style={{ marginHorizontal: 20, marginVertical: 3, color: "#000" }}>
-            {"Mrp "}
+            {"MRP "}
           </Text>
 
           <View style={style.inputContainer}>
             <TextInput
               style={style.txtinput}
-              placeholder="Mrp"
+              placeholder="MRP"
               placeholderTextColor="#000"
               value={mrp > 0 ? mrp.toString() : ''}
               onChangeText={(text) => {
@@ -1818,7 +1863,7 @@ const NewStyleDetail = ({ route }) => {
                 placeholder="Search"
                 onChangeText={filterColors}
               />
-              {console.log("checking length========>", filteredColorList?.length)}
+              {/* {console.log("checking length========>", filteredColorList?.length)} */}
               {filteredColorList?.length === 0 || (filteredColorList?.length === 1 && !filteredColorList[0]) && !isLoading ? (
                 <Text style={style.noCategoriesText}>Sorry, no results found!</Text>
               ) : (
@@ -1862,6 +1907,20 @@ const NewStyleDetail = ({ route }) => {
               )}
             </View>
           )}
+
+          <Text style={{ marginHorizontal: 20, marginVertical: 3, color: "#000" }}>
+            {"Color Code "}
+          </Text>
+          <View style={style.inputContainer}>
+            <TextInput
+              style={style.txtinput}
+              placeholder="Color Code"
+              placeholderTextColor="#000"
+              editable={false}
+              value={colorCode}
+              onChangeText={(text) => setColorCode(text)}
+            />
+          </View>
 
           <Text style={style.headerTxt}>{"Types *"}</Text>
 
@@ -2937,7 +2996,7 @@ const style = StyleSheet.create({
     padding: 10,
     marginBottom: 5,
     width: '100%',
-    color:"black"
+    color: "black"
   },
   inputContainer: {
     borderWidth: 1,

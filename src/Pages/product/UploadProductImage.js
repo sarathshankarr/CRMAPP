@@ -48,12 +48,11 @@ const UploadProductImage = ({ route }) => {
 
   useEffect(() => {
     const styleDetails = route?.params?.productStyle || route?.params?.styleDetails;
-    console.log("sizesListReq========================>>>>", route?.params?.productStyle?.sizesListReq)
+    // console.log("sizesListReq========================>>>>", route?.params?.productStyle?.sizesListReq)
     if (styleDetails) {
       setProductStyle(styleDetails);
 
-      // If images exist in styleDetails, set them to selectedImages
-      if (styleDetails.imageUrls && styleDetails.imageUrls.length > 0) {
+      if (styleDetails?.imageUrls && styleDetails?.imageUrls.length > 0 && selectedImages?.length===0) {
         const imageArray = styleDetails.imageUrls.map((url, index) => ({
           uri: url,
           width: 100,
@@ -67,7 +66,7 @@ const UploadProductImage = ({ route }) => {
 
       setStyleId(styleDetails?.styleId || 0);
       setSaveBtn(true);
-      console.log("route params from upload inside =======> ", styleDetails);
+      // console.log("route params from upload inside =======> ", styleDetails);
     }
 
     getStyleList();
@@ -176,7 +175,9 @@ const UploadProductImage = ({ route }) => {
     formData.append("styleId", 0);
     formData.append("styleName", productStyle.styleName);
     formData.append("styleDesc", productStyle.styleDesc);
+    formData.append("styleNum", productStyle.styleNum);
     formData.append("colorId", productStyle.colorId);
+    formData.append("colorCode", productStyle.colorCode);
     formData.append("price", productStyle.price);
     formData.append("typeId", productStyle.typeId);
     formData.append("sizeGroupId", productStyle.sizeGroupId);
@@ -243,10 +244,12 @@ const UploadProductImage = ({ route }) => {
     let formData = new FormData();
 
     // Append fields to FormData
-    formData.append("styleId", productStyle.styleId.toString());
+    formData.append("styleId", productStyle.styleId);
     formData.append("styleName", productStyle.styleName);
     formData.append("styleDesc", productStyle.styleDesc);
+    formData.append("styleNum", productStyle.styleNum);
     formData.append("colorId", productStyle.colorId.toString());
+    formData.append("colorCode", productStyle.colorCode);
     formData.append("price", productStyle.price.toString());
     formData.append("typeId", productStyle.typeId.toString());
     formData.append("sizeGroupId", productStyle.sizeGroupId.toString());
@@ -283,19 +286,29 @@ const UploadProductImage = ({ route }) => {
     formData.append("decId", (productStyle.decId || 0).toString());
     formData.append("trimId", (productStyle.trimId || 0).toString());
     formData.append("processId", (productStyle.processId || 0).toString());
-    // formData.append("imgUrls", JSON.stringify(productStyle.imageUrls) || '[]');
 
-    formData.append("imgUrls", productStyle.imageUrls)
-    // Append image files
+
     // selectedImages.forEach((image, index) => {
-    //   if (image.uri && image.mime) {
-    //     formData.append('files', {
-    //       uri: image.uri,
-    //       type: image.mime,
-    //       name: `image_${index}.jpg`,
-    //     });
-    //   }
+    //   formData.append('files', {
+    //     uri: image.uri,
+    //     type: image.mime,
+    //     name: `image_${index}.jpg`,
+    //   });
     // });
+
+    // formData.append("imgUrls", JSON.stringify([])
+
+    formData.append("imgUrls", productStyle.imageUrls);
+    // Append image files
+    selectedImages?.forEach((image, index) => {
+      if (image.uri && image.mime) {
+        formData.append('files', {
+          uri: image.uri,
+          type: image.mime,
+          name: `image_${index}.jpg`,
+        });
+      }
+    });
 
     // Log FormData contents in a readable format
     // const formDataObject = {};
@@ -311,7 +324,7 @@ const UploadProductImage = ({ route }) => {
     // URL for API
     const apiUrl = 'https://crm.codeverse.co/erpportal/api/style/editstyle';
     console.log("URL===> ", apiUrl);
-    console.log("formData====================>", formData)
+    console.log("FORMDATA BEFORE EDITING====================>", formData)
     setIsLoading(true);
     axios
       .put(apiUrl, formData, {
@@ -322,9 +335,9 @@ const UploadProductImage = ({ route }) => {
       })
       .then(response => {
         Alert.alert('Style edited successfully');
-        navigation.navigate('ProductsStyles', {reload:"true"});
         console.log("Response===> ", response);
         setIsLoading(false);
+        navigation.navigate('ProductsStyles', {reload:"true"});
       })
       .catch(error => {
         console.error('Error:', error.response ? error.response.data : error.message);

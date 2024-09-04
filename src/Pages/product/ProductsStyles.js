@@ -146,7 +146,7 @@ const ProductsStyles = ({route}) => {
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        console.log('Styles List:', response.data?.response?.stylesList[0]);
+        // console.log('Styles List:', response.data?.response?.stylesList[0]);
       })
       .catch(error => {
         console.error('Error:', error);

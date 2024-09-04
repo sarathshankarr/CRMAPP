@@ -70,7 +70,7 @@ const ProductInventory = () => {
           },
         },
       );
-      // console.log('Response:', response.data);
+      console.log('Response:', response.data.gsCodesList[0]);
       setInventoryData(response.data.gsCodesList);
       setFilteredData(response.data.gsCodesList); // Initialize filtered data
     } catch (error) {
@@ -84,9 +84,10 @@ const ProductInventory = () => {
     setSearchQuery(text);
     if (text) {
       const newData = inventoryData.filter(item => {
-        const itemData = `${item.styleName.toUpperCase()} ${item.sizeCode.toUpperCase()}`;
+        const itemData = `${item.styleName.toUpperCase()} ${item.sizeCode.toUpperCase()} ${item.gsCode}`;
+        const sku=`${item.gsCode}`
         const textData = text.toUpperCase();
-        return itemData.indexOf(textData) > -1;
+        return itemData.indexOf(textData) > -1 || sku.startsWith(textData) ;
       });
       setFilteredData(newData);
     } else {

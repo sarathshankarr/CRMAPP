@@ -178,6 +178,9 @@ const CommenHeaderHomeScreen = ({
   const goToCart = () => {
     navigation.navigate('Cart');
   };
+  const goToLocation = () => {
+    navigation.navigate('CustomerLocation');
+  };
 
   const cartItemCount = cartItems.length;
 
@@ -203,7 +206,7 @@ const CommenHeaderHomeScreen = ({
       )}
       <View style={styles.rightContainer}>
         {showLocationIcon && (
-          <TouchableOpacity style={styles.iconWrapper}>
+          <TouchableOpacity style={styles.iconWrapper} onPress={goToLocation}>
             <Image
               resizeMode="contain"
               style={styles.locationimg}

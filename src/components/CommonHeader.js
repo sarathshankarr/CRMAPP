@@ -39,6 +39,9 @@ const CommonHeader = ({
   const goToCart = () => {
     navigation.navigate('Cart');
   };
+  const goToLocation = () => {
+    navigation.navigate('CustomerLocation');
+  };
 
   const notifications = [
     { id: 1, icon: '🔔', message: 'Notification 1' },
@@ -81,7 +84,7 @@ const CommonHeader = ({
       <Text style={styles.title}>{truncateTitle(title)}</Text>
       <View style={styles.rightContainer}>
         {showLocationIcon && (
-          <TouchableOpacity style={styles.iconWrapper}>
+          <TouchableOpacity style={styles.iconWrapper} onPress={goToLocation}>
             <Image
               resizeMode="contain"
               style={styles.locationimg}
