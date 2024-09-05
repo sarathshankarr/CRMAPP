@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import { API } from './config/apiConfig';
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { CLEAR_CART } from './redux/ActionTypes';
 
 const Sidebar = ({ navigation, route }) => {
@@ -28,6 +28,11 @@ const Sidebar = ({ navigation, route }) => {
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const dispatch = useDispatch();
+  const loginuser = useSelector(state => state.loggedInUser);
+console.log("loginuser============>",loginuser)
+
+const isAdmin = loginuser?.role?.some(role => role.role === 'admin');
+console.log("isAdmin============>",isAdmin)
 
   useEffect(() => {
     const { params } = route ?? {};

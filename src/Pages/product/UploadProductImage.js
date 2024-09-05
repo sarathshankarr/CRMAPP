@@ -48,7 +48,7 @@ const UploadProductImage = ({ route }) => {
 
   useEffect(() => {
     const styleDetails = route?.params?.productStyle || route?.params?.styleDetails;
-    // console.log("sizesListReq========================>>>>", route?.params?.productStyle?.sizesListReq)
+    console.log("sizesListReq========================>>>>", route?.params?.productStyle?.sizesListReq)
     if (styleDetails) {
       setProductStyle(styleDetails);
 
@@ -200,7 +200,11 @@ const UploadProductImage = ({ route }) => {
     formData.append("cedgeStyle", productStyle.cedgeStyle);
     formData.append("compFlag", productStyle.compFlag);
     formData.append("companyName", productStyle.companyName);
-
+    formData.append("closureId", productStyle.closure);
+    formData.append("peakId", productStyle.peak);
+    formData.append("logoId", productStyle.logo);
+    formData.append("decId", productStyle.decoration);
+    formData.append("trimId", productStyle.trims);
 
     selectedImages.forEach((image, index) => {
       formData.append('files', {
@@ -262,7 +266,7 @@ const UploadProductImage = ({ route }) => {
     formData.append("fabricQuality", productStyle.fabricQuality || '');
     // formData.append("gst", productStyle.gst.toString() || '');
     formData.append("gsm", productStyle.gsm || '');
-    formData.append("customerLevel", productStyle.customerLevel.toString());
+    formData.append("customerLevel", productStyle?.customerLevel?.toString());
     formData.append("publishType", productStyle.publishType || '');
     formData.append("customerLevelPrice", productStyle.customerLevelPrice.toString() || '0');
     formData.append("discount", (productStyle.discount || 0).toString());
@@ -278,14 +282,15 @@ const UploadProductImage = ({ route }) => {
     formData.append("cedgeTypeId", (productStyle.cedgeTypeId || 0).toString());
     formData.append("cedgeSizeGroupId", (productStyle.cedgeSizeGroupId || 0).toString());
     formData.append("cedgeScaleId", (productStyle.cedgeScaleId || 0).toString());
-    formData.append("pub_to_jakya", (productStyle.pub_to_jakya || 0).toString());
-    formData.append("styleNum", (productStyle.styleNum || 0).toString());
-    formData.append("closureId", (productStyle.closureId || 0).toString());
-    formData.append("peakId", (productStyle.peakId || 0).toString());
-    formData.append("logoId", (productStyle.logoId || 0).toString());
-    formData.append("decId", (productStyle.decId || 0).toString());
-    formData.append("trimId", (productStyle.trimId || 0).toString());
+    formData.append("pub_to_jakya", (productStyle.pub_to_jakya || 0)?.toString());
+    formData.append("styleNum", (productStyle?.styleNum || 0).toString());
+    formData.append("closureId", productStyle?.closure?.toString());
+    formData.append("peakId", productStyle?.peak?.toString());
+    formData.append("logoId", productStyle?.logo?.toString());
+    formData.append("decId", productStyle?.decoration?.toString());
+    formData.append("trimId", productStyle?.trims?.toString());
     formData.append("processId", (productStyle.processId || 0).toString());
+    // formData.append("linkType",0);
 
 
     // selectedImages.forEach((image, index) => {

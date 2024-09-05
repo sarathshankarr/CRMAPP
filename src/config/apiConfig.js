@@ -73,7 +73,9 @@ export const API = {
   GET_Location:'erpportal/api/master/getLocation',
   GET_NOTIFICATION_LIST:'erpportal/api/master/getMessages',
   UPDATE_READ_MSG:'erpportal/api/master/updateRead',
-
+  GET_KAPTURE:'erpportal/api/master/getAllMasters',
+  VALIDATE_KAPTURE:'erpportal/api/master/isValidClosures',
+  ADD_KAPTURE:'erpportal/api/master/saveMaster'
 };
 
 export const USER_ID = 'adminClientId';

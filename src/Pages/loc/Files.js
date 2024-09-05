@@ -77,32 +77,86 @@ const Files = ({route}) => {
     }
   };
 
+  // const requestStoragePermission = async () => {
+  //   try {
+  //     const granted = await PermissionsAndroid.requestMultiple([
+  //       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //       PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+  //     ]);
+
+  //     if (
+  //       granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+  //         PermissionsAndroid.RESULTS.GRANTED &&
+  //       granted['android.permission.READ_EXTERNAL_STORAGE'] ===
+  //         PermissionsAndroid.RESULTS.GRANTED
+  //     ) {
+  //       return true;
+  //     } else {
+  //       Alert.alert(
+  //         'Permission Denied',
+  //         'Storage permission is required to save the file. Please grant the permission.',
+  //       );
+  //       return false;
+  //     }
+  //   } catch (err) {
+  //     console.warn('Error requesting storage permission:', err);
+  //     return false;
+  //   }
+  // };
+
   const requestStoragePermission = async () => {
     try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      ]);
-
-      if (
-        granted['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-          PermissionsAndroid.RESULTS.GRANTED &&
-        granted['android.permission.READ_EXTERNAL_STORAGE'] ===
-          PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        return true;
-      } else {
-        Alert.alert(
-          'Permission Denied',
-          'Storage permission is required to save the file. Please grant the permission.',
-        );
-        return false;
+      if (Platform.OS === 'android') {
+        if (Platform.Version >= 33) {
+          // Android 13 and above
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+            {
+              title: 'Storage Permission Required',
+              message: 'This app needs access to your storage to download PDF',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } else if (Platform.Version >= 30) {
+          // Android 11 - 12 (Scoped Storage)
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            {
+              title: 'Storage Permission Required',
+              message: 'This app needs access to your storage to download PDF',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } else {
+          // Below Android 11
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+            {
+              title: 'Storage Permission Required',
+              message: 'This app needs access to your storage to download PDF',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        }
       }
+      return false;
     } catch (err) {
       console.warn('Error requesting storage permission:', err);
       return false;
     }
   };
+
+  
 
   const downloadPDF = async (url, fileName) => {
     try {
