@@ -43,7 +43,6 @@ const CustomTabBar = ({ state, descriptors, route }) => {
             setSelectedCompany(initialCompany);
             setCompanyLogo(initialCompany.companyLogo);
             dispatch({ type: SET_SELECTED_COMPANY, payload: initialCompany });
-            console.log('Initial Selected Company:', initialCompany);
           }
         }
       } catch (error) {
@@ -61,7 +60,6 @@ const CustomTabBar = ({ state, descriptors, route }) => {
   const handleCompanySelect = company => {
     setSelectedCompany(company);
     setCompanyLogo(company.companyLogo);
-    console.log('Selected Company:', company);
     setDropdownVisible(false);
     dispatch({ type: SET_SELECTED_COMPANY, payload: company });
   };
@@ -354,7 +352,6 @@ export default Home;
 //           const company = companyList[0];
 //           setCompanyLogo(company.companyLogo);
 //         } else {
-//           console.log('No company data found');
 //         }
 //       })
 //       .catch(error => {

@@ -47,7 +47,6 @@ const PackingConformation = ({route}) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -166,7 +165,6 @@ const PackingConformation = ({route}) => {
         ...prevSelectedItems,
         [itemId]: !prevSelectedItems[itemId],
       };
-      console.log('Checkbox Toggled:', updated); // Debug log
       return updated;
     });
   };
@@ -225,7 +223,7 @@ const PackingConformation = ({route}) => {
         [
           {
             text: 'Cancel',
-            onPress: () => console.log('Action Cancelled'),
+            onPress: () => ('Action Cancelled'),
             style: 'cancel',
           },
           {
@@ -259,7 +257,6 @@ const PackingConformation = ({route}) => {
   }, [triggerUpdate]);
 
   const updateDisOrder = () => {
-    console.log('Selected Items (Before API Call):', selectedItems);
     const requestData = {
       orderId: order?.orderId || 0,
       totalGst: order?.totalGst || 0,
@@ -307,7 +304,6 @@ const PackingConformation = ({route}) => {
       )
       .then(response => {
         if (response.data.status.success) {
-          console.log('Order updated successfully', requestData);
           navigation.goBack();
         } else {
           console.error('Failed to update order:', response.data.status);

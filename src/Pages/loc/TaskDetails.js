@@ -99,7 +99,6 @@ const TaskDetails = ({route}) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -117,7 +116,6 @@ const TaskDetails = ({route}) => {
         setEditStatus(true);
       }
     }
-    // console.log("useeffect",(parseFloat(distance)*1000)-100 )
   }, [distance]);
 
   const companyId = selectedCompany
@@ -142,7 +140,6 @@ const TaskDetails = ({route}) => {
         },
       })
       .then(response => {
-        // console.log('API Response:', response.data);
         const taskOptions = response.data.map(task => ({
           id: task.id,
           label: task.taskName,
@@ -191,7 +188,6 @@ const TaskDetails = ({route}) => {
         },
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Location permission granted');
       } else {
         console.log('Location permission denied');
       }
@@ -235,7 +231,6 @@ const TaskDetails = ({route}) => {
   };
 
   const createAddressString = task => {
-    console.log('Full Task Object:', task);
 
     const {
       houseNo = '',
@@ -260,7 +255,6 @@ const TaskDetails = ({route}) => {
     ];
     const address = addressParts.filter(part => part.trim()).join(', ');
 
-    console.log('Constructed Address:', address);
     return address;
   };
 
@@ -276,7 +270,6 @@ const TaskDetails = ({route}) => {
 
       if (data.status === 'OK') {
         const location = data.results[0].geometry.location;
-        console.log('Geocoded Location:', location);
         return location;
       } else {
         console.error('Geocoding error:', data.status);
@@ -291,7 +284,6 @@ const TaskDetails = ({route}) => {
   };
 
   const handleTaskSelect = async task => {
-    console.log('Selected Task:', task);
     setSelectedTask(task);
 
     if (!mLat || !mLong) {
@@ -362,10 +354,8 @@ const TaskDetails = ({route}) => {
       Alert.alert(
         'You must be within 100 meters of the destination to upload a selfie',
       );
-      console.log('upload', parseFloat(distance) * 1000 - 100);
       return;
     }
-    // console.log("out", parseFloat(distance));
 
     const MAX_SELFIES = 1;
 
@@ -402,7 +392,6 @@ const TaskDetails = ({route}) => {
       })
       .catch(error => {
         if (error.code === 'E_PICKER_CANCELLED') {
-          console.log('User canceled the camera');
         } else {
           console.error('Image capture error:', error);
           Alert.alert('Error', 'Failed to capture image.');
@@ -461,10 +450,8 @@ const TaskDetails = ({route}) => {
           `document_${index}_${Date.now()}.${document.name.split('.').pop()}`,
       });
     });
-    console.log('formData==================>', formData);
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_LOCATION_IMAGES}`;
-    console.log('ADD_LOCATION_IMAGES', apiUrl0);
 
     axios
       .post(apiUrl0, formData, {
@@ -474,7 +461,6 @@ const TaskDetails = ({route}) => {
         },
       })
       .then(response => {
-        console.log('response.data=======>', response.data);
         Alert.alert('Success', 'added successfully.', [
           {text: 'OK', onPress: () => navigation.navigate('CustomerLocation')}, // Navigate to Location screen on OK
         ]);
@@ -536,7 +522,6 @@ const TaskDetails = ({route}) => {
       }
     } catch (error) {
       if (DocumentPicker.isCancel(error)) {
-        console.log('User canceled the picker');
       } else {
         console.error('Error picking document:', error);
       }
@@ -583,7 +568,6 @@ const TaskDetails = ({route}) => {
   const getDetails = async () => {
     try {
       const apiUrl = `${global?.userData?.productURL}${API.GET_Location}/${id}/${companyId}`;
-      console.log('apiUrl=====>', apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -613,7 +597,6 @@ const TaskDetails = ({route}) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
-      console.log('DATA========> ', url, data?.rows[0].elements[0]);
       if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
         const distance = data.rows[0].elements[0].distance.text;
         return distance;

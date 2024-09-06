@@ -143,9 +143,6 @@ const ModalComponent = ({
               ...cartItems[existingItemIndex],
               quantity: updatedQuantity.toString(),
             };
-            console.log(
-              `Updating existing item at index ${existingItemIndex} with quantity ${updatedItem.quantity}`,
-            );
             dispatch(updateCartItem(existingItemIndex, updatedItem));
           } else {
             itemsToUpdate.push(itemBaseDetails);
@@ -209,7 +206,6 @@ const ModalComponent = ({
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        // console.log('Styles List:', response.data?.response?.stylesList);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -257,7 +253,6 @@ const ModalComponent = ({
     if (sizeDesc) {
       updatedInputValues[sizeDesc] = (currentQuantity + 1).toString();
       setInputValues(updatedInputValues);
-      console.log('Updated Input Values after increment:', updatedInputValues);
     }
   };
 
@@ -270,7 +265,6 @@ const ModalComponent = ({
     if (sizeDesc && currentQuantity > 0) {
       updatedInputValues[sizeDesc] = (currentQuantity - 1).toString();
       setInputValues(updatedInputValues);
-      console.log('Updated Input Values after decrement:', updatedInputValues);
     }
   };
 

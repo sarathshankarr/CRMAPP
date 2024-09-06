@@ -26,7 +26,6 @@ const DistributorGrn = () => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -40,7 +39,6 @@ const DistributorGrn = () => {
 
   useEffect(() => {
     if (companyId) {
-      console.log("Fetching data for company ID:", companyId);
       getDistributorGrn();
     }
   }, [companyId]);
@@ -48,7 +46,6 @@ const DistributorGrn = () => {
   const getDistributorGrn = async () => {
     setLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_GRN}/${companyId}`;
-    console.log("Fetching Distributor GRN from:", apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -59,7 +56,6 @@ const DistributorGrn = () => {
       if (response.data.status.success) {
         const filteredOrders = response.data.response.ordersList.filter(order => order !== null);
         setOrders(filteredOrders);
-        // console.log('Filtered Orders:', filteredOrders);
       } else {
         // console.error('Failed to fetch orders:', response.data.status);
       }
@@ -72,7 +68,6 @@ const DistributorGrn = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    console.log("Refreshing data...");
     await getDistributorGrn();
     setRefreshing(false);
   };

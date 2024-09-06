@@ -26,7 +26,6 @@ const ModalScreen = ({modalVisible, closeModal, selectedItem, modalItems}) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -50,7 +49,6 @@ const ModalScreen = ({modalVisible, closeModal, selectedItem, modalItems}) => {
   };
 
   const handleSaveItem = () => {
-    console.log('Saving changes:', modalItems);
     modalItems.forEach(item => {
       const updatedItem = { ...item, companyId };
       dispatch(updateCartItem(updatedItem));

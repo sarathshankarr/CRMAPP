@@ -111,17 +111,14 @@ const NewTask = () => {
       customerType = 3; // Distributor
     }
 
-    console.log(`Customer Type: ${customerType}`);
 
     const customerId = switchStatus
       ? selectedCustomerId
       : selectedDistributorId;
-    console.log('customerId:', customerId);
 
     if (!customerId) return;
 
     const apiUrl = `${global?.userData?.productURL}${API.GET_CUSTOMER_LOCATION}/${customerId}/${customerType}/${companyId}`;
-    console.log('Fetching customer locations with companyId:', companyId);
 
     axios
       .get(apiUrl, {
@@ -131,7 +128,6 @@ const NewTask = () => {
       })
       .then(response => {
         setCustomerLocations(response.data);
-        // console.log('location response', response.data);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -184,7 +180,6 @@ const NewTask = () => {
   };
   const getFieldsList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_Fields_List}`;
-    console.log('apiUrl=================================>    ', apiUrl)
     setLoadinggg(true);
     axios
       .get(apiUrl, {
@@ -194,7 +189,6 @@ const NewTask = () => {
       })
       .then(response => {
         const FieldList = response.data || [];
-        // console.log("response===> ", response.data)
         setfieldsList(FieldList);
         setFilteredFieldsList(FieldList);
         setLoadinggg(false);
@@ -242,7 +236,6 @@ const NewTask = () => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -267,7 +260,6 @@ const NewTask = () => {
     const filtered = fieldsList?.filter(field =>
       field?.fieldName?.toLowerCase().includes(text?.toLowerCase()),
     );
-    console.log("FilterFields=== >", filtered)
     setFilteredFieldsList(filtered);
   };
 
@@ -353,7 +345,6 @@ const NewTask = () => {
 
 
   useEffect(() => {
-    console.log('task', task);
     if (route.params && route.params.task) {
       const { task } = route.params;
       // Populate state with task details if available
@@ -436,11 +427,6 @@ const NewTask = () => {
         task.locId,
         task.locationName,
       );
-      console.log(
-        'inside useEffect ',
-        selectedCustomerId,
-        selectedDistributorId,
-      );
     }
   }, [route.params, users, customers, distributor]);
 
@@ -469,7 +455,6 @@ const NewTask = () => {
     if (fieldsList?.length > 0) {
       const foundItem = fieldsList.filter((item) => item.id === id);
       setSelectedField(foundItem[0]?.fieldName);
-      console.log("field prepoulate=============>", id, foundItem[0]?.fieldName)
     }
   }
 
@@ -485,9 +470,7 @@ const NewTask = () => {
     }
 
     let foundItem = await users?.find(item => item.userId === role);
-    // console.log('users, role ==> ', users[0], role);
     if (foundItem) {
-      // console.log('founded user role ==> ', foundItem);
       setSelectedUserOption(foundItem.firstName);
     }
   };
@@ -559,7 +542,6 @@ const NewTask = () => {
         ) {
           setUsers(response.data.response.users);
           setFilteredUsers(response.data.response.users); // Initialize filtered users
-          console.log('get users[0]', response.data.response.users[0]);
         } else {
           console.error('Error fetching users:', response.data);
         }
@@ -639,10 +621,8 @@ const NewTask = () => {
     setSelectedDateUntil(formattedDate); // Set the state without additional text
     hideDatePickerUntil();
   };
-  // console.log(selectedLocationId);
 
   const handleSave = () => {
-    // console.log(customerType);
     if (!taskName.trim() || !relatedTo.trim()) {
       Alert.alert('Alert', 'Please fill in all mandatory fields');
       return; // Exit the function early if any mandatory field is empty
@@ -661,12 +641,10 @@ const NewTask = () => {
     const customerId = switchStatus
       ? selectedCustomerId
       : selectedDistributorId;
-    // console.log('customerId:', customerId);
 
     const customeroption = switchStatus
       ? selectedCustomerOption
       : selectedDistributorOption;
-    // console.log('customeroption:', customeroption);
 
     const requestData = {
       id: route.params.task.id || 0,
@@ -694,7 +672,6 @@ const NewTask = () => {
       type: 2
     };
 
-    console.log('Request Data:', requestData);
 
     axios
       .post(global?.userData?.productURL + API.ADD_UPDATE_TASK, requestData, {
@@ -704,7 +681,6 @@ const NewTask = () => {
         },
       })
       .then(response => {
-        console.log('Task added successfully:', response.data);
         navigation.goBack();
       })
       .catch(error => {

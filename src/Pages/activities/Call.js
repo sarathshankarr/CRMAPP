@@ -34,7 +34,6 @@ const Call = () => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -60,7 +59,6 @@ const Call = () => {
     navigation.navigate('NewCall', {call: {}});
   };
 
-  console.log('companyId', companyId);
 
   const getAllCalls = () => {
     setLoading(true);
@@ -74,7 +72,6 @@ const Call = () => {
       .then(response => {
         setCalls(response.data);
         setFilteredCalls(response.data);
-        console.log('All calls ==>', response.data[0]);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -102,7 +99,6 @@ const Call = () => {
         },
       })
       .then(response => {
-        console.log("call==>",response.data)
         navigation.navigate('NewCall', {call: response.data, callId: callId});
       })
       .catch(error => {

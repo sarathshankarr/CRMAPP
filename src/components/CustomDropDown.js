@@ -86,7 +86,6 @@ const CustomDropDown = () => {
               }}
               onPress={() => {
                 handleCustomerSelection(item.firstName, item.lastName);
-                console.log(item);
               }}>
               <Text style={{fontWeight: '600', marginHorizontal: 15}}>
                 {item.firstName} {item.lastName}

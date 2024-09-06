@@ -39,7 +39,6 @@ const UploadProductImage = ({ route }) => {
   //       setSelectedImages(imageArray);
   //     }
 
-  //     console.log("route params from upload inside =======> ", styleDetails);
   //     setSaveBtn(true);
   //   }
 
@@ -48,7 +47,6 @@ const UploadProductImage = ({ route }) => {
 
   useEffect(() => {
     const styleDetails = route?.params?.productStyle || route?.params?.styleDetails;
-    console.log("sizesListReq========================>>>>", route?.params?.productStyle?.sizesListReq)
     if (styleDetails) {
       setProductStyle(styleDetails);
 
@@ -66,7 +64,6 @@ const UploadProductImage = ({ route }) => {
 
       setStyleId(styleDetails?.styleId || 0);
       setSaveBtn(true);
-      // console.log("route params from upload inside =======> ", styleDetails);
     }
 
     getStyleList();
@@ -76,7 +73,6 @@ const UploadProductImage = ({ route }) => {
   const getStyleList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_LIST}${companyId}`;
     setIsLoading(true);
-    console.log('GET_STYLE_LIST URL===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -117,12 +113,10 @@ const UploadProductImage = ({ route }) => {
           Alert.alert('Image Limit Exceeded', 'You can only upload a maximum of 10 images.');
         } else {
           setSelectedImages([...selectedImages, ...imageArray]);
-          console.log('Selected images: ', imageArray);
         }
       })
       .catch(error => {
         if (error.message.includes('User cancelled image selection')) {
-          console.log('Image selection was cancelled by the user.');
         } else {
           console.error('Error selecting images: ', error);
           Alert.alert('Error', 'An error occurred while selecting images. Please try again.');
@@ -140,10 +134,8 @@ const UploadProductImage = ({ route }) => {
   const handleSave = () => {
 
     if (ValidateStyle()) {
-      console.log("Validation true");
       handleSaveNewStyle();
     } else {
-      console.log("Validation false");
       Alert.alert("Already exist!");
       return;
     }
@@ -161,7 +153,6 @@ const UploadProductImage = ({ route }) => {
           ) ||
             productStyle.colorId === style.colorId)
       );
-      console.log(styleRecord ? "Already exist!" : "Validated ! , you can add this style");
       return styleRecord ? false : true;
     } else {
       return true;
@@ -218,10 +209,8 @@ const UploadProductImage = ({ route }) => {
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_STYLE}`;
     const URL = apiUrl0
-    console.log("URL===> ", URL);
 
     setIsLoading(true);
-    console.log("formdata before saving  in Upload page ===========> ", formData);
 
     axios
       .post(URL, formData, {
@@ -233,7 +222,6 @@ const UploadProductImage = ({ route }) => {
       .then(response => {
         Alert.alert('New style created successfully');
         navigation.navigate('ProductsStyles', {reload:"true"});
-        console.log("Response===> ", response);
         setIsLoading(false);
       })
       .catch(error => {
@@ -324,12 +312,9 @@ const UploadProductImage = ({ route }) => {
     //     formDataObject[key] = value;
     //   }
     // });
-    // console.log("FormData Object===> ", formDataObject);
 
     // URL for API
     const apiUrl = 'https://crm.codeverse.co/erpportal/api/style/editstyle';
-    console.log("URL===> ", apiUrl);
-    console.log("FORMDATA BEFORE EDITING====================>", formData)
     setIsLoading(true);
     axios
       .put(apiUrl, formData, {
@@ -340,7 +325,6 @@ const UploadProductImage = ({ route }) => {
       })
       .then(response => {
         Alert.alert('Style edited successfully');
-        console.log("Response===> ", response);
         setIsLoading(false);
         navigation.navigate('ProductsStyles', {reload:"true"});
       })

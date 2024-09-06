@@ -69,7 +69,6 @@ console.log("isAdmin============>",isAdmin)
         },
       })
       .then(response => {
-        console.log('Get Inactive User Response:', response.data);
         if (response.data === true) {
           // Navigate to login screen
           navigation.reset({
@@ -156,12 +155,10 @@ console.log("isAdmin============>",isAdmin)
       compressImageQuality: 0.7,
     })
       .then(image => {
-        console.log('Camera Image Path:', image.path);
         setImage({ uri: image.path });
         setModalVisible(false);
       })
       .catch(error => {
-        console.log('Error taking photo from camera:', error);
         setModalVisible(false);
       });
   };
@@ -174,12 +171,10 @@ console.log("isAdmin============>",isAdmin)
       compressImageQuality: 0.7,
     })
       .then(image => {
-        console.log('Library Image Path:', image.path);
         setImage({ uri: image.path });
         setModalVisible(false);
       })
       .catch(error => {
-        console.log('Error choosing photo from library:', error);
         setModalVisible(false);
       });
   };
@@ -191,7 +186,6 @@ console.log("isAdmin============>",isAdmin)
     const companyId = globalUserData?.token?.companyId;
 
     const apiUrl = `${global?.userData?.productURL}${API.LOGINAUDIT}/${userId}/${companyId}/${1}/${2}`;
-    console.log('Constructed API URL:', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -199,7 +193,6 @@ console.log("isAdmin============>",isAdmin)
         },
       })
       .then(response => {
-        console.log('Logged out user:', response.data);
       })
       .catch(error => {
         console.error('Error:', error);

@@ -36,7 +36,6 @@ const HomeCategories = ({navigation}) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -83,7 +82,6 @@ const HomeCategories = ({navigation}) => {
       })
       .then(response => {
         setSelectedDetails(response?.data || []);
-        // console.log('Styles List:', response.data);
       })
       .catch(error => {
         console.error('Error:', error);

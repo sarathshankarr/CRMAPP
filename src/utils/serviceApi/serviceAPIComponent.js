@@ -2,12 +2,6 @@ import { API } from '../../config/apiConfig';
 
 export async function getAllProducts(userDetails, jsonValue) {
   try {
-    console.log("userDetails?.productURL+API.ALL_PRODUCTS_DATA", global?.userData?.productURL+ API.ALL_PRODUCTS_DATA);
-    console.log("ttoooo",global?.userData?.token?.access_token)
-    console.log('userDetails?.productURL:', global?.userData?.productURL);
-console.log('API.ALL_PRODUCTS_DATA:', API.ALL_PRODUCTS_DATA);
-
-
     const response = await fetch(userDetails?.productURL+API.ALL_PRODUCTS_DATA, {
       
       method: 'POST',
@@ -26,7 +20,6 @@ console.log('API.ALL_PRODUCTS_DATA:', API.ALL_PRODUCTS_DATA);
     }
 
     const data = await response.json();
-    // console.log('All Products API', data);
     return { data, error: undefined };
   } catch (error) {
     // console.error('All Products API error', error);
@@ -53,7 +46,6 @@ export async function getAllCategories(token) {
     }
 
     dataValue = await response.json();
-    // console.log('All Categories API', dataValue);
   } catch (error) {
     // console.error('All Categories API error', error);
     errorValue = error;

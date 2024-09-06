@@ -41,7 +41,6 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 const AddNewStyle = ({ route }) => {
   const navigation = useNavigation();
   const styleDetails = route?.params?.Style;
-console.log("styleDetails",styleDetails)
   return (
     <View style={styles.container}>
       <View style={{

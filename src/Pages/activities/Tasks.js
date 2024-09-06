@@ -34,7 +34,6 @@ const Tasks = () => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -54,7 +53,6 @@ const Tasks = () => {
       }
     }, [companyId])
   );
-console.log("companyId",companyId)
 
   const fetchTasks = () => {
     setLoading(true); // Show loading indicator
@@ -68,7 +66,6 @@ console.log("companyId",companyId)
       .then(response => {
         setTasks(response.data); // Update tasks state
         setFilteredTasks(response.data); // Initialize filtered tasks with all tasks
-        console.log("fetchTasks",response.data[0])
       })
       .catch(error => {
         console.error('Error:', error);
@@ -89,7 +86,6 @@ console.log("companyId",companyId)
       })
       .then(response => {
         navigation.navigate('NewTask', { task: response.data, taskId: taskId }); // Pass taskId along with task details
-        console.log('Fetched task by ID:', response.data);
       })
       .catch(error => {
         console.error('Error fetching task by ID:', error);

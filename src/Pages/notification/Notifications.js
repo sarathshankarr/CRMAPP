@@ -13,7 +13,6 @@ const Notifications = () => {
   // const userId = useSelector(state => state?.loggedInUser?.userId);
   const userId = 1;
   const roleId = useSelector(state => state?.loggedInUser?.roleId);
-  // console.log("user details=====> ", companyId, userId, roleId);
   const [latestId, setLatestId] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,7 +25,6 @@ const Notifications = () => {
     const getFlag=1;
     const apiUrl = `${global?.userData?.productURL}${API.GET_NOTIFICATION_LIST}/${userId}/${roleId}/${companyId}/${getFlag}`;
     setIsLoading(true);
-    console.log('customer api===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -39,10 +37,6 @@ const Notifications = () => {
         if(response?.data && response?.data[0]?.id){
           setLatestId(response?.data[0]?.id);
         }
-        console.log(
-          'INSIDE CUSTOMERS ===> ',
-          response.data,
-        );
       })
       .catch(error => {
         console.error('Error:', error);
@@ -54,7 +48,6 @@ const Notifications = () => {
     const flag=1;
     const apiUrl = `${global?.userData?.productURL}${API.UPDATE_READ_MSG}/${latestId}/${userId}/${roleId}/${companyId}/${flag}`;
     setIsLoading(true);
-    console.log('customer api===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -62,13 +55,10 @@ const Notifications = () => {
         },
       })
       .then(response => {
-
         console.log(
           'INSIDE updateRead  ===> ',
           response.data,
         );
-
-
       })
       .catch(error => {
         console.error('Error:', error);

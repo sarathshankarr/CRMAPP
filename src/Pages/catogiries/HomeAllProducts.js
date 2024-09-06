@@ -112,7 +112,6 @@ const HomeAllProducts = ({navigation}) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -159,7 +158,6 @@ const HomeAllProducts = ({navigation}) => {
   const getAllProducts = async companyId => {
     setIsLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA}`;
-    console.log('apiurll', apiUrl);
 
     try {
       const userData = await AsyncStorage.getItem('userdata');
@@ -171,7 +169,6 @@ const HomeAllProducts = ({navigation}) => {
         categoryId: '',
         companyId: companyId,
       };
-      console.log("REquest daTA ===> ", requestData)
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,

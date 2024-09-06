@@ -41,7 +41,6 @@ const Files = ({route}) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -63,7 +62,6 @@ const Files = ({route}) => {
     setLoading(true);
     try {
       const apiUrl = `${global?.userData?.productURL}${API.GET_Location}/${id}/${companyId}`;
-      console.log('apiUrl=====>', apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -186,7 +184,6 @@ const Files = ({route}) => {
         },
       }).fetch('GET', url);
 
-      console.log(`File downloaded to: ${filePath}`);
 
       Alert.alert('Download Success', `File downloaded to: ${filePath}`);
 

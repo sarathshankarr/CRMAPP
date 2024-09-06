@@ -7,7 +7,6 @@ export const isValidString = data => {
   };
 
   export function formatDateIntoDMY(formattedDate) {
-    // console.log(" ==>" , formattedDate)
     const parts = formattedDate.split('-');
     const year = parts[0];
     const month = parts[1];

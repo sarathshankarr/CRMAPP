@@ -65,7 +65,6 @@ const NewCategoryUi = () => {
 
       }
     }
-    console.log("pageNo===> ", pageNo, totalPages);
   }, [pageNo]);
 
   const fetchCategories = (companyId) => {
@@ -126,7 +125,6 @@ const NewCategoryUi = () => {
         categoryId: categoryId,
         companyId: companyId,
       };
-      console.log("Request Data  , Categories List ===> ", requestData);
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -138,7 +136,6 @@ const NewCategoryUi = () => {
       setProductsList(data);
       setTotalItems(response.data.totalItems);
       setTotalPages(response.data.totalPages);
-      console.log("reposne in category list ===> ", response.data)
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -150,7 +147,6 @@ const NewCategoryUi = () => {
   const getAllProducts = async (companyId) => {
     setIsLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA}`;
-    console.log("apiurll", apiUrl);
 
     try {
       const userData = await AsyncStorage.getItem('userdata');
@@ -162,7 +158,6 @@ const NewCategoryUi = () => {
         categoryId: '',
         companyId: companyId,
       };
-      console.log("Request Data  , all products ===> ", requestData);
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,

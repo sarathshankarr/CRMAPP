@@ -70,7 +70,6 @@ const AddNote = () => {
         setModalVisible(false);
       })
       .catch((error) => {
-        console.log('Error taking photo from camera:', error);
         setModalVisible(false);
       });
   };
@@ -87,7 +86,6 @@ const AddNote = () => {
         setModalVisible(false);
       })
       .catch((error) => {
-        console.log('Error choosing photo from library:', error);
         setModalVisible(false);
       });
   };

@@ -243,7 +243,6 @@ const NewStyleDetail = ({route}) => {
   useEffect(() => {
     if (route.params && route?.params?.styleDetails) {
       const styleDetails = route?.params?.styleDetails;
-      console.log('DATA TO PREPOPULATE =======> ', styleDetails);
 
       if (styleDetails.categoryId) {
         setSelectedCategoryId(styleDetails?.categoryId);
@@ -273,7 +272,6 @@ const NewStyleDetail = ({route}) => {
 
       if (styleDetails?.colorId) {
         setSelectedColorIds([styleDetails?.colorId]);
-        // console.log("COLOR ID SETTED");
         setEditColor(false);
       }
 
@@ -324,26 +322,21 @@ const NewStyleDetail = ({route}) => {
         setStyleNum(styleDetails?.styleNum);
       }
       if (styleDetails?.closureId) {
-        console.log('closureId', styleDetails?.closureId);
         setSelectedClosureId(styleDetails?.closureId);
       }
       if (styleDetails?.peakId) {
-        console.log('peakId', styleDetails?.peakId);
 
         setSelectedPeakId(styleDetails?.peakId);
       }
       if (styleDetails?.logoId) {
-        console.log('logoId', styleDetails?.logoId);
 
         setSelectedLogoId(styleDetails?.logoId);
       }
       if (styleDetails?.trimId) {
-        console.log('trimId', styleDetails?.trimId);
 
         setSelectedTrimsId(styleDetails?.trimId);
       }
       if (styleDetails?.decId) {
-        console.log('decId', styleDetails?.decId);
 
         setSelectedDecorationId(styleDetails?.decId);
       }
@@ -351,7 +344,6 @@ const NewStyleDetail = ({route}) => {
   }, []);
 
   // useEffect(() => {
-  //   console.log(selectedCategory?.length, styleName?.length, styleDesc?.length, dealerPrice, selectedCustomerLevel?.length, selectedColorIds?.length, selectedType?.length, selectedSeasonGroup?.length, selectedProcessWorkflow?.length, selectedLocation?.length, selectedScale?.length)
   //   if (selectedCategory.length > 0 && styleName.length > 0 && styleDesc.length > 0 && dealerPrice > 0 && selectedCustomerLevel?.length > 0 && selectedColorIds.length > 0 && selectedType.length > 0 && selectedSeasonGroup.length > 0 && (cedge_flag === 0 || selectedProcessWorkflow.length > 0) && selectedLocation.length > 0 && selectedScale.length > 0) {
   //     setNextButton(true);
   //   }
@@ -474,7 +466,6 @@ const NewStyleDetail = ({route}) => {
       const l = selectedColorIds?.length;
       const selectedColorId = selectedColorIds[l - 1];
       const found = colorList?.filter(item => item.colorId === selectedColorId);
-      // console.log("FOund===> ", found);
       if (found) {
         setColorCode(found[0]?.colorCode);
       }
@@ -564,7 +555,6 @@ const NewStyleDetail = ({route}) => {
   const getCategoriesList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_CATEGORY_LIST}${companyId}`;
     setIsLoading(true);
-    console.log('GET CATEGORIES LIST URL===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -584,7 +574,6 @@ const NewStyleDetail = ({route}) => {
   const getCustomerLevelList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_CUSTOMERLEVEL_LIST}`;
     setIsLoading(true);
-    console.log('GET_CUSTOMERLEVEL_LIST URL===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -608,7 +597,6 @@ const NewStyleDetail = ({route}) => {
   const getcolorsList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_COLOR_LIST}${companyId}`;
     setIsLoading(true);
-    console.log('GET COLORS LIST URL===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -617,7 +605,6 @@ const NewStyleDetail = ({route}) => {
       })
       .then(response => {
         setColorList(response?.data.response.colorList || []);
-        // console.log("ColorList==> ", response?.data.response.colorList[0]);
         setFilteredColorList(response?.data.response.colorList || []);
         setIsLoading(false); // Set loading to false after receiving the response
       })
@@ -629,7 +616,6 @@ const NewStyleDetail = ({route}) => {
   const getTypesList = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_TYPES_LIST}${companyId}`;
     setIsLoading(true);
-    console.log('GET_TYPES_LIST URL===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -649,7 +635,6 @@ const NewStyleDetail = ({route}) => {
   const getSeasonalGroups = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_SEASONGROUP_LIST}${companyId}`;
     setIsLoading(true);
-    console.log('GET_SEASONGROUP_LIST', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -674,7 +659,6 @@ const NewStyleDetail = ({route}) => {
   const getProcessWorkFlow = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_PROCESSWORKFLOW_LIST}`;
     setIsLoading(true);
-    console.log('GET_PROCESSWORKFLOW_LIST', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -698,7 +682,6 @@ const NewStyleDetail = ({route}) => {
       const requestData = {
         styleName: '',
       };
-      console.log('GET_LOCATION_C0_LIST', apiUrl0);
       axios
         .post(apiUrl0, requestData, {
           headers: {
@@ -717,7 +700,6 @@ const NewStyleDetail = ({route}) => {
     } else if (comp_flag === 1) {
       const apiUrl1 = `${global?.userData?.productURL}${API.GET_LOCATION_C1_LIST}${companyId}`;
       setIsLoading(true);
-      console.log('GET_LOCATION_C1_LIST', apiUrl1);
       axios
         .get(apiUrl1, {
           headers: {
@@ -745,7 +727,6 @@ const NewStyleDetail = ({route}) => {
     const text = '/scalesBysizegroupId';
     const apiUrl = `${global?.userData?.productURL}${API.GET_SCALES}${selectedSeasonGroupId}${text}`;
     // setIsLoading(true);
-    console.log('GET_SCALES', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -765,7 +746,6 @@ const NewStyleDetail = ({route}) => {
   const getAllSizesInScale = () => {
     const apiUrl = `${global?.userData?.productURL}${API.ALL_SIZES_IN_SCALE}/${companyId}`;
     setIsLoading(true);
-    console.log('ALL_SIZES_IN_SCALE', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -796,7 +776,6 @@ const NewStyleDetail = ({route}) => {
       article_no: item.article_no,
     }));
 
-    console.log('filteredList===> ', filteredList);
 
     setSelectedSizes(filteredList);
   };
@@ -866,7 +845,6 @@ const NewStyleDetail = ({route}) => {
       setSelectedColorIds([...selectedColorIds, item.colorId]);
     } else {
       setSelectedColorIds(selectedColorIds.filter(id => id !== item.colorId));
-      // console.log("filtered colors ", selectedColorIds.filter(id => id !== item.colorId))
     }
 
     if (selectedColorIds.length === filteredColorList.length - 1) {
@@ -888,8 +866,6 @@ const NewStyleDetail = ({route}) => {
 
   // const handleSelectallSizesInScales = (item) => {
   //   setSelectedModalSizeInSeasonListIds([...selectedModalSizeInSeasonListIds, item.id])
-  //   // console.log("season selected ", selectedModalSeasonGroupId, selectedModalSeasonGroup)
-  //   // console.log("sizes",selectedModalSizeInSeasonListIds.length, item.size );
   // }
 
   const handleSelectallSizesInScales = item => {
@@ -1020,10 +996,8 @@ const NewStyleDetail = ({route}) => {
   };
 
   const handleChangeScale = item => {
-    console.log('Selected Item:', item); // Log the selected item
 
     const sizes = item.scaleRange.split(',').map(size => size.trim());
-    console.log('Sizes Split:', sizes); // Log the split sizes
 
     const newSizes = sizes.map((size, index) => ({
       sizeId: index + 1,
@@ -1038,7 +1012,6 @@ const NewStyleDetail = ({route}) => {
       article_no: null,
     }));
 
-    console.log('New Sizes:', newSizes); // Log the new sizes being added
 
     // Update selectedSizes and then update all items
     setSelectedSizes(newSizes);
@@ -1056,7 +1029,6 @@ const NewStyleDetail = ({route}) => {
       ...item,
       [field]: Number(value),
     }));
-    console.log('updateAllItems', updatedSizes);
     setSelectedSizes(updatedSizes);
   };
 
@@ -1068,7 +1040,6 @@ const NewStyleDetail = ({route}) => {
       mrp: mrp ? Number(mrp) : 0,
       availQty: 0,
     }));
-    console.log('updateAllItems', updatedSizes);
     setSelectedSizes(updatedSizes);
   };
 
@@ -1097,7 +1068,6 @@ const NewStyleDetail = ({route}) => {
 
     // setIsLoading(true);
 
-    console.log('ADD_CATEGORY', apiUrl0);
     axios
       .post(apiUrl0, formData, {
         headers: {
@@ -1107,9 +1077,7 @@ const NewStyleDetail = ({route}) => {
       })
       .then(response => {
         // Alert.alert(`Category Created Successfully ${response?.data?.category}`);
-        // console.log("Response==> ", response.data);
         // setSelectedCategory(response?.data?.category)
-        console.log('response.data=======>', response.data);
         setSelectedCategoryId(response?.data?.categoryId);
         getCategoriesList();
         setIsLoading(false);
@@ -1156,7 +1124,6 @@ const NewStyleDetail = ({route}) => {
       userId: userId,
     };
 
-    console.log('ADD_COLOR======>', apiUrl0, requestData);
     axios
       .post(apiUrl0, requestData, {
         headers: {
@@ -1209,7 +1176,6 @@ const NewStyleDetail = ({route}) => {
       userId: userId,
     };
 
-    console.log('ADD_TYPE', apiUrl0);
     axios
       .post(apiUrl0, requestData, {
         headers: {
@@ -1261,7 +1227,6 @@ const NewStyleDetail = ({route}) => {
       userId: userId,
     };
 
-    console.log('ADD_SEASON_GROUP', apiUrl0);
     axios
       .post(apiUrl0, requestData, {
         headers: {
@@ -1320,7 +1285,6 @@ const NewStyleDetail = ({route}) => {
       userId: userId,
     };
 
-    console.log('ADD_SCALE', apiUrl0);
     axios
       .post(apiUrl0, requestData, {
         headers: {
@@ -1359,7 +1323,6 @@ const NewStyleDetail = ({route}) => {
     }
     const slash = '/';
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_CATEGORY}${mCategoryName}${slash}${companyId}`;
-    console.log('VALIDATE_CATEGORY', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -1367,7 +1330,6 @@ const NewStyleDetail = ({route}) => {
         },
       });
       if (response.data === true) {
-        console.log('VAlidated category');
         handleSaveCategoryModal();
       } else {
         Alert.alert(' This name has been used. Please enter a new name');
@@ -1390,7 +1352,6 @@ const NewStyleDetail = ({route}) => {
 
     const slash = '/';
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_COLOR}${modifiedColor}${slash}${companyId}`;
-    console.log('VALIDATE_COLOR', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -1398,7 +1359,6 @@ const NewStyleDetail = ({route}) => {
         },
       });
       if (response?.data?.isValid === true) {
-        console.log('VAlidated COLOR');
         handleSaveColorModal();
       } else {
         Alert.alert(' This name has been used. Please enter a new name');
@@ -1419,7 +1379,6 @@ const NewStyleDetail = ({route}) => {
 
     const slash = '/';
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_TYPE}${mTypeName}${slash}${companyId}`;
-    console.log('VALIDATE_TYPE', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -1427,7 +1386,6 @@ const NewStyleDetail = ({route}) => {
         },
       });
       if (response?.data === true) {
-        console.log('VAlidated TYPE');
         handleSaveTypesModal();
       } else {
         Alert.alert(' This name has been used. Please enter a new name');
@@ -1447,7 +1405,6 @@ const NewStyleDetail = ({route}) => {
     }
     const slash = '/';
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_SEASON_GROUP}${mSeasonGroupName}${slash}${companyId}`;
-    console.log('VALIDATE_SEASON_GROUP', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -1455,7 +1412,6 @@ const NewStyleDetail = ({route}) => {
         },
       });
       if (response.data === true) {
-        console.log('VAlidated SEASON_GROUP');
         handleSaveSeasonGroupsModal();
       } else {
         Alert.alert(' This name has been used. Please enter a new name');
@@ -1475,7 +1431,6 @@ const NewStyleDetail = ({route}) => {
     }
     const slash = '/';
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_SCALE}${mSize}${slash}${companyId}`;
-    console.log('VALIDATE_SCALE', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -1483,7 +1438,6 @@ const NewStyleDetail = ({route}) => {
         },
       });
       if (response.data === true) {
-        console.log('VAlidated SCALE');
         handleSaveScalesModal();
       } else {
         Alert.alert(' This name has been used. Please enter a new name');
@@ -1505,7 +1459,6 @@ const NewStyleDetail = ({route}) => {
         colorName: item.colorName,
       }));
 
-    // console.log("colorsArray===>", colorsArray);
 
     const styleDetails = {
       styleId: styleId,
@@ -1544,10 +1497,6 @@ const NewStyleDetail = ({route}) => {
       decoration: selectedDecorationId,
       trims: selectedTrimsId,
     };
-    console.log(
-      'Data navigating to Upload ====================>',
-      styleDetails,
-    );
     navigation.navigate('Product Images', {productStyle: styleDetails});
   };
 
@@ -1566,8 +1515,6 @@ const NewStyleDetail = ({route}) => {
       companyId: companyId,
     };
 
-    console.log('ADD_NEW_SIZE IN_SCALE', apiUrl0, requestData);
-
     axios
       .post(apiUrl0, requestData, {
         headers: {
@@ -1580,7 +1527,6 @@ const NewStyleDetail = ({route}) => {
         setSelectedScaleId(0);
         setSelectedScale('');
         setShowScaleTable(false);
-        // console.log("Response after creating ===> ", response?.data?.response?.scaleAddRequest[0]?.scaleId);
         // setSelectedScaleId(response?.data?.response?.scaleAddRequest[0]?.scaleId);
         // const item={
         //   scaleRange:response?.data?.response?.scaleAddRequest[0]?.combineSizeId,
@@ -1611,7 +1557,6 @@ const NewStyleDetail = ({route}) => {
   const getAllKapture = flagValue => {
   
     const apiUrl = `${global?.userData?.productURL}${API.GET_KAPTURE}/${flagValue}/${companyId}`;
-    console.log('Requesting URL:', apiUrl); // Log the URL to debug
   
     setIsKapturLoading(true); // Start loading
   
@@ -1622,7 +1567,6 @@ const NewStyleDetail = ({route}) => {
         },
       })
       .then(response => {
-        console.log('API Response:', response.data);
   
         // Update the appropriate state based on the flag
         if (flagValue === 1) {
@@ -1716,7 +1660,6 @@ const NewStyleDetail = ({route}) => {
       });
 
       if (response?.data === true) {
-        console.log('Validation successful:', response.data);
         // Close the modal after successful validation
         if (flag === 1) {
           setClosureModal(false);
@@ -1787,15 +1730,12 @@ const NewStyleDetail = ({route}) => {
       userId: userId,
     };
 
-    console.log('API Request============>:', apiUrl0, requestData);
-
     try {
       const response = await axios.post(apiUrl0, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-      console.log('Save Successful:', response.data);
       if (flag === 1) {
         setSelectedClosureId(response?.data?.m_id);
       } else if (flag === 2) {
@@ -2323,7 +2263,6 @@ const NewStyleDetail = ({route}) => {
                 placeholder="Search"
                 onChangeText={filterColors}
               />
-              {/* {console.log("checking length========>", filteredColorList?.length)} */}
               {filteredColorList?.length === 0 ||
               (filteredColorList?.length === 1 &&
                 !filteredColorList[0] &&

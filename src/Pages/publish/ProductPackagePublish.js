@@ -196,7 +196,6 @@ const ProductPackagePublish = () => {
       )
       .then(response => {
         const newCustomer = response.data.response.customerList[0];
-        console.log('ADD_CUSTOMER_DETAILS', newCustomer);
 
         // Update the selected customer details and ID
         setSelectedCustomerDetails([newCustomer]);
@@ -289,7 +288,6 @@ const ProductPackagePublish = () => {
       )
       .then(response => {
         const newDistributor = response.data.response.distributorList[0];
-        console.log('ADD_DISTRIBUTOR_DETAILS', newDistributor);
 
         // Update the selected distributor details and ID
         setSelectedDistributorDetails([newDistributor]);
@@ -365,7 +363,6 @@ const ProductPackagePublish = () => {
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        // console.log('Styles List:', response.data?.response?.stylesList);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -378,7 +375,6 @@ const ProductPackagePublish = () => {
   const getDistributorsDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTORS_DETAILS}/${companyId}`;
     setIsLoading(true);
-    console.log('Distributors API URL:', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -388,10 +384,6 @@ const ProductPackagePublish = () => {
       .then(response => {
         setDistributors(response?.data?.response?.distributorList || []);
         setIsLoading(false);
-        console.log(
-          'Distributors response:',
-          response?.data?.response?.distributorList,
-        );
       })
 
       .catch(error => {
@@ -403,7 +395,6 @@ const ProductPackagePublish = () => {
   const getCustomersDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.ADD_CUSTOMER_LIST}/${companyId}`;
     setIsLoading(true);
-    console.log('Customers API URL:', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -413,10 +404,6 @@ const ProductPackagePublish = () => {
       .then(response => {
         setCustomers(response?.data?.response?.customerList || []);
         setIsLoading(false);
-        console.log(
-          'Customers response:',
-          response?.data?.response?.customerList,
-        );
       })
       .catch(error => {
         console.error('Error:', error);
@@ -458,11 +445,6 @@ const ProductPackagePublish = () => {
       userId:userId,
       linkType: 3,
     };
-    console.log('stylesPublishList===>', checkedStyleIds);
-
-    console.log('customerIdOrDistributorId', customerIdOrDistributorId);
-    console.log('checkedModalIds:', checkedModalIds);
-    console.log('requestData:', requestData);
 
     try {
       const apiUrl =`${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
@@ -473,7 +455,6 @@ const ProductPackagePublish = () => {
         },
       });
 
-      console.log('Catalog generation response:', response.data);
 
       // Show success alert and reset checkbox selection
       Alert.alert(
@@ -483,8 +464,6 @@ const ProductPackagePublish = () => {
           {
             text: 'OK',
             onPress: () => {
-              console.log('OK Pressed');
-              // Reset checkedStyleIds after alert confirmation
               setCheckedStyleIds([]);
             },
           },

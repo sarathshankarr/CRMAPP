@@ -146,7 +146,6 @@ const ProductsStyles = ({route}) => {
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        // console.log('Styles List:', response.data?.response?.stylesList[0]);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -159,7 +158,6 @@ const ProductsStyles = ({route}) => {
   const getDistributorsDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTORS_DETAILS}/${companyId}`;
     setIsLoading(true);
-    console.log('Distributors API URL:', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -169,10 +167,6 @@ const ProductsStyles = ({route}) => {
       .then(response => {
         setDistributors(response?.data?.response?.distributorList || []);
         setIsLoading(false);
-        console.log(
-          'Distributors response:',
-          response?.data?.response?.distributorList,
-        );
       })
 
       .catch(error => {
@@ -184,7 +178,6 @@ const ProductsStyles = ({route}) => {
   const getCustomersDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.ADD_CUSTOMER_LIST}/${companyId}`;
     setIsLoading(true);
-    console.log('Customers API URL:', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -194,10 +187,6 @@ const ProductsStyles = ({route}) => {
       .then(response => {
         setCustomers(response?.data?.response?.customerList || []);
         setIsLoading(false);
-        console.log(
-          'Customers response:',
-          response?.data?.response?.customerList,
-        );
       })
       .catch(error => {
         console.error('Error:', error);
@@ -237,11 +226,7 @@ const ProductsStyles = ({route}) => {
       userId:userId,
       linkType: 3,
     };
-    console.log('stylesPublishList===>', checkedStyleIds);
 
-    console.log('customerIdOrDistributorId', customerIdOrDistributorId);
-    console.log('checkedModalIds:', checkedModalIds);
-    console.log('requestData:', requestData);
 
     try {
       const apiUrl =`${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
@@ -251,10 +236,6 @@ const ProductsStyles = ({route}) => {
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('Catalog generation response:', response.data);
-
-      // Show success alert and reset checkbox selection
       Alert.alert(
         'Success',
         'Styles published successfully!',
@@ -262,8 +243,6 @@ const ProductsStyles = ({route}) => {
           {
             text: 'OK',
             onPress: () => {
-              console.log('OK Pressed');
-              // Reset checkedStyleIds after alert confirmation
               setCheckedStyleIds([]);
             },
           },
@@ -296,11 +275,9 @@ const ProductsStyles = ({route}) => {
   };
 
   const fetchStyleById =(Id) => {
-    // console.log("fetchStyleById ===> ", Id)
     setLoading(true);
     const end="/0";
     const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_BY_ID}${Id}${end}`;
-    console.log("GET_STYLE_BY_ID", apiUrl);
     axios
       .get(apiUrl, {
         headers: {

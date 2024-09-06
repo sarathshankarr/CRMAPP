@@ -59,7 +59,6 @@
 //         if (initialCompanyData) {
 //           const initialCompany = JSON.parse(initialCompanyData);
 //           setInitialSelectedCompany(initialCompany);
-//           console.log('Initial Selected Company:', initialCompany);
 //         }
 //       } catch (error) {
 //         console.error('Error fetching initial selected company:', error);
@@ -91,7 +90,6 @@
 //         },
 //       })
 //       .then(response => {
-//         // console.log('API Response:', response.data);
 //         const taskOptions = response.data.map(task => ({
 //           id: task.id,
 //           label: task.taskName,
@@ -140,9 +138,7 @@
 //         },
 //       );
 //       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-//         console.log('Location permission granted');
 //       } else {
-//         console.log('Location permission denied');
 //       }
 //     } catch (err) {
 //       console.warn(err);
@@ -184,7 +180,6 @@
 //   };
 
 //   const createAddressString = task => {
-//     console.log('Full Task Object:', task);
 
 //     const {
 //       houseNo = '',
@@ -209,7 +204,6 @@
 //     ];
 //     const address = addressParts.filter(part => part.trim()).join(', ');
 
-//     console.log('Constructed Address:', address);
 //     return address;
 //   };
 
@@ -225,7 +219,6 @@
 
 //       if (data.status === 'OK') {
 //         const location = data.results[0].geometry.location;
-//         console.log('Geocoded Location:', location);
 //         return location;
 //       } else {
 //         console.error('Geocoding error:', data.status);
@@ -240,7 +233,6 @@
 //   };
 
 //   const handleTaskSelect = async task => {
-//     console.log('Selected Task:', task);
 //     setSelectedTask(task);
 //     setSearchQuery(task.label);
 //     setClicked(false);
@@ -259,7 +251,6 @@
 //     }
 //   };
 //   const handleTaskSelectt = task => {
-//     console.log('Selected Task:', task);
 //     setSelectedTask(task);
 //     setSearchQuery(task.label);
 //     setSelectedId(task.id);
@@ -553,7 +544,6 @@ const CustomerLocation = ({navigation}) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -578,7 +568,6 @@ const CustomerLocation = ({navigation}) => {
       return;
     }
     const apiUrl = `${global?.userData?.productURL}${API.GET_TASKS_ACC_USER}/${userData.userId}/${companyId}`;
-    console.log('apiUrl=====================>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -586,7 +575,6 @@ const CustomerLocation = ({navigation}) => {
         },
       })
       .then(response => {
-        // console.log('API Response:', response.data);
         const taskOptions = response.data.map(task => ({
           id: task.id,
           label: task.taskName,
@@ -603,7 +591,6 @@ const CustomerLocation = ({navigation}) => {
           dueDateStr: task.dueDateStr || '',
           desc: task.desc || '',
         }));
-        // console.log('All Tasks:', taskOptions);
         setTasks(taskOptions);
         setFilteredTasks(taskOptions); // This sets both tasks and filteredTasks
       })
@@ -636,7 +623,6 @@ const CustomerLocation = ({navigation}) => {
         },
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Location permission granted');
       } else {
         console.log('Location permission denied');
       }
@@ -680,7 +666,6 @@ const CustomerLocation = ({navigation}) => {
   };
 
   const createAddressString = task => {
-    // console.log('Full Task Object:', task);
 
     const {
       houseNo = '',
@@ -705,7 +690,6 @@ const CustomerLocation = ({navigation}) => {
     ];
     const address = addressParts.filter(part => part.trim()).join(', ');
 
-    // console.log('Constructed Address:', address);
     return address;
   };
 
@@ -721,7 +705,6 @@ const CustomerLocation = ({navigation}) => {
 
       if (data.status === 'OK') {
         const location = data.results[0].geometry.location;
-        // console.log('Geocoded Location:', location);
         return location;
       } else {
         console.error('Geocoding error:', data.status);
@@ -769,7 +752,6 @@ const CustomerLocation = ({navigation}) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
-      console.log('DATA========> ', url, data?.rows[0].elements[0]);
       if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
         const distance = data.rows[0].elements[0].distance.text;
         return distance;
@@ -790,7 +772,6 @@ const CustomerLocation = ({navigation}) => {
 
   const handleTaskSelectt = async task => {
     setLoading(true);
-    // console.log('Selected Task:', task);
     setSelectedTask(task);
     setSearchQuery(task.label);
     setSelectedId(task.id);

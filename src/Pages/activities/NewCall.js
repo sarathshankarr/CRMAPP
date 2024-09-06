@@ -119,7 +119,6 @@ const NewCall = () => {
       customerType = 3; // Distributor
     }
 
-    console.log(`Customer Type: ${customerType}`);
 
     const customerId = switchStatus
       ? selectedCustomerId
@@ -129,13 +128,10 @@ const NewCall = () => {
     const text = isEnabled
       ? 'customerId in getCustomerLocations :===>'
       : 'dtributorId in getCustomerLocations :===>';
-    console.log(text, customerId);
 
     if (!customerId) return;
 
-    console.log('request body ==> ', customerId, companyId, customerType);
     const apiUrl = `${global?.userData?.productURL}${API.GET_CUSTOMER_LOCATION}/${customerId}/${customerType}/${companyId}`;
-    console.log('Fetching customer locations with companyId:', companyId);
 
     axios
       .get(apiUrl, {
@@ -145,7 +141,6 @@ const NewCall = () => {
       })
       .then(response => {
         setCustomerLocations(response.data);
-        // console.log('location response', response.data);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -185,8 +180,6 @@ const NewCall = () => {
   useEffect(() => {
     if (route.params && route.params.call) {
       const {call} = route.params;
-      console.log('call===>   ', call);
-      console.log('call.userId===>   ', call.userId); // Add this log
       setRelatedTo(call.relatedTo || '');
       setSelectedUserId(call.userId);
       setAgenda(call.agenda || '');
@@ -214,12 +207,10 @@ const NewCall = () => {
   };
 
   const getTimeDiffandRemainder=(date, time)=>{
-    // console.log("DATE AND TIME ========================================================> ", date.split('T')[0], time);
     minutesBetweenDates(date.split('T')[0], time);
   }
 
   const getRemainder = time => {
-    console.log("rem==>",dropdownOptions[time-1],time)
     if (!time) return;
     setShowDropdownRow(true);
     // setshowRemainder(true);
@@ -232,9 +223,7 @@ const NewCall = () => {
     }
 
     let foundItem = await users?.find(item => item.userId === role);
-    console.log('users, role ==> ', users[0], role);
     if (foundItem) {
-      console.log('founded user role ==> ', foundItem);
       setSelectedUserOption(foundItem?.firstName);
     }
   };
@@ -304,12 +293,6 @@ const NewCall = () => {
         call.userId,
         call.userName,
         call.remTime
-      );
-      console.log(
-        'inside useEffect ',
-        selectedCustomerId,
-        selectedDistributorId,
-        selectedUserId
       );
     }
   }, [route.params, users, customers, distributor]);
@@ -381,7 +364,6 @@ const NewCall = () => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -415,7 +397,6 @@ const NewCall = () => {
         setLoadingg(false);
       });
 
-    console.log('customer LIst ===>', customers);
   };
 
   const handleShipDropdownClickDistributor = () => {
@@ -464,7 +445,6 @@ const NewCall = () => {
         console.error('Error:', error);
         setLoadinggg(false);
       });
-    console.log('distributor LIst ===>', distributor);
   };
 
   useEffect(() => {
@@ -522,10 +502,6 @@ const NewCall = () => {
         ) {
           setUsers(response.data.response.users);
           setFilteredUsers(response.data.response.users); // Initialize filtered users
-          console.log(
-            'response.data.response.users',
-            response.data.response.users[0],
-          );
         } else {
           console.error('Error fetching users:', response.data);
         }
@@ -606,15 +582,12 @@ const NewCall = () => {
     setSelectedDateUntil(formattedDate); // Set the state without additional text
     hideDatePickerUntil();
     
-    console.log("outside if of select date", selectedDropdownOptionTime.length) ;
 
     if(selectedDropdownOptionTime!=='Call Start Time' &&  selectedDropdownOptionTime?.length>0){
       minutesBetweenDates (formattedDate, selectedDropdownOptionTime);
-      console.log("INside if of select date") 
     }else{
       const defaultTime='11:59 PM'
       minutesBetweenDates (formattedDate, defaultTime);
-      console.log("INside else of select date") 
     }
 
   };
@@ -731,12 +704,10 @@ const NewCall = () => {
     const customerId = switchStatus
       ? selectedCustomerId
       : selectedDistributorId;
-    console.log('customerId:', customerId);
 
     const customeroption = switchStatus
       ? selectedCustomerOption
       : selectedDistributorOption;
-    console.log('customeroption: inside API CALL ==============================================>', customeroption);
 
     const requestData = {
       id: callData ? callData.id : 0,
@@ -767,7 +738,6 @@ const NewCall = () => {
       type: 2
     };
 
-    console.log('requested Data ===>  ', requestData);
     axios
       .post(global?.userData?.productURL + API.ADD_NEW_CALL, requestData, {
         headers: {
@@ -776,7 +746,6 @@ const NewCall = () => {
         },
       })
       .then(response => {
-        console.log('Call added successfully:', response.data);
         navigation.goBack();
       })
       .catch(error => {
@@ -925,8 +894,6 @@ const NewCall = () => {
   // Convert the difference to minutes
   const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
 
-  // console.log("Difference in minutes:", diffInMinutes);
-
 
     const filteredOptions = dropdownOptions.filter(o => o.value <= diffInMinutes);
 
@@ -938,9 +905,6 @@ const NewCall = () => {
         } else {
           setshowRemainder(true);
         }
-        console.log("difference :", diffInMinutes)
-        console.log("filteredDropdownOptions", filteredOptions)
-        console.log("showRemainder", showRemainder);
     }
   return (
     <ScrollView  style={{flex:1, backgroundColor:'#ffffff'}}>

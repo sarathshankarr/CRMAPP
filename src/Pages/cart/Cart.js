@@ -125,7 +125,6 @@ const Cart = () => {
   };
 
   const handleRemoveItem = index => {
-    console.log('Removing item at index:', index);
     dispatch(removeFromCart(index));
   };
 
@@ -154,7 +153,6 @@ const Cart = () => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -170,7 +168,6 @@ const Cart = () => {
     : initialSelectedCompany?.id;
 
   useEffect(() => {
-    console.log('Companyyyyyyyyy ID:', companyId);
   }, [companyId]);
 
   useEffect(() => {
@@ -178,7 +175,6 @@ const Cart = () => {
     const fetchUserRole = async () => {
       try {
         const storedUserRole = await AsyncStorage.getItem('userRole');
-        console.log('Stored user role:', storedUserRole);
         if (storedUserRole) {
           dispatch(
             setUserRole(
@@ -280,7 +276,6 @@ const Cart = () => {
         const storedUserData = await AsyncStorage.getItem('userData');
         if (storedUserData) {
           const userData = JSON.parse(storedUserData);
-          // console.log('Stored User Data:', userData);
           // Dispatch action to set user data in Redux
           dispatch(setLoggedInUser(userData));
         }
@@ -382,7 +377,6 @@ const Cart = () => {
       )
       .then(response => {
         const newCustomer = response.data.response.customerList[0];
-        console.log('ADD_CUSTOMER_DETAILS', newCustomer);
 
         // Update the selected customer details and ID
         setSelectedCustomerDetails([newCustomer]);
@@ -465,7 +459,6 @@ const Cart = () => {
       userId: userId
     };
 
-    console.log("requestData===>", requestData);
     axios
       .post(
         global?.userData?.productURL + API.ADD_DISTRIBUTOR_DETAILS,
@@ -479,7 +472,6 @@ const Cart = () => {
       )
       .then(response => {
         const newDistributor = response.data.response.distributorList[0];
-        console.log('ADD_DISTRIBUTOR_DETAILS', newDistributor);
 
         // Update the selected distributor details and ID
         setSelectedDistributorDetails([newDistributor]);
@@ -507,7 +499,6 @@ const Cart = () => {
       const requestData = {
         styleName: ""
       }
-      console.log('GET_LOCATION_C0_LIST', apiUrl0);
       axios
         .post(apiUrl0, requestData, {
           headers: {
@@ -527,7 +518,6 @@ const Cart = () => {
     } else if (comp_flag === 1) {
       const apiUrl1 = `${global?.userData?.productURL}${API.GET_LOCATION_C1_LIST}${companyId}`;
       setIsLoading(true);
-      console.log('GET_LOCATION_C1_LIST', apiUrl1);
       axios
         .get(apiUrl1, {
           headers: {
@@ -582,7 +572,6 @@ const Cart = () => {
       customerType = 3; // Distributor
     }
 
-    console.log(`Customer Type: ${customerType}`);
 
     if (!customerId) {
       console.error('customerId is undefined or null');
@@ -590,9 +579,7 @@ const Cart = () => {
     }
 
     const apiUrl = `${global?.userData?.productURL}${API.GET_CUSTOMER_LOCATION}/${customerId}/${customerType}/${companyId}`;
-    console.log('Fetching customer locations with companyId:', companyId);
 
-    console.log('API URL:', apiUrl);
 
     axios
       .get(apiUrl, {
@@ -602,7 +589,6 @@ const Cart = () => {
       })
       .then(response => {
         setCustomerLocations(response.data);
-        console.log('location response', response.data);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -634,7 +620,6 @@ const Cart = () => {
   const getCustomersDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.ADD_CUSTOMER_LIST}/${companyId}`;
     setIsLoading(true); // Set loading to true before making the request
-    console.log('customer api===>', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -644,10 +629,6 @@ const Cart = () => {
       .then(response => {
         setCustomers(response?.data?.response?.customerList || []);
         setIsLoading(false); // Set loading to false after receiving the response
-        console.log(
-          'INSIDE CUSTOMERS ===> ',
-          response?.data?.response?.customerList[0],
-        );
       })
       .catch(error => {
         console.error('Error:', error);
@@ -658,7 +639,6 @@ const Cart = () => {
   const getDistributorsDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTORS_DETAILS}/${companyId}`;
     setIsLoading(true);
-    console.log('distributors api ', apiUrl);
     axios
       .get(apiUrl, {
         headers: {
@@ -669,11 +649,6 @@ const Cart = () => {
         // const distributorList = response?.data?.response?.distributorList || [];
         setDistributors(response?.data?.response?.distributorList || []);
         setIsLoading(false);
-
-        console.log(
-          'get Distributors response ===>',
-          response?.data?.response?.distributorList[0],
-        );
       })
       .catch(error => {
         console.error('Error:', error);
@@ -689,7 +664,6 @@ const Cart = () => {
   };
 
   const handleCustomerSelection = (firstName, lastName, customerId) => {
-    console.log('INSIDE CUST HANDLE ===> ', firstName, lastName, customerId);
     setSelectedCustomer(`${firstName} ${lastName}`);
     setClicked(false);
     setSelectedCustomerId(customerId);
@@ -705,7 +679,6 @@ const Cart = () => {
   };
 
   const handleDistributorSelection = (firstName, lastName, customerId) => {
-    console.log('INSIDE DIST HANDLE ===> ', firstName, lastName, customerId);
     setSelectedDistributor(`${lastName}`);
     setClicked(false);
     setSelectedDistributorId(customerId);
@@ -721,20 +694,15 @@ const Cart = () => {
   };
 
   const handleLocationSelection = location => {
-    console.log('Selected Location:', location);
     setSelectedLocation(location.locationName);
     setSelectedLocationId(location.locationId);
     setFromToClicked(false);
   };
   const handleShipLocation = location => {
-    console.log('Selected Ship Location:', location);
     setSelectedShipLocation(location.locationName);
     setSelectedShipLocationId(location.locationId);
     setShipFromToClicked(false);
   };
-
-  // console.log('cart', cartItems);
-  // console.log('selecteditem', selectedItem);
 
   const PlaceAddOrder = () => {
     let customerType;
@@ -778,8 +746,6 @@ const Cart = () => {
         return;
       }
     }
-    // console.log("selectedLocationId   Billing==> ", selectedLocationId);
-    // console.log("selectedShipLocationId   Shipping   ==> ", selectedShipLocationId);
 
     if (!selectedLocationId) {
       Alert.alert('Alert', 'Please select a Billing to location.');
@@ -804,30 +770,24 @@ const Cart = () => {
 
     setIsSubmitting(true);
 
-    // console.log('loggedInUser:', loggedInUser);
-    // console.log('userRole:', userRole);
 
     // if (!loggedInUser || !userRole) {
     //   // Redirect to login screen or handle not logged in scenario
     //   return;
     // }
 
-    // console.log('userRole type:', typeof userRole);
 
     // let roleId = ''; // Initialize roleId
 
     // Check if userRole is an array and not empty
     // if (Array.isArray(userRole) && userRole.length > 0) {
     //   roleId = userRole[0].id; // Using the first id from userRole array
-    //   console.log('roleId from userRole:', roleId);
     // } else {
-    //   console.log('userRole is not an array or is empty');
     // }
 
     // Extract roleId from loggedInUser if userRole is not an array or is empty
     // if (!roleId && loggedInUser.role && loggedInUser.role.length > 0) {
     //   roleId = loggedInUser.role[0].id;
-    //   console.log('roleId from loggedInUser:', roleId);
     // }
 
     const selectedCustomerObj = customers.find(customer => {
@@ -936,7 +896,6 @@ const Cart = () => {
       // companyLocId: selectedCompanyLocationId,
       linkType: 3
     };
-    console.log('requestData', requestData);
     // return;
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
@@ -978,7 +937,6 @@ const Cart = () => {
   };
 
   const openModal = item => {
-    console.log(openModal);
     setSelectedItem(item);
 
     // Create a map to store the initial quantities for each item
@@ -1003,7 +961,6 @@ const Cart = () => {
   useEffect(() => {
     if (selectedItem) {
       setInputValuess(selectedItem.inputValue || {}); // Set to an empty object if selectedItem.inputValue is empty
-      console.log('Input Values:', inputValuess); // Log the inputValues state
     }
   }, [selectedItem]);
 
@@ -1105,7 +1062,6 @@ const Cart = () => {
       .join(', ');
 
     Clipboard.setString(copiedText);
-    console.log(`Copied values: ${copiedText} to clipboard`);
 
     updatedItems.forEach((updatedItem, updatedIndex) => {
       if (updatedItem.styleId === styleId && updatedItem.colorId === colorId) {
@@ -1217,7 +1173,6 @@ const Cart = () => {
     const cusDisID = isEnabled ? selectedCustomerId : selectedDistributorId;
     const cusrDisType = isEnabled ? 1 : 3;
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONLOACTION}/${locationInputValues.locationName}/${cusDisID}/${cusrDisType}/${companyId}`;
-    console.log('apiUrl==>', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -1287,10 +1242,6 @@ const Cart = () => {
         },
       )
       .then(response => {
-        console.log(
-          'ADD_CUSTOMER_LOCATION',
-          response.data.response.locationList,
-        );
         setSelectedCustomerLocationDetails(response.data.response.locationList);
         toggleLocationModal();
 
@@ -1319,14 +1270,12 @@ const Cart = () => {
   };
 
   useEffect(() => {
-    console.log('User Roleeeeee:', userRole);
   }, []); // Run only once when component mounts
 
 
   const handleSelectLocation = (item) => {
     setSelectedCompanyLocation(item.locationName);
     setSelectedCompanyLocationId(item.locationId);
-    console.log("Company Location details, ", item.locationName, item.locationId)
     setShowCompanyLocationList(false);
   }
 
@@ -1778,7 +1727,6 @@ const Cart = () => {
             </Text>
           ) : (
             <View>
-              {console.log('cartItems.length===>', cartItems)}
               {cartItems.map((item, index) => (
                 <View
                   key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>

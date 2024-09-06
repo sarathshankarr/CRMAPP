@@ -26,7 +26,6 @@ const AllCategoriesListed = ({ navigation, route }) => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -63,7 +62,6 @@ const AllCategoriesListed = ({ navigation, route }) => {
   const getAllCategories = async () => {
     setIsLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA}`;
-    console.log("apiUrl", apiUrl);
 
     try {
       const userData = await AsyncStorage.getItem('userdata');

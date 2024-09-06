@@ -48,7 +48,6 @@ const DistributorOrder = () => {
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
-          console.log('Initial Selected Company:', initialCompany);
         }
       } catch (error) {
         console.error('Error fetching initial selected company:', error);
@@ -80,7 +79,6 @@ const DistributorOrder = () => {
       });
       if (response.data.status.success) {
         setOrder(response.data.response.ordersList[0]);
-        // console.log('Order:', response.data.response.ordersList[0]);
       } else {
         console.error('Failed to fetch order:', response.data.status);
       }
@@ -112,15 +110,9 @@ const DistributorOrder = () => {
         const unitPrice = parseFloat(item.unitPrice) || 0;
         const gst = parseFloat(item.gst) || 0;
 
-        // Log values for debugging
-        console.log('item.orderLineitemId:', item.orderLineitemId);
-        console.log('shippedQty:', shippedQty);
-        console.log('receivedQty:', receivedQty);
-        console.log('inputQty:', inputQty);
 
         // Calculate qty as receivedQty + inputQty
         const qty = receivedQty + inputQty;
-        console.log('===>', qty);
         // Calculate gross value based on qty and unitPrice
         const grnGross = qty * unitPrice;
         const gstAmount = ((unitPrice * gst) / 100) * qty;
@@ -184,7 +176,6 @@ const DistributorOrder = () => {
     } else {
       inputQty = isChecked ? (shippedQty - receivedQty).toString() : '0';
     }
-    console.log('inputQty', inputQty);
 
     const unitPrice = parseFloat(item.unitPrice);
     const gst = parseFloat(item.gst);
@@ -269,25 +260,21 @@ const DistributorOrder = () => {
     if (isButtonDisabled) return; // Prevent further execution if button is disabled
     let flag = 0; 
     
-    console.log("flag1 ", flag);
     
     order?.orderLineItems?.forEach(item => {
         const q = parseInt(inputValues[item?.orderLineitemId] || 0, 10); // Ensure i is a number
         
         if (q > 0) {
             flag = 1; // Set flag to 1 if condition is met
-            console.log("setting flag", q)
         }
     });
     
-    console.log("flag2", flag);
 
     if(flag===0){
       Alert.alert('Cannot process empty fields. Please fill atleast one input field');
       return;
     }
 
-    console.log("Success");
 
     // return;
 
@@ -350,7 +337,6 @@ const DistributorOrder = () => {
       }),
     };
 
-    console.log('Request Data:', requestData);
     axios
       .post(global?.userData?.productURL + API.ADD_GRN_ORDER, requestData, {
         headers: {
@@ -359,7 +345,6 @@ const DistributorOrder = () => {
         },
       })
       .then(response => {
-        console.log('Response received:', response.data);
         navigation.navigate('Distributor GRN');
         getDistributorOrder();
       })

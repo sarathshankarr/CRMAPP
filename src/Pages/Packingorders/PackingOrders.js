@@ -48,7 +48,6 @@ const PackingOrders = () => {
       })
       .then(response => {
         setPackingOrders(response.data);
-        console.log("response.data ===> ", response.data)
         setLoading(false);
       })
       .catch(error => {
@@ -123,7 +122,6 @@ const PackingOrders = () => {
         },
       );
       const pdfBase64 = response.data.body;
-      console.log('Received PDF base64 data');
 
       if (Platform.OS === 'android') {
         const hasPermission = await requestStoragePermission();
@@ -137,11 +135,9 @@ const PackingOrders = () => {
       }
 
       pdfPath = `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Invoice_${orderId}_${pId}.pdf`;
-      console.log('Saving PDF to:', pdfPath);
 
       await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
       Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
-      console.log('PDF saved successfully at', pdfPath);
     } catch (error) {
       console.error('Error generating or saving PDF:', error);
       Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
@@ -162,7 +158,6 @@ const PackingOrders = () => {
         },
       );
       const pdfBase64 = response.data.body;
-      console.log('Received PDF base64 data');
 
       if (Platform.OS === 'android') {
         const hasPermission = await requestStoragePermission();
@@ -176,11 +171,9 @@ const PackingOrders = () => {
       }
 
       pdfPath = `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Pakinglist_${orderId}_${pId}.pdf`;
-      console.log('Saving PDF to:', pdfPath);
 
       await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
       Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
-      console.log('PDF saved successfully at', pdfPath);
     } catch (error) {
       console.error('Error generating or saving PDF:', error);
       Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
