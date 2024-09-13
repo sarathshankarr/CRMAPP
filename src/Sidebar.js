@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -8,15 +8,16 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
-import { API } from './config/apiConfig';
+import {API} from './config/apiConfig';
 import axios from 'axios';
-import { useDispatch, useSelector } from 'react-redux';
-import { CLEAR_CART } from './redux/ActionTypes';
+import {useDispatch, useSelector} from 'react-redux';
+import {CLEAR_CART} from './redux/ActionTypes';
 
-const Sidebar = ({ navigation, route }) => {
+const Sidebar = ({navigation, route}) => {
+  const userRole = useSelector(state => state.userRole) || '';
   const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState(require('../assets/profile.png'));
   const [userData, setUserData] = useState(null);
@@ -29,13 +30,16 @@ const Sidebar = ({ navigation, route }) => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const dispatch = useDispatch();
   const loginuser = useSelector(state => state.loggedInUser);
-console.log("loginuser============>",loginuser)
-
-const isAdmin = loginuser?.role?.some(role => role.role === 'admin');
-console.log("isAdmin============>",isAdmin)
-
+  // console.log('loginuser============>', loginuser);
+  const isAdmin = loginuser?.role?.some(role => role.role === 'admin');
+  const isDistributor = loginuser?.role?.some(
+    role => role.role === 'Distributor',
+  );
+  // console.log('isAdmin============>', isAdmin);
+  // console.log('isDistributor============>', isDistributor);
+  // console.log('userRole==========>', userRole);
   useEffect(() => {
-    const { params } = route ?? {};
+    const {params} = route ?? {};
     if (params && params.userData) {
       setUserData(params.userData);
     } else {
@@ -73,7 +77,7 @@ console.log("isAdmin============>",isAdmin)
           // Navigate to login screen
           navigation.reset({
             index: 0,
-            routes: [{ name: 'Login' }],
+            routes: [{name: 'Login'}],
           });
         } else {
           console.error('Account not inactive. Could not delete.');
@@ -100,8 +104,8 @@ console.log("isAdmin============>",isAdmin)
   };
 
   const toggleDropdownOrder = () => {
-    setdropdownVisibleOrder(!dropdownVisibleOrder)
-  }
+    setdropdownVisibleOrder(!dropdownVisibleOrder);
+  };
 
   const goToHome = () => {
     navigation.navigate('Home');
@@ -115,9 +119,9 @@ console.log("isAdmin============>",isAdmin)
     navigation.navigate('Order');
   };
 
-  const goToPackOrder =()=>{
-    navigation.navigate('Packorders')
-  }
+  const goToPackOrder = () => {
+    navigation.navigate('Packing orders');
+  };
   const goToProductInventory = () => {
     navigation.navigate('ProductInventory');
   };
@@ -125,7 +129,9 @@ console.log("isAdmin============>",isAdmin)
   const goToLocationInventory = () => {
     navigation.navigate('LocationInventory');
   };
-
+  const goToDistributorInventory = () => {
+    navigation.navigate('DistributorInventory');
+  };
   const goToDistributorGrn = () => {
     navigation.navigate('Distributor GRN');
   };
@@ -146,6 +152,9 @@ console.log("isAdmin============>",isAdmin)
   const goToCustomerLocation = () => {
     navigation.navigate('CustomerLocation');
   };
+  const goToAttendence = () => {
+    navigation.navigate('Attendence');
+  };
 
   const takePhotoFromCamera = () => {
     ImagePicker.openCamera({
@@ -155,7 +164,7 @@ console.log("isAdmin============>",isAdmin)
       compressImageQuality: 0.7,
     })
       .then(image => {
-        setImage({ uri: image.path });
+        setImage({uri: image.path});
         setModalVisible(false);
       })
       .catch(error => {
@@ -171,7 +180,7 @@ console.log("isAdmin============>",isAdmin)
       compressImageQuality: 0.7,
     })
       .then(image => {
-        setImage({ uri: image.path });
+        setImage({uri: image.path});
         setModalVisible(false);
       })
       .catch(error => {
@@ -185,19 +194,19 @@ console.log("isAdmin============>",isAdmin)
     const userId = globalUserData?.token?.userId;
     const companyId = globalUserData?.token?.companyId;
 
-    const apiUrl = `${global?.userData?.productURL}${API.LOGINAUDIT}/${userId}/${companyId}/${1}/${2}`;
+    const apiUrl = `${global?.userData?.productURL}${
+      API.LOGINAUDIT
+    }/${userId}/${companyId}/${1}/${2}`;
     axios
       .get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       })
-      .then(response => {
-      })
+      .then(response => {})
       .catch(error => {
         console.error('Error:', error);
-      })
-
+      });
   };
 
   const handleLogout = async () => {
@@ -208,28 +217,27 @@ console.log("isAdmin============>",isAdmin)
       await AsyncStorage.removeItem('userRoleId'); // Remove the user role ID from AsyncStorage
       await AsyncStorage.removeItem('loggedInUser'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('selectedCompany'); // Remove the logged-in user data from AsyncStorage
-      dispatch({ type: CLEAR_CART });
+      dispatch({type: CLEAR_CART});
 
       navigation.closeDrawer(); // Close the drawer
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Login' }],
+        routes: [{name: 'Login'}],
       });
     } catch (error) {
       console.error('Error clearing user data:', error);
     }
   };
 
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={{ backgroundColor: '#1F74BA' }}>
+        <View style={{backgroundColor: '#1F74BA'}}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Image style={[styles.img, { borderRadius: 30 }]} source={image} />
+              <Image style={[styles.img, {borderRadius: 30}]} source={image} />
             </TouchableOpacity>
-            <Text style={{ color: '#fff', fontSize: 20 }}>Profile</Text>
+            <Text style={{color: '#fff', fontSize: 20}}>Profile</Text>
           </View>
           <View>
             {userData && (
@@ -256,16 +264,18 @@ console.log("isAdmin============>",isAdmin)
           />
           <Text style={styles.categoriestxt}>Categories</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.inventoryhead} onPress={toggleDropdownOrder}>
+        <TouchableOpacity
+          style={styles.inventoryhead}
+          onPress={toggleDropdownOrder}>
           <Image
             style={styles.orderimg}
             source={require('../assets/orderr.png')}
           />
           <Text style={styles.ordertxt}>Order</Text>
-          <View style={{ marginLeft: 'auto' }}>
+          <View style={{marginLeft: 'auto'}}>
             <Image
               source={require('../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
+              style={{width: 20, height: 20}}
             />
           </View>
         </TouchableOpacity>
@@ -281,7 +291,7 @@ console.log("isAdmin============>",isAdmin)
             <TouchableOpacity
               style={styles.inventoryhead}
               onPress={goToPackOrder}>
-             <Image
+              <Image
                 style={styles.prodimg}
                 source={require('../assets/packing.png')}
               />
@@ -296,35 +306,52 @@ console.log("isAdmin============>",isAdmin)
             source={require('../assets/inventory.png')}
           />
           <Text style={styles.ordertxt}>Inventory</Text>
-          <View style={{ marginLeft: 'auto' }}>
+          <View style={{marginLeft: 'auto'}}>
             <Image
               source={require('../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
+              style={{width: 20, height: 20}}
             />
           </View>
         </TouchableOpacity>
 
         {dropdownVisible && (
           <View style={styles.dropdown}>
+            {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
+              <TouchableOpacity
+                style={styles.inventoryhead}
+                onPress={() => goToProductInventory('Product Inventory')}>
+                <Image
+                  style={styles.prodimg}
+                  source={require('../assets/product-management.png')}
+                />
+                <Text style={styles.dropdownItem}>Product Inventory</Text>
+              </TouchableOpacity>
+            {/* )} */}
+            {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
+              <TouchableOpacity
+                style={styles.inventoryhead}
+                onPress={() =>
+                  goToLocationInventory('Location Wise Inventory')
+                }>
+                <Image
+                  style={styles.prodimg}
+                  source={require('../assets/locationinv.png')}
+                />
+                <Text style={styles.dropdownItemm}>
+                  Location Wise Inventory
+                </Text>
+              </TouchableOpacity>
+            {/* )} */}
+
             <TouchableOpacity
               style={styles.inventoryhead}
-              onPress={() => goToProductInventory('Product Inventory')}>
+              onPress={() => goToDistributorInventory('Distributor Inventory')}>
               <Image
                 style={styles.prodimg}
-                source={require('../assets/product-management.png')}
+                source={require('../assets/disinventory.png')}
               />
-              <Text style={styles.dropdownItem}>Product Inventory</Text>
+              <Text style={styles.dropdownItemm}>Distributor Inventory</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.inventoryhead}
-              onPress={() => goToLocationInventory('Location Wise Inventory')}>
-              <Image
-                style={styles.prodimg}
-                source={require('../assets/locationinv.png')}
-              />
-              <Text style={styles.dropdownItemm}>Location Wise Inventory</Text>
-            </TouchableOpacity>
-            {/* Add more dropdown items here */}
           </View>
         )}
         <TouchableOpacity
@@ -336,21 +363,23 @@ console.log("isAdmin============>",isAdmin)
           />
           <Text style={styles.ordertxt}>Distributor GRN</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.inventoryhead}
-          onPress={toggleDropdownSecond}>
-          <Image
-            style={styles.orderimg}
-            source={require('../assets/activity.png')}
-          />
-          <Text style={styles.ordertxt}>Campaign Management</Text>
-          <View style={{ marginLeft: 'auto' }}>
+        {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
+          <TouchableOpacity
+            style={styles.inventoryhead}
+            onPress={toggleDropdownSecond}>
             <Image
-              source={require('../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
+              style={styles.orderimg}
+              source={require('../assets/activity.png')}
             />
-          </View>
-        </TouchableOpacity>
+            <Text style={styles.ordertxt}>Campaign Management</Text>
+            <View style={{marginLeft: 'auto'}}>
+              <Image
+                source={require('../assets/dropdown.png')}
+                style={{width: 20, height: 20}}
+              />
+            </View>
+          </TouchableOpacity>
+        {/* )} */}
         {dropdownVisiblee && (
           <View style={styles.dropdown}>
             <TouchableOpacity
@@ -365,21 +394,23 @@ console.log("isAdmin============>",isAdmin)
             {/* Add more dropdown items here */}
           </View>
         )}
-        <TouchableOpacity
-          style={styles.inventoryhead}
-          onPress={toggleDropdownthird}>
-          <Image
-            style={styles.orderimg}
-            source={require('../assets/publish.png')}
-          />
-          <Text style={styles.ordertxt}>Publish</Text>
-          <View style={{ marginLeft: 'auto' }}>
+        {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
+          <TouchableOpacity
+            style={styles.inventoryhead}
+            onPress={toggleDropdownthird}>
             <Image
-              source={require('../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
+              style={styles.orderimg}
+              source={require('../assets/publish.png')}
             />
-          </View>
-        </TouchableOpacity>
+            <Text style={styles.ordertxt}>Publish</Text>
+            <View style={{marginLeft: 'auto'}}>
+              <Image
+                source={require('../assets/dropdown.png')}
+                style={{width: 20, height: 20}}
+              />
+            </View>
+          </TouchableOpacity>
+        {/* )} */}
         {dropdownVisiblePublish && (
           <View style={styles.dropdown}>
             <TouchableOpacity
@@ -394,21 +425,23 @@ console.log("isAdmin============>",isAdmin)
             {/* Add more dropdown items here */}
           </View>
         )}
-        <TouchableOpacity
-          style={styles.inventoryhead}
-          onPress={toggleDropdownfourth}>
-          <Image
-            style={styles.orderimg}
-            source={require('../assets/box.png')}
-          />
-          <Text style={styles.ordertxt}>Product</Text>
-          <View style={{ marginLeft: 'auto' }}>
+        {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
+          <TouchableOpacity
+            style={styles.inventoryhead}
+            onPress={toggleDropdownfourth}>
             <Image
-              source={require('../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
+              style={styles.orderimg}
+              source={require('../assets/box.png')}
             />
-          </View>
-        </TouchableOpacity>
+            <Text style={styles.ordertxt}>Product</Text>
+            <View style={{marginLeft: 'auto'}}>
+              <Image
+                source={require('../assets/dropdown.png')}
+                style={{width: 20, height: 20}}
+              />
+            </View>
+          </TouchableOpacity>
+        {/* )} */}
         {dropdownVisibleProduct && (
           <View style={styles.dropdown}>
             <TouchableOpacity
@@ -423,15 +456,26 @@ console.log("isAdmin============>",isAdmin)
             {/* Add more dropdown items here */}
           </View>
         )}
-        <TouchableOpacity
-          onPress={goToCustomerLocation}
-          style={styles.inventoryhead}>
-          <Image
-            style={styles.locimg}
-            source={require('../assets/location-pin.png')}
-          />
-          <Text style={styles.ordertxt}>Location</Text>
-        </TouchableOpacity>
+        {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
+          <TouchableOpacity
+            onPress={goToCustomerLocation}
+            style={styles.inventoryhead}>
+            <Image
+              style={styles.locimg}
+              source={require('../assets/location-pin.png')}
+            />
+            <Text style={styles.ordertxt}>Location</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={goToAttendence}
+            style={styles.inventoryhead}>
+            <Image
+              style={styles.locimg}
+              source={require('../assets/attendence.png')}
+            />
+            <Text style={styles.ordertxt}>Attendence</Text>
+          </TouchableOpacity>
+        {/* )} */}
       </ScrollView>
 
       <View style={styles.logoutContainer}>
@@ -440,7 +484,7 @@ console.log("isAdmin============>",isAdmin)
             resizeMode="contain"
             style={[
               styles.logoutimg,
-              { tintColor: '#fff', height: 20, width: 20 },
+              {tintColor: '#fff', height: 20, width: 20},
             ]}
             source={require('../assets/logout.png')}
           />
@@ -450,7 +494,7 @@ console.log("isAdmin============>",isAdmin)
           style={styles.orderhead1}
           onPress={() => setDeleteModalVisible(true)}>
           <Image
-            style={{ height: 25, width: 25, tintColor: 'red' }}
+            style={{height: 25, width: 25, tintColor: 'red'}}
             source={require('../assets/delete.png')}
           />
           <Text
@@ -486,7 +530,7 @@ console.log("isAdmin============>",isAdmin)
             <TouchableOpacity
               style={styles.modalCancelButton}
               onPress={() => setModalVisible(false)}>
-              <Text style={{ color: 'white' }}>Cancel</Text>
+              <Text style={{color: 'white'}}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -741,5 +785,3 @@ const styles = StyleSheet.create({
 });
 
 export default Sidebar;
-
-

@@ -1,12 +1,20 @@
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { API } from '../../config/apiConfig';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {useSelector} from 'react-redux';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 const Notifications = () => {
-
   const navigation = useNavigation();
   const [notifications, set_notifications] = useState([]);
   const companyId = useSelector(state => state.selectedCompany.id);
@@ -16,13 +24,12 @@ const Notifications = () => {
   const [latestId, setLatestId] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-
   useEffect(() => {
     getNotificationsList();
-  }, [])
+  }, []);
 
   const getNotificationsList = () => {
-    const getFlag=1;
+    const getFlag = 1;
     const apiUrl = `${global?.userData?.productURL}${API.GET_NOTIFICATION_LIST}/${userId}/${roleId}/${companyId}/${getFlag}`;
     setIsLoading(true);
     axios
@@ -34,7 +41,7 @@ const Notifications = () => {
       .then(response => {
         set_notifications(response?.data || []);
         setIsLoading(false);
-        if(response?.data && response?.data[0]?.id){
+        if (response?.data && response?.data[0]?.id) {
           setLatestId(response?.data[0]?.id);
         }
       })
@@ -44,8 +51,8 @@ const Notifications = () => {
       });
   };
 
-  const updateRead = (Id) => {
-    const flag=1;
+  const updateRead = Id => {
+    const flag = 1;
     const apiUrl = `${global?.userData?.productURL}${API.UPDATE_READ_MSG}/${latestId}/${userId}/${roleId}/${companyId}/${flag}`;
     setIsLoading(true);
     axios
@@ -55,10 +62,7 @@ const Notifications = () => {
         },
       })
       .then(response => {
-        console.log(
-          'INSIDE updateRead  ===> ',
-          response.data,
-        );
+        console.log('INSIDE updateRead  ===> ', response.data);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -69,11 +73,50 @@ const Notifications = () => {
   const handleBacktton = () => {
     navigation.goBack();
     updateRead(latestId);
-  }
+  };
 
-  const renderItem = ({ item }) => (
+  const handleClearAll = () => {
+    Alert.alert(
+      'crm.codeverse.co says',
+      'Are you certain you want to clear all notifications? Once cleared, this action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'OK',
+          onPress: () => updateClearAll(),
+        },
+      ],
+      {cancelable: false},
+    );
+  };
+
+  const updateClearAll = () => {
+    const flag = 1;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_CLEARALL_MESSAGE}/${latestId}/${userId}/${roleId}/${companyId}/${flag}`;
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        console.log('notification cleared  ===> ', response.data);
+        getNotificationsList();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  };
+
+  const renderItem = ({item}) => (
     <View style={styles.notificationItem}>
-      <Text style={item.m_read === 0 ? styles.messageTextUnRead : styles.messageTextRead}>
+      <Text
+        style={
+          item.m_read === 0 ? styles.messageTextUnRead : styles.messageTextRead
+        }>
         {item.m_msg}
       </Text>
       {item.m_read === 0 && <View style={styles.unreadDot} />}
@@ -81,7 +124,7 @@ const Notifications = () => {
   );
 
   return (
-    <>
+    <View style={{flex: 1, backgroundColor: '#fff'}}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => handleBacktton()}>
           <Image
@@ -90,9 +133,27 @@ const Notifications = () => {
             style={styles.menuimg}
           />
         </TouchableOpacity>
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ color: '#000', fontSize: 18, textAlign: 'center', fontWeight: 'bold' }}>Notifications</Text>
+        <View style={{alignItems: 'center'}}>
+          <Text
+            style={{
+              color: '#000',
+              fontSize: 18,
+              textAlign: 'center',
+              fontWeight: 'bold',
+            }}>
+            Notifications
+          </Text>
         </View>
+        <TouchableOpacity
+          onPress={handleClearAll}
+          style={{
+            borderWidth: 1,
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 10,
+          }}>
+          <Text style={{color: '#000'}}>Clear all</Text>
+        </TouchableOpacity>
       </View>
 
       {isLoading ? (
@@ -108,19 +169,20 @@ const Notifications = () => {
           color="#1F74BA"
         />
       ) : notifications.length === 0 ? (
-        <Text style={styles.noCategoriesText}>You have no notifications ! </Text>
-      ) :
-        (<View style={styles.container}>
+        <Text style={styles.noCategoriesText}>
+          You have no notifications !{' '}
+        </Text>
+      ) : (
+        <View style={styles.container}>
           <FlatList
             data={notifications}
             renderItem={renderItem}
-            keyExtractor={(item) => item.id}
+            keyExtractor={item => item.id}
             contentContainerStyle={styles.list}
           />
-        </View>)
-
-      }
-    </>
+        </View>
+      )}
+    </View>
   );
 };
 
@@ -141,7 +203,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'space-between',
+    justifyContent: 'space-between',
     paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: 'white',
@@ -159,11 +221,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     elevation: 2, // for shadow on Android
     shadowColor: '#000', // for shadow on iOS
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.2,
     shadowRadius: 4,
     width: '90%',
-    marginHorizontal: 10
+    marginHorizontal: 10,
   },
   messageTextRead: {
     fontSize: 16,
@@ -192,6 +254,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
 export default Notifications;
-

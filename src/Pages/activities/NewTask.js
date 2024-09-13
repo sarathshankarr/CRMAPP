@@ -94,6 +94,9 @@ const NewTask = () => {
   const [fieldsList, setfieldsList] = useState([]);
   const [selectedFieldId, setSelectedFieldId] = useState();
 
+
+  const [isDropdownDisabled, setIsDropdownDisabled] = useState(false);
+
   useEffect(() => {
     setSelectedLocation('Select');
     setCustomerLocations([]);
@@ -361,6 +364,9 @@ const NewTask = () => {
       getTaskRepeatRem(task.repeatRem);
       task.priority && setMarkHighPriority(true);
       task?.customerType && task?.customerType === 1 ? setIsEnabled(true) : setIsEnabled(false);
+   
+      setIsDropdownDisabled(task.status === 'Completed');
+
     }
   }, [route.params]);
 
@@ -645,7 +651,23 @@ const NewTask = () => {
     const customeroption = switchStatus
       ? selectedCustomerOption
       : selectedDistributorOption;
-
+      
+      const getCurrentDateTime = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+        const day = now.getDate().toString().padStart(2, '0');
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      };
+    
+      // Set complete_date if conditions are met
+      const complete_date = (selectedStatusOption === "Completed") ? getCurrentDateTime() : null;
+    
+      console.log('Complete Date:', complete_date); // Debugging log
+      
     const requestData = {
       id: route.params.task.id || 0,
       customerId: customerId || 0,
@@ -669,9 +691,12 @@ const NewTask = () => {
       field: selectedFieldId || null,
       userId: userId,
       companyId: companyId,
-      type: 2
-    };
+      type: 2,
+      complete_date:complete_date,
+      del_stts:0
 
+    };
+console.log("requestData======>",requestData)
 
     axios
       .post(global?.userData?.productURL + API.ADD_UPDATE_TASK, requestData, {
@@ -1093,7 +1118,11 @@ const NewTask = () => {
             paddingRight: 15,
             marginHorizontal: 10,
             marginVertical: 1,
-          }}>
+            backgroundColor: isDropdownDisabled ? '#f0f0f0' : '#fff'
+          }}
+          disabled={isDropdownDisabled}
+          >
+            
           <Text style={{ color: "#000" }}>{selectedStatusOption || 'Status'}</Text>
           <Image
             source={require('../../../assets/dropdown.png')}

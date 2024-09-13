@@ -34,6 +34,8 @@ const TaskDetails = ({route}) => {
     task,
     distance,
     traveledDistance,
+    checkIn,
+    checkOut,
   } = route.params;
 
   const navigation = useNavigation();
@@ -44,7 +46,8 @@ const TaskDetails = ({route}) => {
   const [selectedStatusOption, setSelectedStatusOption] = useState('');
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
-  const isAdmin = userData?.role?.some(roleObj => roleObj.role === 'admin') || false;
+  const isAdmin =
+    userData?.role?.some(roleObj => roleObj.role === 'admin') || false;
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -69,13 +72,14 @@ const TaskDetails = ({route}) => {
   const [pdfUrls, setPdfUrls] = useState([]);
   const [traveleDis, setTraveledDis] = useState('0 km');
 
+  const [isSignedIn, setIsSignedIn] = useState(false); // Initialize the state
+
   const selectedCompany = useSelector(state => state.selectedCompany);
   const goToFiles = id => {
     navigation.navigate('Files', {id}); // Pass the id as a parameter
   };
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -155,6 +159,8 @@ const TaskDetails = ({route}) => {
           status: task.status || '',
           dueDateStr: task.dueDateStr || '',
           desc: task.desc || '',
+          checkIn: checkIn || '',
+          checkOut: checkOut || '',
         }));
         setTasks(taskOptions);
         setFilteredTasks(taskOptions);
@@ -231,7 +237,6 @@ const TaskDetails = ({route}) => {
   };
 
   const createAddressString = task => {
-
     const {
       houseNo = '',
       street = '',
@@ -643,6 +648,74 @@ const TaskDetails = ({route}) => {
       setTraveledDis(traveledDistance); // Keep the previous traveled distance
     }
   };
+  const formatDateTime = (date, format = 'full') => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+
+    if (format === 'full') {
+      // Return full date-time format: YYYY-MM-DDTHH:MM:SS
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    } else if (format === 'date') {
+      // Return only date format: YYYY-MM-DD
+      return `${year}-${month}-${day}`;
+    }
+  };
+  
+
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      setIsSignedIn(true); // User has checked in and checked out
+    } else if (checkIn && !checkOut) {
+      setIsSignedIn(true); // User has checked in but not checked out
+    } else {
+      setIsSignedIn(false); // User has not checked in
+    }
+  }, [checkIn, checkOut]);
+  
+  const PunchInPunchOut = async () => {
+        const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
+    const now = new Date();
+    const formattedDateTime = formatDateTime(now, 'full'); // For payload
+
+    // Prepare payload based on the isSignedIn state
+    const payload = isSignedIn
+      ? {
+          id: id,
+          checkOut: formattedDateTime, // Use current date-time for check-out
+          check_out_latitude: mLat, // Use current latitude
+          check_out_longitude: mLong, // Use current longitude
+          type: 1,
+        }
+      : {
+          id: id,
+          checkIn: formattedDateTime, // Use current date-time for check-in
+          check_in_latitude: mLat, // Use current latitude
+          check_in_longitude: mLong, // Use current longitude
+          type: 0,
+        };
+
+    console.log('payload========>', payload);
+
+    try {
+      const response = await axios.put(apiUrl, payload, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Response:', response.data);
+      // Optionally handle the response and update the state
+      setIsSignedIn(!isSignedIn); // Toggle the signed-in state
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'Failed to punch in/out. Please try again.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -703,6 +776,7 @@ const TaskDetails = ({route}) => {
         <View>
           <Text style={styles.remarksText}>Remarks</Text>
         </View>
+
         <View style={styles.textInputContainerremarks}>
           <TextInput
             style={styles.textInput}
@@ -712,37 +786,130 @@ const TaskDetails = ({route}) => {
             onChangeText={text => setRemark(text)}
           />
         </View>
-        <Text
+        <View
           style={{
-            fontWeight: 'bold',
-            color: '#000',
-            textAlign: 'right',
-            marginHorizontal: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
             marginVertical: 10,
-          }}>{` Distance btw 2 Locations is : ${distance} `}</Text>
-        <Text
-          style={{
-            fontWeight: 'bold',
-            color: '#000',
-            textAlign: 'right',
-            marginHorizontal: 10,
-          }}>{` Traveled Distance : ${traveledDistance || traveleDis} `}</Text>
+          }}>
+          {/* Left side: Check In and Check Out */}
+          <View>
+            {checkIn ? (
+              <Text style={{color: '#000', marginLeft: 10,fontWeight:"bold"}}>
+                Check In : {formatDateTime(new Date(checkIn), 'date')}
+              </Text>
+            ) : null}
+            {checkOut ? (
+              <Text style={{color: '#000', marginLeft: 10,fontWeight:"bold"}}>
+                Check Out : {formatDateTime(new Date(checkOut), 'date')}
+              </Text>
+            ) : null}
+          </View>
 
-        <View style={styles.switchContainer}>
+          {/* Right side: Distance and Traveled Distance */}
+          <View>
+            <Text
+              style={{
+                fontWeight: 'bold',
+                color: '#000',
+                textAlign: 'right',
+                marginRight: 10,
+              }}>{`Dis btw 2 Locations is : ${distance}`}</Text>
+            <Text
+              style={{
+                fontWeight: 'bold',
+                color: '#000',
+                textAlign: 'right',
+                marginRight: 10,
+              }}>{`Traveled Distance : ${
+              traveledDistance || traveleDis
+            }`}</Text>
+          </View>
+        </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
           <TouchableOpacity
-            onPress={handleShipDropdownClickStatus}
             style={[
-              styles.dropdownButton,
-              {backgroundColor: editStatus ? '#fff' : '#dedede'},
-            ]}>
-            <Text style={styles.dropdownText}>
-              {selectedStatusOption || status || 'Status'}
+              styles.signOutButton,
+              // Disable the button if checkIn and checkOut values are not null or undefined
+              checkIn && checkOut ? {backgroundColor: '#d3d3d3'} : null, // Grey out the button if disabled
+            ]}
+            onPress={() => {
+              // If both checkIn and checkOut values are present, disable the action
+              if (checkIn && checkOut) {
+                Alert.alert('You have already checked in and checked out');
+                return;
+              }
+
+              // Check if the user is within 100 meters
+              if (parseFloat(distance) * 1000 >= 100) {
+                Alert.alert(
+                  'You must be within 100 meters of the destination to Punch In or Punch Out',
+                );
+                return;
+              }
+
+              // Call PunchInPunchOut function if within range
+              PunchInPunchOut();
+            }}
+            disabled={!!checkIn && !!checkOut} // Use double negation to cast strings to booleans
+          >
+            <Text style={{color: '#000', fontSize: 15}}>
+              {isSignedIn ? 'Check Out' : 'Check In'}
             </Text>
-            <Image
-              source={require('../../../assets/dropdown.png')}
-              style={styles.dropdownImage}
-            />
           </TouchableOpacity>
+          {/* {!(checkIn && checkOut) && (
+  <TouchableOpacity
+    style={[
+      styles.signOutButton,
+      // Add a different style for when the button is enabled
+    ]}
+    onPress={() => {
+      // Check if both checkIn and checkOut values are present
+      if (checkIn && checkOut) {
+        Alert.alert('You have already checked in and checked out');
+        return;
+      }
+
+      // Check if the user is within 100 meters
+      if (parseFloat(distance) * 1000 >= 100) {
+        Alert.alert(
+          'You must be within 100 meters of the destination to Punch In or Punch Out',
+        );
+        return;
+      }
+
+      // Call PunchInPunchOut function if within range
+      PunchInPunchOut();
+    }}
+  >
+    <Text style={{color: '#000', fontSize: 15}}>
+      {isSignedIn ? 'Check Out' : 'Check In'}
+    </Text>
+  </TouchableOpacity>
+)} */}
+
+          <View style={styles.switchContainer}>
+            <TouchableOpacity
+              onPress={handleShipDropdownClickStatus}
+              style={[
+                styles.dropdownButton,
+                {backgroundColor: editStatus ? '#fff' : '#dedede'},
+              ]}>
+              <Text style={styles.dropdownText}>
+                {selectedStatusOption || status || 'Status'}
+              </Text>
+              <Image
+                source={require('../../../assets/dropdown.png')}
+                style={styles.dropdownImage}
+              />
+            </TouchableOpacity>
+          </View>
 
           {shipFromToClickedStatus &&
             editStatus &&
@@ -876,33 +1043,22 @@ const TaskDetails = ({route}) => {
             </View>
           )}
         </View>
-        {/* {!(selfieImageName && imageUrls.length > 0 && pdfUrls.length > 0) && ( */}
-          <TouchableOpacity
-            onPress={handleSave}
-            style={{
-              borderWidth: 1,
-              marginTop: 15,
-              marginBottom: 50,
-              marginHorizontal: 20,
-              borderRadius: 10,
-              paddingVertical: 10,
-              backgroundColor: '#F09120',
-              opacity: loadingg ? 0.6 : 1, // Adjust opacity based on loading state
-            }}
-            disabled={loadingg} // Disable button when loading
-          >
-            <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
-          </TouchableOpacity>
-         {/* )}  */}
-
-        {/* <View style={styles.uploadedFilesContainer}>
-        {selectedFiles.length > 0 &&
-          selectedFiles.map((file, index) => (
-            <View key={index} style={styles.filePreview}>
-              <Text>{file.name}</Text>
-            </View>
-          ))}
-      </View> */}
+        <TouchableOpacity
+          onPress={handleSave}
+          style={{
+            borderWidth: 1,
+            marginTop: 15,
+            marginBottom: 50,
+            marginHorizontal: 20,
+            borderRadius: 10,
+            paddingVertical: 10,
+            backgroundColor: '#F09120',
+            opacity: loadingg ? 0.6 : 1, // Adjust opacity based on loading state
+          }}
+          disabled={loadingg} // Disable button when loading
+        >
+          <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -1029,6 +1185,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginHorizontal: 10,
     marginVertical: 10,
+  },
+  signOutButton: {
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginHorizontal: 5,
+    borderRadius: 10,
   },
   dropdownButton: {
     height: 35,

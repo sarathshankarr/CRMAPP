@@ -9,6 +9,7 @@ import {
   Modal,
   TextInput,
   Image,
+  ScrollView,
 } from 'react-native';
 import axios from 'axios';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -28,6 +29,14 @@ const Order = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchInput, setShowSearchInput] = useState(false);
   const navigation = useNavigation();
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [searchKey, setSearchKey] = useState(1); // Default to "Type" or any other default
+  const [page, setPage] = useState(1);
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const selectedCompany = useSelector(state => state.selectedCompany);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -67,8 +76,9 @@ const Order = () => {
   const getAllOrders = () => {
     setLoading(true);
     const apiUrl = `${global?.userData?.productURL}${
-      API.GET_ALL_ORDER
-    }/${0}/${companyId}`;
+      API.GET_ALL_ORDER_LAZY
+    }/${0}/${10000}/${companyId}/${0}`;
+
     axios
       .get(apiUrl, {
         headers: {
@@ -84,6 +94,94 @@ const Order = () => {
       .finally(() => {
         setLoading(false);
       });
+  };
+  const getProductInventorySearch = async (initialLoad = false) => {
+    if (loading || !hasMoreData) return;
+
+    initialLoad ? setLoading(true) : setLoadingMore(true);
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_SEARCH}`;
+    const requestBody = {
+      dropdownId: searchKey,
+      fieldvalue: searchQuery,
+      from: 0,
+      to: 10000,
+      companyId: companyId,
+      pdfFlag: 0,
+    };
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      const fetchedData = response.data.gsCodesList.filter(
+        item => item !== null,
+      );
+      if (initialLoad) {
+        setOrders(fetchedData);
+      } else {
+        setOrders(prevData => [...prevData, ...fetchedData]);
+      }
+      setHasMoreData(fetchedData.length >= 100);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
+    setSearchQuery('');
+    setPage(1);
+    setHasMoreData(true);
+    getAllOrders(true);
+  };
+
+  const searchOption = [
+    {label: 'Order No', value: 5},
+    {label: 'Retailer', value: 2},
+    {label: 'Agent', value: 3},
+    {label: 'Sub Agent', value: 4},
+    {label: 'Distributor', value: 1},
+    {label: 'Retailer', value: 5},
+    {label: 'Order Date', value: 6},
+    {label: 'Order status', value: 7},
+    {label: 'Packing status', value: 8},
+  ];
+  //   const handleSearch = () => {
+  //     console.log("handleSearch======>",handleSearch)
+  //     setPage(1);
+  //     setHasMoreData(true);
+  //     getProductInventorySearch(true);
+  // };
+  const handleSearch = () => {
+    console.log('handleSearch======>', searchQuery);
+    setPage(1); // Reset page to 1 for fresh search
+    setHasMoreData(true); // Reset data fetching status
+    // Filter the orders based on the search query
+    const filteredOrders = orders.filter(item => {
+      if (!item) return false;
+      const customerName = item.customerName
+        ? item.customerName.toLowerCase()
+        : '';
+      const orderNum = item.orderNum
+        ? item.orderNum.toString().toLowerCase()
+        : '';
+      const query = searchQuery.toLowerCase();
+      return customerName.includes(query) || orderNum.includes(query);
+    });
+    setOrders(filteredOrders); // Update the state with filtered orders
   };
 
   useEffect(() => {
@@ -117,7 +215,7 @@ const Order = () => {
   // };
 
   const handleOrderPress = item => {
-      navigation.navigate('PackingConformation', {orderId: item.orderId});
+    navigation.navigate('PackingConformation', {orderId: item.orderId});
   };
 
   const toggleSearchInput = () => {
@@ -230,33 +328,64 @@ const Order = () => {
     });
 
   return (
-    <View style={{backgroundColor: '#faf7f6', flex: 1}}>
+    <View style={style.container}>
       <View style={style.searchContainer}>
-        <TextInput
-          style={[
-            style.searchInput,
-            searchQuery.length > 0 && style.searchInputActive,
-          ]}
-          autoFocus={false}
-          value={searchQuery}
-          onChangeText={text => setSearchQuery(text)}
-          placeholder="Search"
-          placeholderTextColor="#000"
-        />
+        <View style={style.searchInputContainer}>
+          <TextInput
+            style={[style.searchInput, {color: '#000'}]}
+            value={searchQuery}
+            onChangeText={text => {
+              setSearchQuery(text);
+              if (text.length === 0) {
+                setHasMoreData(true);
+                getAllOrders(true);
+              }
+            }}
+            placeholder="Search"
+            placeholderTextColor="#000"
+          />
+
+          <TouchableOpacity style={style.searchButton} onPress={toggleDropdown}>
+            <Text style={{color: '#000'}}>
+              {selectedSearchOption || 'Select'}
+            </Text>
+            <Image
+              style={style.image}
+              source={require('../../assets/dropdown.png')}
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
-          style={style.searchButton}
-          onPress={toggleSearchInput}>
-          <Image
-            style={style.image}
-            source={
-              showSearchInput
-                ? require('../../assets/close.png')
-                : require('../../assets/search.png')
-            }
-          />
+          style={style.searchIconContainer}
+          onPress={handleSearch}>
+          <Text
+            style={{
+              color: '#000',
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 10,
+            }}>
+            Search
+          </Text>
         </TouchableOpacity>
       </View>
+
+      {dropdownVisible && (
+        <View style={style.dropdownContent1}>
+          <ScrollView>
+            {searchOption.map((option, index) => (
+              <TouchableOpacity
+                style={style.dropdownOption}
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000'}}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
       {loading && orders.length === 0 ? (
         <ActivityIndicator
           size="large"
@@ -409,15 +538,20 @@ const style = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 5,
-    marginBottom: 10,
-    // borderWidth:1,
-    borderRadius: 30,
+    paddingHorizontal: 10,
+    marginVertical: 10,
+  },
+  backIcon: {
+    height: 25,
+    width: 25,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'lightgray',
+    borderRadius: 15,
     marginHorizontal: 10,
-    // backgroundColor:'#f1e8e6',
-    backgroundColor: 'white',
-    elevation: 5,
   },
   searchInput: {
     flex: 1,
@@ -431,10 +565,13 @@ const style = StyleSheet.create({
   },
   searchButton: {
     marginLeft: 'auto',
+    flexDirection: 'row',
   },
   image: {
-    height: 30,
-    width: 30,
+    height: 20,
+    width: 20,
+    marginLeft: 10,
+    marginRight: 10,
   },
   noCategoriesText: {
     top: 40,
@@ -443,6 +580,20 @@ const style = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
+  },
+  dropdownContent1: {
+    elevation: 5,
+    // height: 220,
+    alignSelf: 'center',
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  dropdownOption: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
 });
 

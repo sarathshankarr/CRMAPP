@@ -38,6 +38,8 @@ import CustomCheckBoxStatus from '../components/CustomCheckBoxStatus';
 import Location from '../Pages/location/Location';
 import Files from '../Pages/loc/Files';
 import Notifications from '../Pages/notification/Notifications';
+import DistributorInventory from '../Pages/inventory/DistributorInventory';
+import Attendence from '../Pages/attendence/Attendence';
 
 const Stack = createNativeStackNavigator();
 
@@ -144,12 +146,12 @@ const Routes = () => {
       <Stack.Screen
         name="ProductInventory"
         component={ProductInventory}
-        options={{headerShown: false}}
+        options={{headerShown: true}}
       />
       <Stack.Screen
         name="LocationInventory"
         component={LocationInventory}
-        options={{headerShown: false}}
+        options={{headerShown: true}}
       />
       <Stack.Screen
         name="SignUp"
@@ -248,9 +250,9 @@ const Routes = () => {
         options={{headerShown: false}}
       />
        <Stack.Screen
-        name="Packorders"
+        name="Packing orders"
         component={Packorders}
-        options={{headerShown: false}}
+        options={{headerShown: true}}
       />
           <Stack.Screen
         name="PackingConformation"
@@ -271,6 +273,16 @@ const Routes = () => {
         name="Notifications"
         component={Notifications}
         options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="DistributorInventory"
+        component={DistributorInventory}
+        options={{ headerShown: true }}
+      />
+       <Stack.Screen
+        name="Attendence"
+        component={Attendence}
+        options={{ headerShown: true }}
       />
     </Stack.Navigator>
   );

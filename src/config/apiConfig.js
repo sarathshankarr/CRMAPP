@@ -75,7 +75,22 @@ export const API = {
   UPDATE_READ_MSG:'erpportal/api/master/updateRead',
   GET_KAPTURE:'erpportal/api/master/getAllMasters',
   VALIDATE_KAPTURE:'erpportal/api/master/isValidClosures',
-  ADD_KAPTURE:'erpportal/api/master/saveMaster'
+  ADD_KAPTURE:'erpportal/api/master/saveMaster',
+  GET_DISTRIBUTOR_INVENTORY:'erpportal/api/ordermgmt/getAllDisInventoryLazy',
+  GET_DISTRIBUTOR_INVENTORY_SEARCH:'erpportal/api/filter/getdisInventoryLazyLoad',
+  GET_CLEARALL_MESSAGE:'erpportal/api/master/clearAllNotifications',
+  ADD_ALL_INVENTORY_LAZY:'erpportal/api/style/cedge/getAllInventoryLazy',
+  GET_ALL_INVENTORY_SEARCH:'erpportal/api/filter/getStyleInventoryForsearchLazyLoad',
+  ADD_LOCATION_INVENTORY_LAZY:'erpportal/api/style/cedge/getLocationInventory',
+  GET_ALL_LOCATION_INVENTORY_SEARCH:'erpportal/api/filter/getLocationInventoryForsearchLazyLoad',
+  GET_ALL_ORDER_LAZY: 'erpportal/api/ordermgmt/getAllOrdersForLazyLoad',
+  GET_ALL_ORDER_SEARCH:'erpportal/api/filter/getAllOrdersSearchForLazyLoad',
+  GET_ALL_STYLE_LAZY:'erpportal/api/style/getAllStyleLazy',
+  GET_ALL_STYLE_LAZY_SEARCH:'erpportal/api/filter/getStyleProductDataForLazyLoad',
+  PUNCH_IN_PUNCH_OUT:'erpportal/api/master/updateAttendanceSwape',
+  GET_PUNCH_IN_PUNCH_OUT:'erpportal/api/master/getAttendanceSwapes',
+  CHECK_IN_CHECK_OUT:'erpportal/api/master/updateTaskPunchInOut',
+  
 };
 
 export const USER_ID = 'adminClientId';

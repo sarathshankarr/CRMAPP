@@ -590,10 +590,14 @@ const CustomerLocation = ({navigation}) => {
           status: task.status || '',
           dueDateStr: task.dueDateStr || '',
           desc: task.desc || '',
+          checkIn: task.checkIn || null,    
+          checkOut: task.checkOut || null,
         }));
+        console.log('Response:', response.data);
         setTasks(taskOptions);
         setFilteredTasks(taskOptions); // This sets both tasks and filteredTasks
       })
+      
       .catch(error => {
         console.error(
           'Error fetching tasks:',
@@ -804,6 +808,8 @@ const CustomerLocation = ({navigation}) => {
       desc: task.desc,
       distance: roadDistance || '0 km',
       traveledDistance: traveledDistance,
+      checkIn:task.checkIn,
+    checkOut :task.checkOut,
     });
 
     // Reset switch state for the task

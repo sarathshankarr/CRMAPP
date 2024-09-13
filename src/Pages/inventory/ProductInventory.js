@@ -11,6 +11,7 @@ import {
   Keyboard,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -25,6 +26,13 @@ const ProductInventory = () => {
   const [loading, setLoading] = useState(true);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchOptions, setSearchOptions] = useState([]);
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [searchKey, setSearchKey] = useState(1); // Default to "Type" or any other default
+  const [page, setPage] = useState(1);
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   useEffect(() => {
@@ -54,13 +62,16 @@ const ProductInventory = () => {
   }, []);
 
   const getProductInventory = async () => {
-    const apiUrl = `${global?.userData?.productURL}${API.ADD_PRODUCT_INVENTORY}`;
+    const apiUrl = `${global?.userData?.productURL}${API.ADD_ALL_INVENTORY_LAZY}`;
     try {
       setLoading(true);
       const response = await axios.post(
         apiUrl,
         {
           companyId: companyId,
+          styleName:"",
+          from: (page - 1) * 100,
+          to:100
         },
         {
           headers: {
@@ -77,6 +88,73 @@ const ProductInventory = () => {
       setLoading(false);
     }
   };
+
+  
+  const getProductInventorySearch = async (initialLoad = false) => {
+    if (loading || !hasMoreData) return;
+  
+    initialLoad ? setLoading(true) : setLoadingMore(true);
+    
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_INVENTORY_SEARCH}`;
+    const requestBody = {
+      dropdownId: searchKey,
+      fieldvalue: searchQuery,
+      from: (page - 1) * 100,
+      to: 100,
+      companyId: companyId,
+    };
+  
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      const fetchedData = response.data.gsCodesList.filter(item => item !== null);
+      if (initialLoad) {
+        setInventoryData(fetchedData);
+      } else {
+        setInventoryData(prevData => [...prevData, ...fetchedData]);
+      }
+      setHasMoreData(fetchedData.length >= 100);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+  
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
+    setSearchQuery('');
+    setPage(1);
+    setHasMoreData(true);
+    getProductInventorySearch(true);
+  };
+  
+  const searchOption = [
+    { label: 'Style Name', value: 3 },
+    { label: 'Size', value: 4 },
+    { label: 'Type', value: 1 },
+    { label: 'Customer Level', value: 2 },
+    { label: 'SKU', value: 5 },
+  ];
+  
+  const handleSearch = () => {
+    setPage(1);
+    setHasMoreData(true);
+    getProductInventorySearch(true);
+  };
+  
+  
 
   const onChangeText = text => {
     setSearchQuery(text);
@@ -114,65 +192,90 @@ const ProductInventory = () => {
     </View>
   );
 
-  const handleGoBack = () => {
-    Keyboard.dismiss(); // Dismiss keyboard when navigating back
-    navigation.goBack();
-  };
 
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <TouchableOpacity onPress={handleGoBack}>
-          <Image
-            style={styles.backIcon}
-            source={require('../../../assets/back_arrow.png')}
-          />
-        </TouchableOpacity>
         <View style={styles.searchInputContainer}>
           <TextInput
-            style={[styles.searchInput, {color: '#000'}]}
-            onChangeText={onChangeText}
-            placeholder="Product Inventory"
+            style={[styles.searchInput, { color: '#000' }]}
+            value={searchQuery}
+            onChangeText={text => {
+              setSearchQuery(text);
+              if (text.length === 0) {
+                setHasMoreData(true);
+                getProductInventory(true);
+              }
+            }}            placeholder="Search"
             placeholderTextColor="#000"
           />
-          <TouchableOpacity style={styles.searchIconContainer}>
-            <Image
-              style={styles.searchIcon}
-              source={require('../../../assets/search.png')}
+     
+        <TouchableOpacity
+            style={styles.searchButton}
+            onPress={toggleDropdown}>
+          <Text style={{color:"#000"}}>{selectedSearchOption || 'Select'}</Text>
+          <Image
+              style={styles.image}
+              source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
         </View>
+          <TouchableOpacity style={styles.searchIconContainer} onPress={handleSearch}>
+          <Text
+            style={{
+              color: '#000',
+              borderWidth: 1,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 10,
+            }}>
+            Search
+          </Text>
+        </TouchableOpacity>
       </View>
-
-      <View style={styles.header}>
+  
+      {dropdownVisible && (
+        <View style={styles.dropdownContent1}>
+          <ScrollView>
+            {searchOption.map((option, index) => (
+              <TouchableOpacity style={styles.dropdownOption} key={index} onPress={() => handleDropdownSelect(option)}>
+                <Text  style={{color: '#000'}}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+  
+  <View style={styles.header}>
         <View style={{flex: 3}}>
         <Text style={styles.headerText1}>Style Name</Text>
         </View>
         <Text style={styles.headerText}>Size</Text>
         <Text style={styles.headerText}>Avail Qty</Text>
       </View>
-      {loading ? (
-        <ActivityIndicator
-          style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
-          size="large"
-          color="#390050"
-        />
-      ) : (searchQuery && filteredData.length === 0) ||
-        (!searchQuery && inventoryData.length === 0) ? (
-        <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
+  
+      {loading && !inventoryData.length ? (
+        <ActivityIndicator size="large" color="#000" />
+      ) : inventoryData.length === 0 ? (
+        <Text style={styles.noResultsText}>No results found!</Text>
       ) : (
         <FlatList
-          data={filteredData}
+          data={inventoryData}
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={styles.listContainer}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          onEndReached={() => {
+            if (hasMoreData) {
+              setPage(prevPage => prevPage + 1);
+              getProductInventorySearch();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         />
       )}
     </View>
   );
+  
 };
 
 const styles = StyleSheet.create({
@@ -253,7 +356,31 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
-  }
+  },
+  searchButton: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
+  },
+  image: {
+    height: 20,
+    width: 20,
+    marginLeft: 10,
+    marginRight:10
+  },
+  dropdownContent1: {
+    elevation: 5,
+    // height: 220,
+    alignSelf: 'center',
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  dropdownOption: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
 });
 
 export default ProductInventory;
