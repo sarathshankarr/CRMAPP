@@ -114,7 +114,8 @@ const TaskDetails = ({route}) => {
 
   useEffect(() => {
     if (distance) {
-      if (parseFloat(distance) * 1000 > 100) {
+      // if (parseFloat(distance) * 1000 > 100) {
+      if ((distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)) > 100) {
         setEditStatus(false);
       } else {
         setEditStatus(true);
@@ -355,12 +356,21 @@ const TaskDetails = ({route}) => {
   };
 
   const handleTakeSelfie = () => {
-    if (parseFloat(distance) * 1000 >= 100) {
+    // if ((parseFloat(distance) * 1000) > 100) {
+    //   Alert.alert(
+    //     // 'You must be within 100 meters of the destination to upload a selfie',
+    //     `Distance travelled : ${parseFloat(distance) * 1000}`,
+    //   );
+    //   return;
+    // }
+    if ((distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)) > 100) {
       Alert.alert(
-        'You must be within 100 meters of the destination to upload a selfie',
+        // `Distance travelled: ${distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)} meters`,
+        'You must be within 100 meters of the destination to upload a selfie'
       );
       return;
     }
+    
 
     const MAX_SELFIES = 1;
 
@@ -821,7 +831,7 @@ const TaskDetails = ({route}) => {
                 color: '#000',
                 textAlign: 'right',
                 marginRight: 10,
-              }}>{`Traveled Distance : ${
+              }}>{`Travelled Distance : ${
               traveledDistance || traveleDis
             }`}</Text>
           </View>
@@ -847,7 +857,8 @@ const TaskDetails = ({route}) => {
               }
 
               // Check if the user is within 100 meters
-              if (parseFloat(distance) * 1000 >= 100) {
+              // if (parseFloat(distance) * 1000 >= 100) {
+              if ((distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)) > 100) {
                 Alert.alert(
                   'You must be within 100 meters of the destination to Punch In or Punch Out',
                 );
