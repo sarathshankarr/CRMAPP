@@ -9,11 +9,13 @@ import {
   Alert,
   Modal,
   Pressable,
+  FlatList,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {useSelector} from 'react-redux';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Attendance = () => {
   const userData = useSelector(state => state.loggedInUser);
@@ -36,9 +38,60 @@ const Attendance = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [latestRecord, setLatestRecord] = useState({});
 
+  const [currentTime, setCurrentTime] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
+  const [currentDay, setCurrentDay] = useState('');
+
+  const selectedCompany = useSelector(state => state.selectedCompany);
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+
+  const [punchRecords, setPunchRecords] = useState([]);
+
+  useEffect(() => {
+    const fetchInitialSelectedCompany = async () => {
+      try {
+        const initialCompanyData = await AsyncStorage.getItem(
+          'initialSelectedCompany',
+        );
+        if (initialCompanyData) {
+          const initialCompany = JSON.parse(initialCompanyData);
+          setInitialSelectedCompany(initialCompany);
+        }
+      } catch (error) {
+        console.error('Error fetching initial selected company:', error);
+      }
+    };
+
+    fetchInitialSelectedCompany();
+  }, []);
+
+  const companyId = selectedCompany
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+      setCurrentTime(timeString);
+      const dayString = now.toLocaleDateString('en-US', { weekday: 'long' });
+      setCurrentDay(dayString);
+    }, 1000); // Update every second
+
+    return () => clearInterval(intervalId); // Clean up interval on unmount
+  }, []);
+
   useEffect(() => {
     requestLocationPermission();
     getPunchInPunchOut();
+  }, []);
+
+  useEffect(() => {
+    setCurrentDate(getCurrentDate());
   }, []);
 
   // Function to request location permission
@@ -121,24 +174,33 @@ const Attendance = () => {
   const handleSignToggle = async () => {
     const now = new Date();
     const currentDateTime = formatDateTime(now);
-    const day = now.toLocaleDateString('en-US', {weekday: 'long'});
-    const location = await getLocation();
-
-    if (!isSignedIn) {
-      setSignInTime(extractTime(currentDateTime)); // Display only time
-      setSignInDay(day);
-      setSignInDate(currentDateTime.split('T')[0]);
-      setSignInLocation(location);
-    } else {
-      setSignOutTime(extractTime(currentDateTime)); // Display only time
-      setSignOutDay(day);
-      setSignOutDate(currentDateTime.split('T')[0]);
-      setSignOutLocation(location);
+    const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+  
+    try {
+      // Wait for the location to be fetched before proceeding
+      const location = await getLocation();
+  
+      if (!isSignedIn) {
+        setSignInTime(extractTime(currentDateTime)); // Display only time
+        setSignInDay(day);
+        setSignInDate(currentDateTime.split('T')[0]);
+        setSignInLocation(location);
+      } else {
+        setSignOutTime(extractTime(currentDateTime)); // Display only time
+        setSignOutDay(day);
+        setSignOutDate(currentDateTime.split('T')[0]);
+        setSignOutLocation(location);
+      }
+  
+      // Call PunchInPunchOut only after setting location
+      PunchInPunchOut();
+      setIsSignedIn(prevState => !prevState);
+    } catch (error) {
+      console.error('Error fetching location:', error);
+      Alert.alert('Error', 'Could not get current location.');
     }
-
-    PunchInPunchOut();
-    setIsSignedIn(prevState => !prevState);
   };
+  
 
   const PunchInPunchOut = async () => {
     const now = new Date();
@@ -155,6 +217,7 @@ const Attendance = () => {
           punch_out_latitude: location.lat,
           punch_out_longitude: location.long,
           date: formattedDate,
+          companyId: companyId,
         }
       : {
           employeeId: userId,
@@ -162,9 +225,10 @@ const Attendance = () => {
           punch_in_latitude: location.lat,
           punch_in_longitude: location.long,
           date: formattedDate,
+          companyId: companyId,
         };
 
-    console.log('payload========>', payload);
+    console.log('payload==================>', payload);
 
     try {
       const response = await axios.put(apiUrl, payload, {
@@ -193,9 +257,11 @@ const Attendance = () => {
 
       console.log('response.data', response.data);
 
-      const latestRecord = response.data[0];
-      setLatestRecord(latestRecord);
+      // Store all records in the state
+      setPunchRecords(response.data);
 
+      // Set other states for the latest record (optional)
+      const latestRecord = response.data[0];
       setIsSignedIn(latestRecord?.loggedStts === 0);
       setSignInTime(
         latestRecord.punchIn ? extractTime(latestRecord.punchIn) : '',
@@ -233,6 +299,7 @@ const Attendance = () => {
   };
 
   const openModal = () => {
+    getPunchInPunchOut();
     setModalVisible(true);
   };
 
@@ -252,29 +319,18 @@ const Attendance = () => {
         <View style={styles.rowContainer}>
           <View style={styles.shiftTime}>
             <Text style={styles.timeText}>
-              {isSignedIn ? signInTime : signOutTime}
+              <Text>{currentTime}</Text>
             </Text>
           </View>
           <View style={styles.shiftDetails}>
             <Text style={styles.shiftText}>
-              {isSignedIn ? signInDay : signOutDay}
+              {/* {isSignedIn ? signInDay : signOutDay} */}
+              {currentDay}
             </Text>
             <Text style={styles.dateText}>
-              {isSignedIn ? signInDate : signOutDate}
+              {/* {isSignedIn ? signInDate : signOutDate} */}
+              {currentDate}
             </Text>
-            {/* {isSignedIn
-              ? signInLocation.lat &&
-                signInLocation.long && (
-                  <Text style={styles.locationText}>
-                    Location: {signInLocation.lat}, {signInLocation.long}
-                  </Text>
-                )
-              : signOutLocation.lat &&
-                signOutLocation.long && (
-                  <Text style={styles.locationText}>
-                    Location: {signOutLocation.lat}, {signOutLocation.long}
-                  </Text>
-                )} */}
           </View>
         </View>
 
@@ -295,23 +351,37 @@ const Attendance = () => {
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={closeModal}
-      >
+        onRequestClose={closeModal}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
-            <View>
-            <Text style={styles.modalTitle}>Swipes</Text>
-
+            <View style={styles.swipeshead}>
+              <Text style={styles.modalTitle}>Swipes</Text>
+              <Text style={styles.datetxt}>Date: {currentDate}</Text>
             </View>
-            <View style={{flexDirection:"row",justifyContent:"space-between"}}>
-            <Text style={styles.modalTitle}>Shift Time : 09:30 to 18.30</Text>
-            <Text style={styles.modalTitle}>Shift Type : Gs</Text>
 
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                backgroundColor: 'lightgray',
+              }}>
+              <Text style={styles.modalContent}>Punch In Time: </Text>
+              <Text style={styles.modalContent}>Punch Out Time:</Text>
             </View>
-            <Text style={styles.modalContent}>Punch In Time: {latestRecord?.punchIn ? extractTime(latestRecord.punchIn) : 'N/A'}</Text>
-            <Text style={styles.modalContent}>Punch Out Time: {latestRecord?.punchOut ? extractTime(latestRecord.punchOut) : 'N/A'}</Text>
-            <Text style={styles.modalContent}>Punch In Date: {latestRecord?.punchIn ? extractDate(latestRecord.punchIn) : 'N/A'}</Text>
-            <Text style={styles.modalContent}>Punch Out Date: {latestRecord?.punchOut ? extractDate(latestRecord.punchOut) : 'N/A'}</Text>
+            <FlatList
+              data={punchRecords}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({item}) => (
+                <View style={styles.recordContainer}>
+                  <Text style={{color: '#000', fontWeight: '500'}}>
+                    {item.punchIn ? extractTime(item.punchIn) : 'N/A'}
+                  </Text>
+                  <Text style={{color: '#000', fontWeight: '500'}}>
+                    {item.punchOut ? extractTime(item.punchOut) : 'N/A'}
+                  </Text>
+                </View>
+              )}
+            />
             <Pressable style={styles.closeButton} onPress={closeModal}>
               <Text style={styles.closeButtonText}>Close</Text>
             </Pressable>
@@ -339,7 +409,7 @@ const styles = StyleSheet.create({
   greetingText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color:"#000"
+    color: '#000',
   },
   shiftCard: {
     backgroundColor: '#fff',
@@ -383,6 +453,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     alignItems: 'flex-end',
+    fontSize:18
   },
   SwipesButton: {
     paddingVertical: 8,
@@ -405,6 +476,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
     fontWeight: 'bold',
+    fontSize:15
   },
   locationText: {
     fontSize: 14,
@@ -418,22 +490,39 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContainer: {
-    width: '98%',
+    width: '95%',
     backgroundColor: '#fff',
-    padding: 20,
     borderRadius: 10,
     elevation: 10,
+  },
+  swipeshead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFA500',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    color:'#000'
+    color: '#000',
+    marginHorizontal: 10,
+    marginVertical: 5,
   },
+  datetxt: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginHorizontal:10
+  },
+
   modalContent: {
     fontSize: 16,
     marginVertical: 5,
-    color:"#000"
+    color: '#000',
+    fontWeight: 'bold',
+    marginHorizontal: 10,
+    marginVertical: 5,
   },
   closeButton: {
     backgroundColor: '#dc3545',
@@ -446,6 +535,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  recordContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
+    marginVertical: 2,
   },
 });
 

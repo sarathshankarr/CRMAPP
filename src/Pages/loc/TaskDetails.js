@@ -115,7 +115,11 @@ const TaskDetails = ({route}) => {
   useEffect(() => {
     if (distance) {
       // if (parseFloat(distance) * 1000 > 100) {
-      if ((distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)) > 100) {
+      if (
+        (distance.includes('km')
+          ? parseFloat(distance) * 1000
+          : parseFloat(distance)) > 100
+      ) {
         setEditStatus(false);
       } else {
         setEditStatus(true);
@@ -363,14 +367,17 @@ const TaskDetails = ({route}) => {
     //   );
     //   return;
     // }
-    if ((distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)) > 100) {
+    if (
+      (distance.includes('km')
+        ? parseFloat(distance) * 1000
+        : parseFloat(distance)) > 100
+    ) {
       Alert.alert(
         // `Distance travelled: ${distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)} meters`,
-        'You must be within 100 meters of the destination to upload a selfie'
+        'You must be within 100 meters of the destination to upload a selfie',
       );
       return;
     }
-    
 
     const MAX_SELFIES = 1;
 
@@ -612,14 +619,21 @@ const TaskDetails = ({route}) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
+
       if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
         const distance = data.rows[0].elements[0].distance.text;
+        console.log(`Distance fetched: ${distance}`);
         return distance;
       } else {
-        console.error('Distance Matrix API error:', data.error_message);
+        console.error(
+          'Distance Matrix API error:',
+          data.error_message || 'Unknown error',
+        );
         Alert.alert(
           'Error',
-          `Unable to calculate road distance: ${data.error_message}`,
+          `Unable to calculate road distance: ${
+            data.error_message || 'Unknown error'
+          }`,
         );
         return null;
       }
@@ -629,6 +643,7 @@ const TaskDetails = ({route}) => {
       return null;
     }
   };
+
   const trackDistance = async () => {
     try {
       const currentPosition = await getLocation();
@@ -672,9 +687,11 @@ const TaskDetails = ({route}) => {
     } else if (format === 'date') {
       // Return only date format: YYYY-MM-DD
       return `${year}-${month}-${day}`;
+    } else if (format === 'time') {
+      // Return only time format: HH:MM:SS
+      return `${hours}:${minutes}`;
     }
   };
-  
 
   useEffect(() => {
     if (checkIn && checkOut) {
@@ -685,30 +702,35 @@ const TaskDetails = ({route}) => {
       setIsSignedIn(false); // User has not checked in
     }
   }, [checkIn, checkOut]);
-  
-  const PunchInPunchOut = async () => {
-        const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
-    const now = new Date();
-    const formattedDateTime = formatDateTime(now, 'full'); // For payload
 
-    // Prepare payload based on the isSignedIn state
+  const PunchInPunchOut = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
+    const now = new Date();
+    const formattedDateTime = formatDateTime(now, 'full');
+
     const payload = isSignedIn
       ? {
           id: id,
-          checkOut: formattedDateTime, // Use current date-time for check-out
-          check_out_latitude: mLat, // Use current latitude
-          check_out_longitude: mLong, // Use current longitude
+          checkOut: formattedDateTime,
+          check_out_latitude: mLat,
+          check_out_longitude: mLong,
           type: 1,
+          userId: userId,
+          t_company_id: companyId,
+          taskName: label,
         }
       : {
           id: id,
-          checkIn: formattedDateTime, // Use current date-time for check-in
-          check_in_latitude: mLat, // Use current latitude
-          check_in_longitude: mLong, // Use current longitude
+          checkIn: formattedDateTime,
+          check_in_latitude: mLat,
+          check_in_longitude: mLong,
           type: 0,
+          userId: userId,
+          t_company_id: companyId,
+          taskName: label,
         };
 
-    console.log('payload========>', payload);
+    console.log('payload==============>', payload);
 
     try {
       const response = await axios.put(apiUrl, payload, {
@@ -805,16 +827,33 @@ const TaskDetails = ({route}) => {
           {/* Left side: Check In and Check Out */}
           <View>
             {checkIn ? (
-              <Text style={{color: '#000', marginLeft: 10,fontWeight:"bold"}}>
-                Check In : {formatDateTime(new Date(checkIn), 'date')}
+              <Text style={{color: '#000', marginLeft: 10, fontWeight: 'bold'}}>
+                Check In : {formatDateTime(new Date(checkIn), 'date')} ({formatDateTime(new Date(checkIn), 'time')})
               </Text>
             ) : null}
             {checkOut ? (
-              <Text style={{color: '#000', marginLeft: 10,fontWeight:"bold"}}>
-                Check Out : {formatDateTime(new Date(checkOut), 'date')}
+              <Text style={{color: '#000', marginLeft: 10, fontWeight: 'bold'}}>
+                Check Out : {formatDateTime(new Date(checkOut), 'date')} ({formatDateTime(new Date(checkOut), 'time')})
               </Text>
             ) : null}
           </View>
+          {/* <View>
+            {checkIn ? (
+              <Text
+                style={{
+                  color: '#000',
+                  marginRight: 5,
+                  fontWeight: 'bold',
+                }}>
+              {formatDateTime(new Date(checkIn), 'time')}
+              </Text>
+            ) : null}
+            {checkOut ? (
+              <Text style={{color: '#000', fontWeight: 'bold'}}>
+                {formatDateTime(new Date(checkOut), 'time')}
+              </Text>
+            ) : null}
+          </View> */}
 
           {/* Right side: Distance and Traveled Distance */}
           <View>
@@ -824,14 +863,14 @@ const TaskDetails = ({route}) => {
                 color: '#000',
                 textAlign: 'right',
                 marginRight: 10,
-              }}>{`Dis btw 2 Locations is : ${distance}`}</Text>
+              }}>{`Dis btw 2 Loc is : ${distance}`}</Text>
             <Text
               style={{
                 fontWeight: 'bold',
                 color: '#000',
                 textAlign: 'right',
                 marginRight: 10,
-              }}>{`Travelled Distance : ${
+              }}>{`Travelled Dis : ${
               traveledDistance || traveleDis
             }`}</Text>
           </View>
@@ -858,7 +897,11 @@ const TaskDetails = ({route}) => {
 
               // Check if the user is within 100 meters
               // if (parseFloat(distance) * 1000 >= 100) {
-              if ((distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)) > 100) {
+              if (
+                (distance.includes('km')
+                  ? parseFloat(distance) * 1000
+                  : parseFloat(distance)) > 100
+              ) {
                 Alert.alert(
                   'You must be within 100 meters of the destination to Punch In or Punch Out',
                 );

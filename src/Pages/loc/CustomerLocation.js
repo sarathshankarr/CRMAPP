@@ -849,31 +849,44 @@ const CustomerLocation = ({navigation}) => {
 
   const trackDistance = async () => {
     try {
+      // Get the current location
       const currentPosition = await getLocation();
-      
+  
       if (previousLocation) {
+        // Get road distance using the Google Maps API
         const distance = await getRoadDistance(
           previousLocation.latitude,
           previousLocation.longitude,
           currentPosition.coords.latitude,
           currentPosition.coords.longitude
         );
-        
-        // Add the new distance to the existing traveledDistance
-        const newDistance = parseFloat(distance.replace(' km', '')) + parseFloat(traveledDistance.replace(' km', ''));
-        setTraveledDistance(`${newDistance.toFixed(2)} km`);
+  
+        // Parse and accumulate the distance
+        if (distance) {
+          const currentDistance = parseFloat(distance.replace(' km', '')) || 0;
+          const existingDistance = parseFloat(traveledDistance.replace(' km', '')) || 0;
+          
+          // Calculate the new accumulated distance
+          const newDistance = currentDistance + existingDistance;
+  
+          // Update the traveled distance state
+          setTraveledDistance(`${newDistance.toFixed(2)} km`);
+        }
       }
-      
-      // Update previous location with the current position
+  
+      // Update the previous location for the next calculation
       setPreviousLocation({
         latitude: currentPosition.coords.latitude,
-        longitude: currentPosition.coords.longitude
+        longitude: currentPosition.coords.longitude,
       });
     } catch (error) {
       console.error('Error tracking distance:', error);
-      setTraveledDistance(traveledDistance); // Keep the previous traveled distance
+      // Keep the previous traveled distance in case of an error
+      setTraveledDistance(traveledDistance);
     }
   };
+  
+  
 
   return (
     <ScrollView style={styles.Container}>

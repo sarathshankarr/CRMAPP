@@ -20,6 +20,7 @@ import {API} from '../../config/apiConfig';
 import CustomCheckBox from '../../components/CheckBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSelector} from 'react-redux';
+import { debounce } from 'lodash';
 
 const ProductsStyles = ({route}) => {
   const navigation = useNavigation();
@@ -52,6 +53,16 @@ const ProductsStyles = ({route}) => {
     useState(null);
   const [selectAll, setSelectAll] = useState(false);
   const [selectAllModel, setSelectAllModel] = useState(false);
+
+  
+  const [searchOptions, setSearchOptions] = useState([]);
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [searchKey, setSearchKey] = useState(1); // Default to "Type" or any other default
+  const [page, setPage] = useState(1);
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const userData=useSelector(state=>state.loggedInUser);
   const userId=userData?.userId;
 
@@ -137,7 +148,9 @@ const ProductsStyles = ({route}) => {
   };
   const getAllProducts = async companyId => {
     setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA_NEW}/${companyId}`;
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_ALL_STYLE_LAZY
+    }/${0}/${10000}/${companyId}`;
     axios
       .get(apiUrl, {
         headers: {
@@ -154,6 +167,92 @@ const ProductsStyles = ({route}) => {
         setLoading(false);
       });
   };
+
+
+  const getProductLocationInventorySearch = async (initialLoad = false) => {
+    if (loading || !hasMoreData) return;
+  
+    initialLoad ? setLoading(true) : setLoadingMore(true);
+    
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_STYLE_LAZY_SEARCH}`;
+    const requestBody = {
+      dropdownId: searchKey,
+      fieldvalue: searchQuery,
+      from: 0,
+      to: 10000,
+      companyId: companyId,
+    };
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      console.log('API Response:', response.data);
+
+      if (response.data && Array.isArray(response.data.response?.stylesList) && response.data.response.stylesList.length > 0) {
+        const fetchedData = response.data.response.stylesList.filter(item => item !== null);
+        
+        if (initialLoad) {
+          setStylesData(fetchedData);
+        } else {
+          setStylesData(prevData => [...prevData, ...fetchedData]);
+        }
+      
+        setHasMoreData(fetchedData.length >= 100);
+      } else {
+        console.error('No valid data received from API or stylesList is empty');
+      }
+         
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+  
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
+    setSearchQuery('');
+    setPage(1);
+    setHasMoreData(true);
+    getProductLocationInventorySearch(true);
+    getAllProducts(companyId)
+  };
+  
+  const searchOption = [
+    { label: 'id', value: 1 },
+    { label: 'Stl Name', value: 3 },
+    { label: 'Stl Des', value: 4 },
+    { label: 'Color', value: 5 },
+    {label :'Cre Date', value: 6},
+    {label :'Cre Name', value: 7}
+  ];
+
+  
+  const handleSearch = () => {
+    setPage(1);
+    setHasMoreData(true);
+    getProductLocationInventorySearch(true);
+  };
+  
+  const debouncedSearch = debounce(() => {
+    setPage(1);
+    setHasMoreData(true);
+    getProductLocationInventorySearch(true);
+  }, 300); // Adjust the debounce delay as needed
+  
+  useEffect(() => {
+    debouncedSearch();
+  }, [searchQuery, searchKey]);
+
 
   const getDistributorsDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTORS_DETAILS}/${companyId}`;
@@ -523,7 +622,7 @@ const ProductsStyles = ({route}) => {
           marginTop: 10,
         }}>
         <View style={styles.searchContainer}>
-          <TextInput
+          {/* <TextInput
             style={[
               styles.searchInput,
               {color: colorScheme === 'dark' ? '#000' : '#000'}, // Adjust text color based on theme
@@ -532,8 +631,34 @@ const ProductsStyles = ({route}) => {
             value={searchQueryStylesData}
             onChangeText={setSearchQueryStylesData}
             placeholderTextColor={colorScheme === 'dark' ? '#000' : '#000'} // Adjust placeholder color based on theme
+          /> */}
+           <TextInput
+            style={[styles.searchInput, { color: '#000' }]}
+            value={searchQuery}
+            onChangeText={text => {
+              setSearchQuery(text);
+              if (text.length === 0) {
+                setHasMoreData(true);
+                getAllProducts(companyId);
+              }
+            }}
+            placeholder="Search"
+            placeholderTextColor="#000"
           />
+            <TouchableOpacity
+            style={styles.searchButton}
+            onPress={toggleDropdown}>
+          <Text style={{color:"#000"}}>{selectedSearchOption || 'Select'}</Text>
+          <Image
+              style={styles.image}
+              source={require('../../../assets/dropdown.png')}
+            />
+          </TouchableOpacity>
+       
         </View>
+        <TouchableOpacity style={{flex:0.1,marginLeft:2}} onPress={handleSearch}>
+         <Image  style={styles.imagee} source={require('../../../assets/search.png')}/>
+        </TouchableOpacity>
         <RadioGroup
           radioButtons={radioButtons}
           onPress={setSelectedId}
@@ -541,6 +666,17 @@ const ProductsStyles = ({route}) => {
           containerStyle={styles.radioGroup}
         />
       </View>
+      {dropdownVisible && (
+        <View style={styles.dropdownContent1}>
+          <ScrollView>
+            {searchOption.map((option, index) => (
+              <TouchableOpacity style={styles.dropdownOption} key={index} onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000'}}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
       <View style={styles.topheader}>
         <View style={{marginLeft: 10}}>
         </View>
@@ -719,7 +855,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 10,
-    paddingHorizontal: 10,
     flex: 1,
   },
   searchInput: {
@@ -729,10 +864,20 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 1,
   },
-  searchInput: {},
+
   image: {
-    height: 20,
-    width: 20,
+    height: 18,
+    width: 18,
+    marginLeft:3,
+    marginRight:2,
+    marginTop:2
+  },
+  imagee: {
+    height: 25,
+    width: 25,
+  },
+  searchButton: {
+    flexDirection: 'row',
   },
   radioGroup: {
     marginHorizontal: 10,
@@ -903,6 +1048,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
     marginLeft: 10,
+  },
+  dropdownContent1: {
+    elevation: 5,
+    // height: 220,
+    alignSelf: 'center',
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  dropdownOption: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
 });
 
