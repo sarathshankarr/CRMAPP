@@ -9,6 +9,9 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
+  RefreshControl,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
 import {API} from '../../config/apiConfig';
@@ -22,15 +25,22 @@ const Call = () => {
   const [calls, setCalls] = useState([]);
   const [filteredCalls, setFilteredCalls] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(20);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreCalls, setHasMoreCalls] = useState(true);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  
   const selectedCompany = useSelector(state => state.selectedCompany);
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
-        const initialCompanyData = await AsyncStorage.getItem(
-          'initialSelectedCompany',
-        );
+        const initialCompanyData = await AsyncStorage.getItem('initialSelectedCompany');
         if (initialCompanyData) {
           const initialCompany = JSON.parse(initialCompanyData);
           setInitialSelectedCompany(initialCompany);
@@ -42,87 +52,157 @@ const Call = () => {
 
     fetchInitialSelectedCompany();
   }, []);
-  const companyId = selectedCompany
-    ? selectedCompany.id
-    : initialSelectedCompany?.id;
 
-  const handleSearch = text => {
-    setSearchQuery(text);
-    const filtered = calls.filter(call => {
-      const customerName = call.customer ? call.customer.toLowerCase() : '';
-      return customerName.includes(text.toLowerCase());
+  const companyId = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
+
+  const getCallSearch = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_CALL_SEARCH}`;
+    const requestBody = {
+      searchKey: searchKey,
+      searchValue: searchQuery,
+      from: 0,
+      to: calls.length,
+      t_company_id: companyId,
+      customerId: 0,
+      customerType: 0,
+    };
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      if (response.data) {
+        setCalls(response.data);
+        setHasMoreCalls(false);
+      } else {
+        setCalls([]);
+      }
+    } catch (error) {
+      console.error('Error fetching calls:', error);
+    }
+  };
+
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; 
+    }
+    
+    if (!searchQuery.trim()) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; 
+    }
+  
+    getCallSearch();
+  };
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+
+    if (query.trim() === '') {
+      fetchCalls(true); // Reload all calls if query is cleared
+    }
+  };
+
+  const searchOptions = [
+    {label: 'Dis/Ret', value: 1},
+    {label: 'Date', value: 2},
+    {label: 'Rel To', value: 3},
+    {label: 'Status', value: 4},
+  ];
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (companyId) {
+        fetchCalls(true); // Fetch calls when the screen is focused
+      }
+    }, [companyId])
+  );
+
+  const fetchCalls = async (reset = false) => {
+    if (loading || loadingMore) return;
+
+    setLoading(reset);
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_CALL_LAZY}/${from}/${to}/${companyId}/${0}/${0}`;
+
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      const newCalls = response.data;
+      if (reset) {
+        setCalls(newCalls);
+      } else {
+        setCalls(prevCalls => [...prevCalls, ...newCalls]);
+      }
+
+      if (newCalls.length < 20) {
+        setHasMoreCalls(false);
+      }
+    } catch (error) {
+      console.error('Error fetching calls:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreCalls = () => {
+    if (!hasMoreCalls || loadingMore) return;
+
+    setLoadingMore(true);
+    const newFrom = from + 20;
+    const newTo = to + 20;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    fetchCalls(false);
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(20);
+    setHasMoreCalls(true);
+    await fetchCalls(true);
+    setRefreshing(false);
+  };
+
+  const fetchCallById = callId => {
+    navigation.navigate('NewCall', {
+      call: calls.find(call => call.id === callId),
     });
-    setFilteredCalls(filtered);
   };
 
   const handleAdd = () => {
     navigation.navigate('NewCall', {call: {}});
   };
 
-
-  const getAllCalls = () => {
-    setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_CALL}/${companyId}`;
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      })
-      .then(response => {
-        setCalls(response.data);
-        setFilteredCalls(response.data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (companyId) {
-        getAllCalls();
-      }
-    }, [companyId]),
-  );
-
-  const fetchCallById = callId => {
-    setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.GET_CALL_BY_ID}/${callId}`;
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      })
-      .then(response => {
-        navigation.navigate('NewCall', {call: response.data, callId: callId});
-      })
-      .catch(error => {
-        console.error('Error fetching call by ID:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  const formatDate = date => {
-    const formattedDate = date.toISOString().split('T')[0];
-    formatDateIntoDMY(formattedDate);
-  };
-
-  const renderItem = ({item}) => (
-    <TouchableOpacity
-      style={styles.callItem}
-      onPress={() => fetchCallById(item.id)}>
-      <Text style={{flex: 1.3, marginLeft: 10,color:"#000"}}>{item.customer}</Text>
-      <Text style={{flex: 1,color:"#000"}}>{item.relatedTo}</Text>
-      <Text style={{flex: 0.7,color:"#000"}}>{item.status}</Text>
-      <Text style={{flex: 0.8,marginRight:5,color:"#000"}}>{item.created_on}</Text>
-      {/* <Text style={{ flex: 1 }}>{formatDateIntoDMY(item.startDate.split('T')[0])}</Text> */}
+  const renderItem = ({ item }) => (
+    <TouchableOpacity style={styles.callItem} onPress={() => fetchCallById(item.id)}>
+      <Text style={{ flex: 1.3, marginLeft: 10, color: "#000" }}>{item.customer}</Text>
+      <Text style={{ flex: 1, color: "#000" }}>{item.relatedTo}</Text>
+      <Text style={{ flex: 0.7, color: "#000" }}>{item.status}</Text>
+      <Text style={{ flex: 0.8, marginRight: 5, color: "#000" }}>{item.created_on}</Text>
     </TouchableOpacity>
   );
   return (
@@ -134,39 +214,73 @@ const Call = () => {
             placeholder="Search"
             placeholderTextColor="#000"
             value={searchQuery}
-            onChangeText={handleSearch}
+            onChangeText={handleSearchInputChange}
           />
-          <TouchableOpacity style={styles.searchButton}>
+          <TouchableOpacity style={styles.searchButton} onPress={toggleDropdown}>
+            <Text style={{color: '#000'}}>{selectedSearchOption || 'Select'}</Text>
             <Image
-              style={styles.searchIcon}
-              source={require('../../../assets/search.png')}
+              style={styles.image}
+              source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity onPress={handleSearch}>
+          <Image
+            style={styles.searchIcon}
+            source={require('../../../assets/search.png')}
+          />
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
           <Text style={styles.addButtonText}>Add Call</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Retailer/Distributor</Text>
-        <Text style={styles.headerText1}>Related To</Text>
-        <Text style={styles.headerText2}>Status</Text>
-        <Text style={styles.headerText1}> Date</Text>
+
+      {dropdownVisible && (
+        <View style={styles.dropdownContent1}>
+          <ScrollView>
+            {searchOptions.map((option, index) => (
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000'}}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      <View style={styles.listHeader}>
+        <Text style={styles.headerText}>Distributor Name</Text>
+        <Text style={styles.headerText}>Related To</Text>
+        <Text style={styles.headerText}>Status</Text>
+        <Text style={styles.headerText}>Date</Text>
       </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : filteredCalls.length === 0 ? (
-        <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
+      ) : calls.length === 0 ? (
+        <Text style={styles.noCategoriesText}>No calls found!</Text>
       ) : (
         <FlatList
-          data={filteredCalls}
+          data={calls}
           renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreCalls}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
         />
       )}
     </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -186,12 +300,14 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    // borderWidth: 1,
     borderRadius: 5,
     flex: 1,
-    borderRadius:30,
-    backgroundColor:'white',
-    paddingHorizontal: 10,
-    elevation:5,
+    marginRight: 10,
+    borderRadius: 30,
+    backgroundColor: 'white',
+    elevation: 5,
+    paddingHorizontal: 15,
   },
   searchInput: {
     flex: 1,
@@ -201,9 +317,8 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   searchButton: {
-    padding: 10,
-    borderRadius: 5,
-    marginLeft: 5,
+    marginLeft: 'auto',
+    flexDirection: 'row',
   },
   searchIcon: {
     width: 25,
@@ -266,6 +381,26 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
+  },
+  image: {
+    height: 20,
+    width: 20,
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  dropdownContent1: {
+    elevation: 5,
+    // height: 220,
+    alignSelf: 'center',
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  dropdownOption: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
 });
 

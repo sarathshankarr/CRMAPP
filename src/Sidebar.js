@@ -149,6 +149,9 @@ const Sidebar = ({navigation, route}) => {
   const goToProduct = () => {
     navigation.navigate('ProductsStyles');
   };
+  const goToPackages = () => {
+    navigation.navigate('Packages');
+  };
   const goToCustomerLocation = () => {
     navigation.navigate('CustomerLocation');
   };
@@ -317,30 +320,26 @@ const Sidebar = ({navigation, route}) => {
         {dropdownVisible && (
           <View style={styles.dropdown}>
             {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={() => goToProductInventory('Product Inventory')}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/product-management.png')}
-                />
-                <Text style={styles.dropdownItem}>Product Inventory</Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.inventoryhead}
+              onPress={() => goToProductInventory('Product Inventory')}>
+              <Image
+                style={styles.prodimg}
+                source={require('../assets/product-management.png')}
+              />
+              <Text style={styles.dropdownItem}>Product Inventory</Text>
+            </TouchableOpacity>
             {/* )} */}
             {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={() =>
-                  goToLocationInventory('Location Wise Inventory')
-                }>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/locationinv.png')}
-                />
-                <Text style={styles.dropdownItemm}>
-                  Location Wise Inventory
-                </Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.inventoryhead}
+              onPress={() => goToLocationInventory('Location Wise Inventory')}>
+              <Image
+                style={styles.prodimg}
+                source={require('../assets/locationinv.png')}
+              />
+              <Text style={styles.dropdownItemm}>Location Wise Inventory</Text>
+            </TouchableOpacity>
             {/* )} */}
 
             <TouchableOpacity
@@ -364,21 +363,21 @@ const Sidebar = ({navigation, route}) => {
           <Text style={styles.ordertxt}>Distributor GRN</Text>
         </TouchableOpacity>
         {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-          <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdownSecond}>
+        <TouchableOpacity
+          style={styles.inventoryhead}
+          onPress={toggleDropdownSecond}>
+          <Image
+            style={styles.orderimg}
+            source={require('../assets/activity.png')}
+          />
+          <Text style={styles.ordertxt}>Campaign Management</Text>
+          <View style={{marginLeft: 'auto'}}>
             <Image
-              style={styles.orderimg}
-              source={require('../assets/activity.png')}
+              source={require('../assets/dropdown.png')}
+              style={{width: 20, height: 20}}
             />
-            <Text style={styles.ordertxt}>Campaign Management</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
         {/* )} */}
         {dropdownVisiblee && (
           <View style={styles.dropdown}>
@@ -395,21 +394,21 @@ const Sidebar = ({navigation, route}) => {
           </View>
         )}
         {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-          <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdownthird}>
+        <TouchableOpacity
+          style={styles.inventoryhead}
+          onPress={toggleDropdownthird}>
+          <Image
+            style={styles.orderimg}
+            source={require('../assets/publish.png')}
+          />
+          <Text style={styles.ordertxt}>Publish</Text>
+          <View style={{marginLeft: 'auto'}}>
             <Image
-              style={styles.orderimg}
-              source={require('../assets/publish.png')}
+              source={require('../assets/dropdown.png')}
+              style={{width: 20, height: 20}}
             />
-            <Text style={styles.ordertxt}>Publish</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
         {/* )} */}
         {dropdownVisiblePublish && (
           <View style={styles.dropdown}>
@@ -426,21 +425,21 @@ const Sidebar = ({navigation, route}) => {
           </View>
         )}
         {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-          <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdownfourth}>
+        <TouchableOpacity
+          style={styles.inventoryhead}
+          onPress={toggleDropdownfourth}>
+          <Image
+            style={styles.orderimg}
+            source={require('../assets/box.png')}
+          />
+          <Text style={styles.ordertxt}>Product</Text>
+          <View style={{marginLeft: 'auto'}}>
             <Image
-              style={styles.orderimg}
-              source={require('../assets/box.png')}
+              source={require('../assets/dropdown.png')}
+              style={{width: 20, height: 20}}
             />
-            <Text style={styles.ordertxt}>Product</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
         {/* )} */}
         {dropdownVisibleProduct && (
           <View style={styles.dropdown}>
@@ -453,28 +452,35 @@ const Sidebar = ({navigation, route}) => {
               />
               <Text style={styles.dropdownItem}>Product/Styles</Text>
             </TouchableOpacity>
+            {/* <TouchableOpacity
+              style={styles.inventoryhead}
+              onPress={goToPackages}>
+              <Image
+                style={styles.prodimg}
+                source={require('../assets/package.png')}
+              />
+              <Text style={styles.dropdownItem}>Packages</Text>
+            </TouchableOpacity> */}
             {/* Add more dropdown items here */}
           </View>
         )}
         {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-          <TouchableOpacity
-            onPress={goToCustomerLocation}
-            style={styles.inventoryhead}>
-            <Image
-              style={styles.locimg}
-              source={require('../assets/location-pin.png')}
-            />
-            <Text style={styles.ordertxt}>Location</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={goToAttendence}
-            style={styles.inventoryhead}>
-            <Image
-              style={styles.locimg}
-              source={require('../assets/attendence.png')}
-            />
-            <Text style={styles.ordertxt}>Attendence</Text>
-          </TouchableOpacity>
+        <TouchableOpacity
+          onPress={goToCustomerLocation}
+          style={styles.inventoryhead}>
+          <Image
+            style={styles.locimg}
+            source={require('../assets/location-pin.png')}
+          />
+          <Text style={styles.ordertxt}>Location</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={goToAttendence} style={styles.inventoryhead}>
+          <Image
+            style={styles.locimg}
+            source={require('../assets/attendence.png')}
+          />
+          <Text style={styles.ordertxt}>Attendence</Text>
+        </TouchableOpacity>
         {/* )} */}
       </ScrollView>
 
