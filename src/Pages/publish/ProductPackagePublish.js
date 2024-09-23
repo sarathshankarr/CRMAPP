@@ -1210,7 +1210,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     width: '90%',
-    // maxHeight: '80%',
+    maxHeight: '80%',
   },
   modalItem: {
     paddingVertical: 10,

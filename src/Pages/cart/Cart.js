@@ -44,6 +44,7 @@ const Cart = () => {
 
   const [inputValuess, setInputValuess] = useState({});
   const cartItems = useSelector(state => state.cartItems);
+  console.log("cartItems=====>",cartItems)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
   const [modalVisible, setModalVisible] = useState(false);
@@ -894,7 +895,8 @@ const Cart = () => {
       companyId: companyId,
       d_pkg_flag:0,
       // companyLocId: selectedCompanyLocationId,
-      linkType: 3
+      linkType: 3,
+      currentCreditLimit:0.00
     };
     // return;
     axios
@@ -1104,7 +1106,7 @@ const Cart = () => {
     let totalPrice = 0;
     for (let item of cartItems) {
       if (item.styleId === styleId && item.colorId === colorId) {
-        totalPrice += (isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString()) * item.quantity;
+        totalPrice += (isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()) * item.quantity;
       }
     }
     return totalPrice;
@@ -1117,7 +1119,7 @@ const Cart = () => {
   const totalPrice = cartItems
     .reduce((total, item) => {
       // Parse price and quantity to floats and integers respectively
-      const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString());
+      const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString());
       const parsedQuantity = parseInt(item.quantity);
 
       // Check if parsedPrice and parsedQuantity are valid numbers
@@ -1205,21 +1207,21 @@ const Cart = () => {
       modifiedBy: 1,
       modifiedOn: '2024-05-08T08:31:06.285',
       locationId: 66,
-      locationName: locationInputValues.locationName,
+      locationName: locationInputValues?.locationName,
       locationCode: '',
-      locationDescription: locationInputValues.locationName,
+      locationDescription: locationInputValues?.locationName,
       parentId: 0,
       customerId: isEnabled ? selectedCustomerId : selectedDistributorId,
       status: 0,
-      phoneNumber: locationInputValues.phoneNumber,
+      phoneNumber: locationInputValues?.phoneNumber,
       emailId: '',
       houseNo: '',
       street: '',
-      locality: locationInputValues.locality,
-      cityOrTown: locationInputValues.cityOrTown,
-      state: locationInputValues.state,
-      country: locationInputValues.country,
-      pincode: locationInputValues.pincode,
+      locality: locationInputValues?.locality,
+      cityOrTown: locationInputValues?.cityOrTown,
+      state: locationInputValues?.state,
+      country: locationInputValues?.country,
+      pincode: locationInputValues?.pincode,
       customerType: isEnabled ? 1 : 3,
       latitude: null,
       longitude: null,
@@ -1857,7 +1859,7 @@ const Cart = () => {
                       <View style={{ flex: 0.3, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
                         <TextInput
                           style={{ color: '#000', alignSelf: "center" }}
-                          value={isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString()}
+                          value={isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()|| item?.price?.toString()}
                           // value={item.price}
                           onChangeText={text => handlePriceChange(index, text)}
                           keyboardType="numeric"
@@ -1866,7 +1868,7 @@ const Cart = () => {
                       <View style={{ flex: 0.3, marginLeft: 30 }}>
                         <Text style={{ color: '#000' }}>
                           {(
-                            Number(isEnabled ? item?.retailerPrice.toString() : item?.dealerPrice.toString()) * Number(item.quantity)
+                            Number(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()|| item?.price?.toString()) * Number(item.quantity)
                           ).toString()}
                         </Text>
                       </View>

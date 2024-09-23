@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {
   StyleSheet,
   Text,
@@ -9,11 +9,14 @@ import {
   Image,
   FlatList,
   ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
-import { API } from '../../config/apiConfig';
-import { formatDateIntoDMY } from '../../Helper/Helper';
-import { useSelector } from 'react-redux';
+import {API} from '../../config/apiConfig';
+import {formatDateIntoDMY} from '../../Helper/Helper';
+import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tasks = () => {
@@ -21,8 +24,18 @@ const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(15);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
   const selectedCompany = useSelector(state => state.selectedCompany);
 
   useEffect(() => {
@@ -42,101 +55,164 @@ const Tasks = () => {
 
     fetchInitialSelectedCompany();
   }, []);
+
   const companyId = selectedCompany
-  ? selectedCompany.id
-  : initialSelectedCompany?.id;
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
+
+  const gettasksearch = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_TASK__SEARCH}`;
+    const requestBody = {
+      searchKey: searchKey,
+      searchValue: searchQuery,
+      from: 0,
+      to: tasks.length,
+      t_company_id: companyId,
+      customerId: 0,
+      customerType: 0,
+    };
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      if (response.data) {
+        setTasks(response.data); 
+        setHasMoreTasks(false); 
+      } else {
+        setTasks([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label); 
+    setSearchKey(option.value); 
+    setDropdownVisible(false); 
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit the function if no search key is selected
+    }
+    
+    if (!searchQuery.trim()) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit if the search query is empty
+    }
+  
+    gettasksearch(); // Call the search function if the dropdown and query are valid
+  };
+  
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+  
+    // If query is cleared, reset tasks and fetch all
+    if (query.trim() === '') {
+      fetchTasks(true); // Call the fetchTasks function to load all tasks
+    }
+  };
+
+  const searchOption = [
+    {label: 'Task Name', value: 1},
+    {label: 'Date', value: 2},
+    {label: 'Rel To', value: 3},
+    {label: 'Status', value: 4},
+    {label: 'Desc', value: 1},
+  ];
 
   useFocusEffect(
     React.useCallback(() => {
       if (companyId) {
-      fetchTasks(); // Fetch tasks when the screen is focused
+        fetchTasks(true);
       }
-    }, [companyId])
+    }, [companyId]),
   );
 
-  const fetchTasks = () => {
-    setLoading(true); // Show loading indicator
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_TASK}/${companyId}`;
-    axios
-      .get(apiUrl, {
+  const fetchTasks = async (reset = false) => {
+    if (loading || loadingMore) return; 
+    setLoading(reset); 
+
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_ALL_TASK_LAZY
+    }/${from}/${to}/${companyId}/${0}/${0}`;
+
+    try {
+      const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
-      })
-      .then(response => {
-        setTasks(response.data); // Update tasks state
-        setFilteredTasks(response.data); // Initialize filtered tasks with all tasks
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      })
-      .finally(() => {
-        setLoading(false); // Hide loading indicator
       });
+
+      const newTasks = response.data; 
+      if (reset) {
+        setTasks(newTasks);
+      } else {
+        setTasks(prevTasks => [...prevTasks, ...newTasks]);
+      }
+
+      if (newTasks.length < 15) {
+        setHasMoreTasks(false); 
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
   };
 
-  const fetchTaskById = (taskId) => {
-    setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.GET_TASK_BY_ID}/${taskId}`;
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      })
-      .then(response => {
-        navigation.navigate('NewTask', { task: response.data, taskId: taskId }); // Pass taskId along with task details
-      })
-      .catch(error => {
-        console.error('Error fetching task by ID:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+  const loadMoreTasks = () => {
+    if (!hasMoreTasks || loadingMore) return; 
+
+    setLoadingMore(true);
+    const newFrom = from + 15;
+    const newTo = to + 15;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    fetchTasks(false); 
   };
 
-  // Handle search input change
-  const handleSearchInputChange = (query) => {
-    setSearchQuery(query); // Update search query state
-    filterTasks(query); // Call filter function on search input change
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(15);
+    setHasMoreTasks(true);
+    await fetchTasks(true); 
+    setRefreshing(false);
   };
 
-  // Filter tasks based on search query
-  const filterTasks = (query) => {
-    const filtered = tasks.filter(task => {
-      const name = task.taskName ? task.taskName.toLowerCase() : ''; // Check if taskName is not null
-      return name.includes(query.toLowerCase());
+  const fetchTaskById = taskId => {
+    navigation.navigate('NewTask', {
+      task: tasks.find(task => task.id === taskId),
     });
-    setFilteredTasks(filtered);
   };
-  
+
   const handleAdd = () => {
-    navigation.navigate('NewTask', { task: {} }); // Pass an empty object or any default value
+    navigation.navigate('NewTask', {task: {}});
   };
 
-  const truncateText = (text, maxWords) => {
-    if (!text || typeof text !== 'string') {
-      return ''; // or handle appropriately for your use case
-    }
-
-    const words = text.split(' ');
-    if (words.length > maxWords) {
-      return words.slice(0, maxWords).join(' ') + '...';
-    }
-    return text;
-  };
-
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <TouchableOpacity
       style={styles.taskItem}
-      onPress={() => fetchTaskById(item.id)} // Fetch and navigate to task details
-    >
+      onPress={() => fetchTaskById(item.id)}>
       <Text style={styles.taskText}>{item.taskName}</Text>
       <Text style={styles.taskText1}>{item.relatedTo}</Text>
       <Text style={styles.taskText3}>{item.status}</Text>
       <Text style={styles.taskText3}>{item.created_on}</Text>
-      {/* <Text style={styles.taskText3}>{formatDateIntoDMY(item?.untilDate.split('T')[0])}</Text> */}
-      {/* <Text style={styles.taskText}>{truncateText(item.desc, 2)}</Text> */}
     </TouchableOpacity>
   );
 
@@ -149,33 +225,71 @@ const Tasks = () => {
             placeholder="Search"
             placeholderTextColor="#000"
             value={searchQuery}
-            onChangeText={handleSearchInputChange} // Update search query on input change
+            onChangeText={handleSearchInputChange}
           />
-          {/* Remove TouchableOpacity around Image for dynamic search */}
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={toggleDropdown}>
+            <Text style={{color: '#000'}}>
+              {selectedSearchOption || 'Select'}
+            </Text>
+            <Image
+              style={styles.image}
+              source={require('../../../assets/dropdown.png')}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity onPress={handleSearch}>
           <Image
             style={styles.searchIcon}
             source={require('../../../assets/search.png')}
           />
-        </View>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
           <Text style={styles.addButtonText}>Add Task</Text>
         </TouchableOpacity>
       </View>
+      {dropdownVisible && (
+        <View style={styles.dropdownContent1}>
+          <ScrollView>
+            {searchOption.map((option, index) => (
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000'}}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
       <View style={styles.listHeader}>
         <Text style={styles.headerText}>Task Name</Text>
         <Text style={styles.headerText}>Related To</Text>
         <Text style={styles.headerText}>Status</Text>
-        <Text style={styles.headerText}> Date</Text>
+        <Text style={styles.headerText}>Date</Text>
       </View>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : filteredTasks.length === 0 ? (
-        <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
+      ) : tasks.length === 0 ? (
+        <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
         <FlatList
-          data={filteredTasks}
+          data={tasks}
           renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
         />
       )}
     </View>
@@ -202,18 +316,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     flex: 1,
     marginRight: 10,
-    borderRadius:30,
-    backgroundColor:'white',
-    elevation:5,
-    paddingHorizontal:15,
-
+    borderRadius: 30,
+    backgroundColor: 'white',
+    elevation: 5,
+    paddingHorizontal: 15,
+  },
+  searchButton: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
   },
   searchInput: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 10,
     fontSize: 16,
-    color:'#000000'
+    color: '#000000',
+  },
+  image: {
+    height: 20,
+    width: 20,
+    marginLeft: 10,
+    marginRight: 10,
   },
   searchIcon: {
     width: 25,
@@ -244,7 +367,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     paddingHorizontal: 5,
-    color:"#000"
+    color: '#000',
   },
   taskItem: {
     flexDirection: 'row',
@@ -259,31 +382,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 5,
     paddingHorizontal: 5,
-    color:"#000"
+    color: '#000',
   },
   taskText1: {
     flex: 1,
     fontSize: 16,
     paddingVertical: 5,
     paddingHorizontal: 5,
-    color:"#000"
+    color: '#000',
   },
   taskText3: {
     flex: 1,
     fontSize: 16,
     paddingVertical: 5,
     paddingHorizontal: 5,
-    color:"#000"
+    color: '#000',
   },
-  noCategoriesText:{
+  noCategoriesText: {
     top: 40,
-    textAlign:"center",
+    textAlign: 'center',
     color: '#000000',
     fontSize: 20,
     fontWeight: 'bold',
-    color:"#000",
+    color: '#000',
     padding: 5,
-  }
+  },
+  dropdownContent1: {
+    elevation: 5,
+    // height: 220,
+    alignSelf: 'center',
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  dropdownOption: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
 });
 
 export default Tasks;

@@ -40,6 +40,8 @@ import Files from '../Pages/loc/Files';
 import Notifications from '../Pages/notification/Notifications';
 import DistributorInventory from '../Pages/inventory/DistributorInventory';
 import Attendence from '../Pages/attendence/Attendence';
+import Packages from '../Pages/product/Packages';
+import PackageDetail from '../Pages/product/PackageDetail';
 
 const Stack = createNativeStackNavigator();
 
@@ -283,6 +285,27 @@ const Routes = () => {
         name="Attendence"
         component={Attendence}
         options={{ headerShown: true }}
+      />
+      <Stack.Screen
+        name="Packages"
+        component={Packages}
+        options={{ headerShown: true }}
+      />
+        <Stack.Screen
+        name="PackageDetail"
+        component={PackageDetail}
+        options={({route, navigation}) => ({
+          header: () => (
+            <CommonHeader
+              navigation={navigation}
+              title={`PackageDetail`} // Set the header title dynamically
+              showMessageIcon={true}
+              showCartIcon={true}
+              showLocationIcon={true}
+            />
+          ),
+          headerBackVisible: true,
+        })}
       />
     </Stack.Navigator>
   );

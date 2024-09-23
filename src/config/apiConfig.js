@@ -90,7 +90,15 @@ export const API = {
   PUNCH_IN_PUNCH_OUT:'erpportal/api/master/updateAttendanceSwape',
   GET_PUNCH_IN_PUNCH_OUT:'erpportal/api/master/getAttendanceSwapes',
   CHECK_IN_CHECK_OUT:'erpportal/api/master/updateTaskPunchInOut',
-  
+  GET_PACKAGES:'erpportal/api/package/getMobPackegeLazy',
+  GET_PACKAGES_SERACH:'erpportal/api/filter/getPackegeDataForMobLazyLoad',
+  GET_ALL_PACKAGES_DETAILS:'erpportal/api/package/getPackageMobile',
+  GET_PACKAGES_MODEL:'erpportal/api/package',
+  GET_ALL_TASK_LAZY:'erpportal/api/master/getAllTasksFromTo',
+  GET_ALL_CALL_LAZY:'erpportal/api/master/getAllCallsFromTo',
+  GET_ALL_TASK__SEARCH:'erpportal/api/master/getTasksSearchFromTo',
+  GET_ALL_CALL_SEARCH:'erpportal/api/master/getCallsSearchFromTo',
+
 };
 
 export const USER_ID = 'adminClientId';

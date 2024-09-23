@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Image, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -27,7 +27,7 @@ const CommonHeader = ({
   const companyId = useSelector(state => state?.selectedCompany?.id);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch notifications whenever the screen comes into focus
+  //Fetch notifications whenever the screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (userId && roleId && companyId) { // Ensure these variables are available
@@ -38,6 +38,14 @@ const CommonHeader = ({
       };
     }, [userId, roleId, companyId]) // Ensure dependencies are properly set
   );
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     getNotificationsList(); 
+  //   }, 300000); 
+  
+  //   return () => clearInterval(interval); 
+  // }, []);
 
   // Fetch notifications from API
   const getNotificationsList = () => {
@@ -107,7 +115,7 @@ const CommonHeader = ({
         useNativeDriver: true,
       }).start();
     } else {
-      Animated.timing(slideAnim, {
+      Animated?.timing(slideAnim, {
         toValue: width,
         duration: 300,
         useNativeDriver: true,

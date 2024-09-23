@@ -353,10 +353,10 @@ const PackingConformation = ({route}) => {
           <Text style={styles.ordertotaltxt}>Total: {item?.gross}</Text>
         </View>
         <View style={{flexDirection: 'row'}}>
-          <View style={{marginVertical: 8}}>
+          <View style={{marginVertical: 8,flex:1.3}}>
             <Text style={styles.sizetxt}>Size : {item?.size}</Text>
           </View>
-          <View style={{marginVertical: 8}}>
+          <View style={{marginVertical: 8,flex:1}}>
             <Text style={styles.colortxt}>Color : {item?.colorName}</Text>
           </View>
         </View>
