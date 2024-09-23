@@ -88,7 +88,6 @@ const NewCategoryUi = () => {
       });
   };
 
-
   const handleCategory = (category) => {
     setIsLoading(true);
     setPageNo(1);
