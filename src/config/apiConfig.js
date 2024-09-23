@@ -98,6 +98,11 @@ export const API = {
   GET_ALL_CALL_LAZY:'erpportal/api/master/getAllCallsFromTo',
   GET_ALL_TASK__SEARCH:'erpportal/api/master/getTasksSearchFromTo',
   GET_ALL_CALL_SEARCH:'erpportal/api/master/getCallsSearchFromTo',
+  SEARCH_DISTRIBUTOR_GRN:'erpportal/api/filter/getDistributorGRNBasedOnTypeServices',
+  SEARCH_ALL_PRODUCTS:'erpportal/api/style/searchAllStylesMobile',
+  SEARCH_ALL_CATEGORIES_LL:'erpportal/api/filter/getCategoryBasedOnTypeServicesMob',
+  ALL_CATEGORIES_LL_LIST: 'erpportal/api/category/getAllCategoryLazyLoadForMob',
+  GET_DISTRIBUTOR_GRN_LL:'erpportal/api/ordermgmt/getAllDistributorGRNLazyLoad',
 
 };
 
