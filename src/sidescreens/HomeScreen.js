@@ -60,7 +60,7 @@ const HomeScreen = ({navigation}) => {
           borderRadius: 30,
           marginHorizontal: 10,
           marginBottom: 10,
-          height: '8%',
+          height: 60,
           position:"absolute"
         },
       })}>
