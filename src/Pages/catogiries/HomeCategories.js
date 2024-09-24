@@ -149,7 +149,6 @@ const HomeCategories = ({ navigation }) => {
     if(searchKey === 0){
       Alert.alert('Please select an option from the dropdown before searching.');
       return;
-
     }
 
     if(searchQuery?.trim()?.length===0) {
@@ -243,7 +242,14 @@ const HomeCategories = ({ navigation }) => {
     setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
-    console.log("handleDropdownSelect")
+    console.log("handleDropdownSelect");
+  };
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+      if (query.trim() === '') {
+      onRefresh(); 
+    }
   };
 
   return (
@@ -255,8 +261,8 @@ const HomeCategories = ({ navigation }) => {
           <TextInput
             style={styles.searchInput}
             value={searchQuery}
-            onChangeText={text => setSearchQuery(text)}
-            placeholder="Search Categories..."
+            onChangeText={handleSearchInputChange}
+            placeholder="Search"
             placeholderTextColor="#888"
           />
           <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>

@@ -62,7 +62,7 @@ const DistributorGrn = () => {
     reset ? setLoading(true) : setLoadingMore(true);
 
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_GRN_LL}/${customFrom}/${customTo}/${companyId}`;
-    console.log("getDistributorGrn List==> ",customFrom, customTo);
+    console.log("getDistributorGrn List==> ", customFrom, customTo);
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -236,34 +236,40 @@ const DistributorGrn = () => {
 
   const handleSearch = () => {
     setsearchFilterFlag(true);
-    if(searchKey === 0){
+    if (searchKey === 0) {
       Alert.alert('Please select an option from the dropdown before searching.');
       return;
     }
-    if(searchQuery.trim().length==0){
-      console.log("empty string")
-      return;
-    }
+   
     if (searchQuery.trim().length > 0 && searchKey > 0) {
       searchAPI(true);
       setFrom(0);
       setTo(15);
     }
-    
+
+  };
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+      if (query.trim().length === 0) {
+        console.log("inside the handleSearchInputChange");
+      onRefresh(true);
+    }
   };
 
   return (
     <View style={styles.container}>
 
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{ flexDirection: 'row', justifyContent:'space-between' }}>
         <View style={styles.searchContainer}>
           <View style={styles.searchInputContainer}>
             <TextInput
               style={[styles.searchInput, { color: '#000' }]}
               value={searchQuery}
-              onChangeText={text => {
-                setSearchQuery(text);
-              }}
+              // onChangeText={text => {
+              //   setSearchQuery(text);
+              // }}
+              onChangeText={handleSearchInputChange}
               placeholder="Search"
               placeholderTextColor="#000"
             />
@@ -408,7 +414,7 @@ const styles = StyleSheet.create({
     // backgroundColor:'#f1e8e6',
     backgroundColor: 'white',
     elevation: 5,
-    width: '72%'
+    width: '70%'
   },
   searchInput: {
     flex: 1,
@@ -456,9 +462,9 @@ const styles = StyleSheet.create({
   },
   searchIconContainer: {
     // padding: 10,
-    width: '25%',
+    // width: '25%',
     paddingVertical: 5,
-    paddingHorizontal:10,
+    paddingHorizontal: 10,
   },
 });
 
