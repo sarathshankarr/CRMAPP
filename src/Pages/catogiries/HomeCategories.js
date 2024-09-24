@@ -67,18 +67,35 @@ const HomeCategories = ({ navigation }) => {
     }
   }, [companyId]);
 
-  const onRefresh = useCallback(() => {
+
+  const onRefresh = async() => {
+    console.log("Refreshing in cat ...........");
     setRefreshing(true);
     setSearchQuery("");
-    fetchCategories(companyId, 0, 15, true);
+    if (companyId) {
+      await fetchCategories(companyId, 0, 15, true);
+    }
     setSelectedSearchOption('');
     setPageFrom(0);
     setPageTo(15);
     setsearchFlag(false);
     setSearchKey(0);
-  }, [companyId]);
+    setRefreshing(false);
+  }
+
+
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // setShowSearchInput(false);
+      console.log("navigation in Cat")
+      onRefresh();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const fetchCategories = (companyId, from, to, reset = false) => {
+
     if (!companyId || !hasMore) return;
 
     console.log("fetchCategories", from, to);
@@ -118,7 +135,7 @@ const HomeCategories = ({ navigation }) => {
       fieldvalue: searchQuery,
       from: from,
       to: to,
-      dropdownId :searchKey,
+      dropdownId: searchKey,
       companyId: companyId,
     };
 
@@ -146,12 +163,12 @@ const HomeCategories = ({ navigation }) => {
   };
 
   const handleSearch = () => {
-    if(searchKey === 0){
+    if (searchKey === 0) {
       Alert.alert('Please select an option from the dropdown before searching.');
       return;
     }
 
-    if(searchQuery?.trim()?.length===0) {
+    if (searchQuery?.trim()?.length === 0) {
       console.log("empty string");
       return;
     }
@@ -229,7 +246,7 @@ const HomeCategories = ({ navigation }) => {
 
 
   const searchOption = [
-    { label: 'Select', value: 0 },
+    // { label: 'Select', value: 0 },
     { label: 'Category', value: 1 },
     { label: 'Category Desc.', value: 2 },
   ];
@@ -247,8 +264,8 @@ const HomeCategories = ({ navigation }) => {
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-      if (query.trim() === '') {
-      onRefresh(); 
+    if (query.trim() === '') {
+      onRefresh();
     }
   };
 

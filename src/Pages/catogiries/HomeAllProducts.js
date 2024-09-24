@@ -141,6 +141,7 @@ const HomeAllProducts = ({ navigation }) => {
   }, [companyId]);
 
   const onRefresh = async () => {
+    console.log("Prod refreshing.valueOf........")
     setRefreshing(true);
     setPageNo(1);
     setSearchKey(0);
@@ -156,7 +157,8 @@ const HomeAllProducts = ({ navigation }) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      setShowSearchInput(false);
+      // setShowSearchInput(false);
+      onRefresh();
     });
     return unsubscribe;
   }, [navigation]);
@@ -218,7 +220,7 @@ const HomeAllProducts = ({ navigation }) => {
         companyId: companyId,
       };
 
-      console.log("Calling all Products, req==> ", requestData);
+      console.log("fetch products ==> ", requestData.pageNo);
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,

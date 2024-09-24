@@ -224,7 +224,7 @@ const DistributorGrn = () => {
   };
 
   const searchOption = [
-    { label: 'Select', value: 0 },
+    // { label: 'Select', value: 0 },
     { label: 'Order No', value: 1 },
     { label: 'Customer', value: 2 },
     { label: 'Status', value: 3 },
