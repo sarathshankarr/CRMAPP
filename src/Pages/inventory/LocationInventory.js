@@ -23,7 +23,6 @@ const LocationInventory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [inventoryData, setInventoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -34,6 +33,12 @@ const LocationInventory = () => {
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  const [loading, setLoading] = useState(false); // Loading state for initial fetch
+  const [hasMoreInventory, setHasMoreInventory] = useState(true); // To track if more inventory data is available
+  const [from, setFrom] = useState(0); // Starting index for pagination
+  const [to, setTo] = useState(15); // Ending index for pagination
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
 
 
   const selectedCompany = useSelector(state => state.selectedCompany);
@@ -64,17 +69,25 @@ const LocationInventory = () => {
     getLocationInventory();
   }, []);
 
-  const getLocationInventory = async () => {
+
+
+  const getLocationInventory = async (reset = false) => {
+    if (loading || loadingMore) return; // Prevent fetching if already loading
+    setLoading(reset); // Set loading state
+
+    const fetchFrom = reset ? 0 : from; // Determine starting index based on reset
+    const fetchTo = reset ? 15 : to; // Determine ending index based on reset
+
     const apiUrl = `${global?.userData?.productURL}${API.ADD_LOCATION_INVENTORY_LAZY}`;
+
     try {
-      setLoading(true);
       const response = await axios.post(
         apiUrl,
         {
-            companyId: companyId,
-          styleName:"",
-          from:(page - 1) * 100,
-          to:100
+          companyId: companyId,
+          styleName: '',
+          from: fetchFrom,
+          to: fetchTo,
         },
         {
           headers: {
@@ -83,43 +96,28 @@ const LocationInventory = () => {
           },
         },
       );
-      setInventoryData(response.data.gsCodesList);
-      setFilteredData(response.data.gsCodesList); // Initialize filtered data
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const getProductLocationInventorySearch = async (initialLoad = false) => {
-    if (loading || !hasMoreData) return;
+      console.log('API Response:', response.data);
+
+      // Check if the response contains an array
+      const newTasks = response.data.gsCodesList;
   
-    initialLoad ? setLoading(true) : setLoadingMore(true);
-    
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_LOCATION_INVENTORY_SEARCH}`;
-    const requestBody = {
-      dropdownId: searchKey,
-      fieldvalue: searchQuery,
-      from: (page - 1) * 100,
-      to: 100,
-      companyId: companyId,
-    };
-  
-    try {
-      const response = await axios.post(apiUrl, requestBody, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      });
-      const fetchedData = response.data.gsCodesList.filter(item => item !== null);
-      if (initialLoad) {
-        setInventoryData(fetchedData);
+      if (reset) {
+        // If it's a reset (like on refresh), replace tasks
+        setInventoryData(newTasks);
+        setFrom(0);  // Reset 'from' to 0 after refresh
+        setTo(15);   // Reset 'to' to 15 after refresh
       } else {
-        setInventoryData(prevData => [...prevData, ...fetchedData]);
+        // If not resetting, append new tasks to existing ones
+        setInventoryData(prevTasks => [...prevTasks, ...newTasks]);
       }
-      setHasMoreData(fetchedData.length >= 100);
+  
+      // If fewer than 15 items are fetched, assume no more tasks are available
+      if (newTasks.length < 15) {
+        setHasMoreInventory(false); // No more tasks to load
+      } else {
+        setHasMoreInventory(true); // There are more tasks to load
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -128,18 +126,70 @@ const LocationInventory = () => {
     }
   };
 
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
+  const gettasksearch = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_LOCATION_INVENTORY_SEARCH}`;
+    const requestBody = {
+      dropdownId: searchKey,
+      fieldvalue: searchQuery,
+      from: 0,
+      to: inventoryData.length,
+      companyId: companyId,
+    };
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      if (response.data.gsCodesList) {
+        setInventoryData(response.data.gsCodesList);
+        setHasMoreData(false);
+      } else {
+        setInventoryData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
   };
-  
+
   const handleDropdownSelect = option => {
     setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
-    setSearchQuery('');
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit the function if no search key is selected
+    }
+
+    if (!searchQuery.trim()) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit if the search query is empty
+    }
+
+    gettasksearch(); // Call the search function if the dropdown and query are valid
+  };
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      getLocationInventory(true);
+    }
   };
   
   const searchOption = [
@@ -148,37 +198,27 @@ const LocationInventory = () => {
     { label: 'Size', value: 5 },
     { label: 'Type', value: 1 },
     { label: 'Customer Level', value: 2 },
-    { label: 'Sku', value: 5 },
+    { label: 'Sku', value: 6 },
 
   ];
-
-  
-  const handleSearch = () => {
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
-  };
-  
-
-  const onChangeText = text => {
-    setSearchQuery(text);
-    if (text) {
-      const newData = inventoryData.filter(item => {
-        const itemData = `${item.locationName.toUpperCase()} ${item.styleName.toUpperCase()} ${item.sizeCode.toUpperCase()}`;
-        const textData = text.toUpperCase();
-        return itemData.indexOf(textData) > -1;
-      });
-      setFilteredData(newData);
-    } else {
-      setFilteredData(inventoryData);
-    }
-  };
-
   const onRefresh = async () => {
     setRefreshing(true);
-    await getLocationInventory();
+    setHasMoreInventory(true); // Reset to indicate more inventory may be available
+    await getLocationInventory(true); // Fetch inventory with reset flag
     setRefreshing(false);
   };
+
+  const loadMoreTasks = () => {
+    if (!hasMoreData || loadingMore) return; 
+  
+    setLoadingMore(true);
+    
+    setFrom(prevFrom => prevFrom + 1);
+    setTo(prevTo => prevTo + 15);
+  
+    getProductInventory(false); 
+  };
+
 
   const renderItem = ({item}) => (
     <View>
@@ -198,24 +238,20 @@ const LocationInventory = () => {
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
-          <TextInput
-            style={[styles.searchInput, { color: '#000' }]}
-            value={searchQuery}
-            onChangeText={text => {
-              setSearchQuery(text);
-              if (text.length === 0) {
-                setHasMoreData(true);
-                getLocationInventory(true);
-              }
-            }}
+        <TextInput
+            style={styles.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
           />
            <TouchableOpacity
             style={styles.searchButton}
             onPress={toggleDropdown}>
-          <Text style={{color:"#000"}}>{selectedSearchOption || 'Select'}</Text>
-          <Image
+            <Text style={{color: '#000'}}>
+              {selectedSearchOption || 'Select'}
+            </Text>
+            <Image
               style={styles.image}
               source={require('../../../assets/dropdown.png')}
             />
@@ -240,7 +276,10 @@ const LocationInventory = () => {
         <View style={styles.dropdownContent1}>
           <ScrollView>
             {searchOption.map((option, index) => (
-              <TouchableOpacity style={styles.dropdownOption} key={index} onPress={() => handleDropdownSelect(option)}>
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
                 <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
@@ -263,15 +302,17 @@ const LocationInventory = () => {
         <FlatList
           data={inventoryData}
           renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
-          onEndReached={() => {
-            if (hasMoreData) {
-              setPage(prevPage => prevPage + 1);
-              getProductLocationInventorySearch();
-            }
-          }}
-          onEndReachedThreshold={0.5}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
         />
       )}
     </View>
@@ -340,6 +381,15 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     color:"#000"
+  },
+  noResultsText: {
+    top: 40,
+    textAlign: 'center',
+    color: '#000000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    padding: 5,
   },
   headerText4: {
     flex: 1,

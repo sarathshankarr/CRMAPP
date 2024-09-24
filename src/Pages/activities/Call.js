@@ -134,59 +134,88 @@ const Call = () => {
     }, [companyId])
   );
 
+
   const fetchCalls = async (reset = false) => {
     if (loading || loadingMore) return;
-
-    setLoading(reset);
-
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_CALL_LAZY}/${from}/${to}/${companyId}/${0}/${0}`;
-
+    setLoading(reset); 
+  
+    const fetchFrom = reset ? 0 : from;
+    const fetchTo = reset ? 15 : to;
+  
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_ALL_CALL_LAZY
+    }/${fetchFrom}/${fetchTo}/${companyId}/${0}/${0}`;
+  
     try {
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-
-      const newCalls = response.data;
+  
+      const newTasks = response.data;
+  
       if (reset) {
-        setCalls(newCalls);
+        // If it's a reset (like on refresh), replace tasks
+        setCalls(newTasks);
+        setFrom(0);  // Reset 'from' to 0 after refresh
+        setTo(15);   // Reset 'to' to 15 after refresh
       } else {
-        setCalls(prevCalls => [...prevCalls, ...newCalls]);
+        // If not resetting, append new tasks to existing ones
+        setCalls(prevTasks => [...prevTasks, ...newTasks]);
       }
-
-      if (newCalls.length < 20) {
-        setHasMoreCalls(false);
+  
+      // If fewer than 15 items are fetched, assume no more tasks are available
+      if (newTasks.length < 15) {
+        setHasMoreCalls(false); // No more tasks to load
+      } else {
+        setHasMoreCalls(true); // There are more tasks to load
       }
     } catch (error) {
-      console.error('Error fetching calls:', error);
+      console.error('Error:', error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   };
 
+
+ 
   const loadMoreCalls = () => {
-    if (!hasMoreCalls || loadingMore) return;
-
+    if (!hasMoreCalls || loadingMore) return; 
+  
     setLoadingMore(true);
-    const newFrom = from + 20;
-    const newTo = to + 20;
-    setFrom(newFrom);
-    setTo(newTo);
-
-    fetchCalls(false);
+    
+    // Increment 'from' and 'to' to load the next set of tasks
+    setFrom(prevFrom => prevFrom + 1);
+    setTo(prevTo => prevTo + 15);
+  
+    fetchCalls(false); // Fetch the next page
   };
+  
+
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setFrom(0);
-    setTo(20);
-    setHasMoreCalls(true);
-    await fetchCalls(true);
+    setHasMoreCalls(true); // Allow more tasks to be loaded after refreshing
+    await fetchCalls(true); // Fetch tasks from the start (reset = true)
     setRefreshing(false);
   };
-
+  
+  
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      console.log("Screen focused, clearing search");
+      setSearchQuery('');
+      setSelectedSearchOption(null);
+      setSearchKey(null);
+      setDropdownVisible(false);
+  
+      fetchCalls(true); // Re-fetch tasks, if necessary
+    });
+  
+    return unsubscribe;
+  }, [navigation]);
   const fetchCallById = callId => {
     navigation.navigate('NewCall', {
       call: calls.find(call => call.id === callId),
@@ -340,6 +369,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 10,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: '#f0f0f0',
   },
   headerText: {
     fontWeight: 'bold',

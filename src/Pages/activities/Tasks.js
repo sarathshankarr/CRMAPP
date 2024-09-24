@@ -128,7 +128,7 @@ const Tasks = () => {
     {label: 'Date', value: 2},
     {label: 'Rel To', value: 3},
     {label: 'Status', value: 4},
-    {label: 'Desc', value: 1},
+    {label: 'Desc', value: 5},
   ];
 
   useFocusEffect(
@@ -138,31 +138,43 @@ const Tasks = () => {
       }
     }, [companyId]),
   );
+  
 
   const fetchTasks = async (reset = false) => {
-    if (loading || loadingMore) return; 
+    if (loading || loadingMore) return;
     setLoading(reset); 
-
+  
+    const fetchFrom = reset ? 0 : from;
+    const fetchTo = reset ? 15 : to;
+  
     const apiUrl = `${global?.userData?.productURL}${
       API.GET_ALL_TASK_LAZY
-    }/${from}/${to}/${companyId}/${0}/${0}`;
-
+    }/${fetchFrom}/${fetchTo}/${companyId}/${0}/${0}`;
+  
     try {
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-
-      const newTasks = response.data; 
+  
+      const newTasks = response.data;
+  
       if (reset) {
+        // If it's a reset (like on refresh), replace tasks
         setTasks(newTasks);
+        setFrom(0);  // Reset 'from' to 0 after refresh
+        setTo(15);   // Reset 'to' to 15 after refresh
       } else {
+        // If not resetting, append new tasks to existing ones
         setTasks(prevTasks => [...prevTasks, ...newTasks]);
       }
-
+  
+      // If fewer than 15 items are fetched, assume no more tasks are available
       if (newTasks.length < 15) {
-        setHasMoreTasks(false); 
+        setHasMoreTasks(false); // No more tasks to load
+      } else {
+        setHasMoreTasks(true); // There are more tasks to load
       }
     } catch (error) {
       console.error('Error:', error);
@@ -171,27 +183,41 @@ const Tasks = () => {
       setLoadingMore(false);
     }
   };
-
+  
   const loadMoreTasks = () => {
     if (!hasMoreTasks || loadingMore) return; 
-
+  
     setLoadingMore(true);
-    const newFrom = from + 15;
-    const newTo = to + 15;
-    setFrom(newFrom);
-    setTo(newTo);
-
+    
+    setFrom(prevFrom => prevFrom + 1);
+    setTo(prevTo => prevTo + 15);
+  
     fetchTasks(false); 
   };
-
+  
   const onRefresh = async () => {
     setRefreshing(true);
-    setFrom(0);
-    setTo(15);
-    setHasMoreTasks(true);
+    setHasMoreTasks(true); 
     await fetchTasks(true); 
     setRefreshing(false);
   };
+  
+  
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      console.log("Screen focused, clearing search");
+      setSearchQuery('');
+      setSelectedSearchOption(null);
+      setSearchKey(null);
+      setDropdownVisible(false);
+  
+      fetchTasks(true); // Re-fetch tasks, if necessary
+    });
+  
+    return unsubscribe;
+  }, [navigation]);
+  
+
 
   const fetchTaskById = taskId => {
     navigation.navigate('NewTask', {

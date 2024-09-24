@@ -10,6 +10,7 @@ import {
   Image,
   TextInput,
   ScrollView,
+  Alert,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -22,18 +23,24 @@ const DistributorInventory = () => {
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchInput, setShowSearchInput] = useState(false);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [dropdownId, setDropdownId] = useState(null);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
-  const [from, setFrom] = useState(1);
-  const [to, setTo] = useState(100);
+
   const [hasMoreData, setHasMoreData] = useState(true);
+
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(15);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -56,41 +63,42 @@ const DistributorInventory = () => {
     : initialSelectedCompany?.id;
 
   useEffect(() => {
-    if (companyId) {
-      getDistributorInventory(1, to, true);
-    }
-  }, [companyId]);
+    getDistributorInventory();
+  }, []);
 
-  const getDistributorInventory = async (
-    startPage,
-    pageSize,
-    initialLoad = false,
-  ) => {
-    if (loading || loadingMore || !hasMoreData) return;
+  const getDistributorInventory = async (reset = false) => {
+    if (loading || loadingMore) return;
+    setLoading(reset);
 
-    initialLoad ? setLoading(true) : setLoadingMore(true);
-    const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_INVENTORY}/${startPage}/${pageSize}/${companyId}`;
+    const fetchFrom = reset ? 0 : from;
+    const fetchTo = reset ? 15 : to;
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_INVENTORY}/${fetchFrom}/${fetchTo}/${companyId}`;
 
     try {
       const response = await axios.get(apiUrl, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
 
-      if (response.data.status.success) {
-        const fetchedOrders = response.data.response.ordersList.filter(
-          order => order !== null,
-        );
-        if (initialLoad) {
-          setOrders(fetchedOrders);
-        } else {
-          setOrders(prevOrders => [...prevOrders, ...fetchedOrders]);
-        }
-        setHasMoreData(fetchedOrders.length >= pageSize);
+      const newTasks = response.data.response.ordersList;
+
+      if (reset) {
+        // If it's a reset (like on refresh), replace tasks
+        setOrders(newTasks);
+        setFrom(0); // Reset 'from' to 0 after refresh
+        setTo(15); // Reset 'to' to 15 after refresh
       } else {
-        console.error('Failed to fetch orders:', response.data.status);
+        // If not resetting, append new tasks to existing ones
+        setOrders(prevTasks => [...prevTasks, ...newTasks]);
+      }
+
+      // If fewer than 15 items are fetched, assume no more tasks are available
+      if (newTasks.length < 15) {
+        setHasMoreData(false); // No more tasks to load
+      } else {
+        setHasMoreData(true); // There are more tasks to load
       }
     } catch (error) {
       console.error('Error:', error);
@@ -100,25 +108,34 @@ const DistributorInventory = () => {
     }
   };
 
-  const getDistributorInventorySearch = async (
-    startPage,
-    pageSize,
-    initialLoad = false,
-    dropdownId,
-  ) => {
-    if (loading || loadingMore || !hasMoreData) return;
+  const loadMoreTasks = () => {
+    if (!hasMoreData || loadingMore) return;
 
-    initialLoad ? setLoading(true) : setLoadingMore(true);
+    setLoadingMore(true);
 
+    setFrom(prevFrom => prevFrom + 1);
+    setTo(prevTo => prevTo + 15);
+
+    getDistributorInventory(false);
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setHasMoreData(true);
+    await fetchTasks(true);
+    setRefreshing(false);
+  };
+
+  const gettasksearch = async () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_INVENTORY_SEARCH}`;
     const requestBody = {
-      dropdownId: dropdownId,
+      dropdownId: searchKey,
       fieldvalue: searchQuery,
-      from: startPage,
-      to: pageSize,
+      from: 0,
+      to: orders.length,
       companyId: companyId,
     };
-
+    console.log(requestBody);
     try {
       const response = await axios.post(apiUrl, requestBody, {
         headers: {
@@ -127,44 +144,56 @@ const DistributorInventory = () => {
         },
       });
 
-      if (response.data.status.success) {
-        const fetchedOrders = response.data.response.ordersList.filter(
-          order => order !== null,
-        );
-        if (initialLoad) {
-          setOrders(fetchedOrders);
-        } else {
-          setOrders(prevOrders => [...prevOrders, ...fetchedOrders]);
-        }
-        setHasMoreData(fetchedOrders.length >= pageSize);
+      if (response.data.response.ordersList) {
+        setOrders(response.data.response.ordersList);
+        setHasMoreData(false);
       } else {
-        console.error('Failed to fetch orders:', response.data.status);
+        setOrders([]);
       }
     } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      console.error('Error fetching tasks:', error);
     }
   };
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setFrom(1);
-    setHasMoreData(true);
-    await getDistributorInventory(1, to, true);
-    await getDistributorInventorySearch(1, to, true, dropdownId);
-    setRefreshing(false);
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
   };
 
-  const loadMoreData = () => {
-    if (!loadingMore && hasMoreData) {
-      const nextPage = from + 1;
-      setFrom(nextPage);
-      getDistributorInventory(nextPage, to);
-      getDistributorInventorySearch(nextPage, to, false, dropdownId);
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit the function if no search key is selected
+    }
+    
+    if (!searchQuery.trim()) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit if the search query is empty
+    }
+  
+    gettasksearch(); // Call the search function if the dropdown and query are valid
+  };
+  
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+      if (query.trim() === '') {
+      getDistributorInventory(true); 
     }
   };
+
+  const searchOption = [
+    {label: 'Distributor Name', value: 3},
+    {label: 'Location', value: 4},
+    {label: 'Style', value: 5},
+    {label: 'Size', value: 6},
+    {label: 'Type', value: 1},
+    {label: 'Customer Level', value: 2},
+  ];
 
   const renderOrderItem = ({item}) => {
     if (!item) return null;
@@ -178,60 +207,6 @@ const DistributorInventory = () => {
       </TouchableOpacity>
     );
   };
-
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
-
-  const handleDropdownSelectStatus = option => {
-    setSelectedStatus(option.label);
-    setDropdownId(option.value);
-    setDropdownVisible(false);
-    setSearchQuery(''); // Reset search query if needed
-    setFrom(1); // Reset pagination
-    setHasMoreData(true); // Reset data availability flag
-
-    // Call getDistributorInventory and getDistributorInventorySearch
-    getDistributorInventory(1, to, true); // Fetch data based on new dropdown selection
-    getDistributorInventorySearch(1, to, true, option.value); // Fetch data based on search criteria
-  };
-
-  const statusOptions = [
-    {label: 'Distributor Name', value: 3},
-    {label: 'Location', value: 4},
-    {label: 'Style', value: 5},
-    {label: 'Size', value: 6},
-    {label: 'Type', value: 1},
-    {label: 'Customer Level', value: 2},
-  ];
-
-  const handleSearch = () => {
-    console.log('Handling search with query:', searchQuery);
-    getDistributorInventorySearch(1, to, true, dropdownId);
-    setFrom(1);
-    setHasMoreData(true);
-  };
-
-  const filteredOrdersList = orders.filter(item => {
-    if (!item) return false;
-    const distributorName = item.distributorName
-      ? item.distributorName.toLowerCase()
-      : '';
-    const shippingLocality = item.shippingLocality
-      ? item.shippingLocality.toString().toLowerCase()
-      : '';
-    const styleName = item.styleName
-      ? item.styleName.toString().toLowerCase()
-      : '';
-    const size = item.size ? item.size.toString().toLowerCase() : '';
-    const query = searchQuery.toLowerCase();
-    return (
-      distributorName.includes(query) ||
-      shippingLocality.includes(query) ||
-      styleName.includes(query) ||
-      size.includes(query)
-    );
-  });
 
 
   return (
@@ -257,28 +232,18 @@ const DistributorInventory = () => {
             marginRight: 10, // Adds space between the input and button
           }}>
           <TextInput
-            style={[
-              styles.searchInput,
-              searchQuery.length > 0 && styles.searchInputActive,
-            ]}
-            value={searchQuery}
-            onChangeText={text => {
-              setSearchQuery(text);
-              if (text.length === 0) {
-                // Call getDistributorInventory when searchQuery is cleared
-                setFrom(1);
-                setHasMoreData(true);
-                getDistributorInventory(1, to, true);
-              }
-            }}
+            style={styles.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
           />
-
           <TouchableOpacity
             style={styles.searchButton}
             onPress={toggleDropdown}>
-            <Text style={{color: '#000'}}>{selectedStatus || 'Select'}</Text>
+            <Text style={{color: '#000'}}>
+              {selectedSearchOption || 'Select'}
+            </Text>
             <Image
               style={styles.image}
               source={require('../../../assets/dropdown.png')}
@@ -302,12 +267,12 @@ const DistributorInventory = () => {
 
       {dropdownVisible && (
         <View style={styles.dropdownContent1}>
-          <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
-            {statusOptions.map((option, index) => (
+          <ScrollView>
+            {searchOption.map((option, index) => (
               <TouchableOpacity
-                key={index}
                 style={styles.dropdownOption}
-                onPress={() => handleDropdownSelectStatus(option)}>
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
                 <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
@@ -322,22 +287,23 @@ const DistributorInventory = () => {
         <Text style={styles.dateText}>Avail Qty</Text>
       </View>
 
-      {loading && !orders.length ? (
-        <ActivityIndicator size="large" color="#000" />
-      ) : orders.length === 0 && filteredOrdersList === 0 ? (
-        <Text style={styles.noResultsText}>Sorry, no results found!</Text>
-      ) : (
+    
         <FlatList
-          data={orders && filteredOrdersList}
+          data={orders}
           renderItem={renderOrderItem}
           keyExtractor={(item, index) => index.toString()}
-          onEndReached={loadMoreData}
-          onEndReachedThreshold={0.5}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
         />
-      )}
+
 
       {loadingMore && !hasMoreData && (
         <ActivityIndicator size="large" color="#000" />
@@ -400,6 +366,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 20,
+  },
+  noCategoriesText: {
+    top: 40,
+    textAlign: 'center',
+    color: '#000000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    padding: 5,
   },
   searchContainer: {
     flexDirection: 'row',
