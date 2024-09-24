@@ -326,6 +326,13 @@ const HomeAllProducts = ({ navigation }) => {
     setDropdownVisible(!dropdownVisible);
   };
 
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+      if (query.trim() === '') {
+      onRefresh();
+    }
+  };
+
 
   return (
     <View style={styles.container}>
@@ -336,8 +343,8 @@ const HomeAllProducts = ({ navigation }) => {
           <TextInput
             style={styles.searchInput}
             value={searchQuery}
-            onChangeText={text => setSearchQuery(text)}
-            placeholder="Search products..."
+            onChangeText={handleSearchInputChange}
+            placeholder="Search"
             placeholderTextColor="#888"
           />
           <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
