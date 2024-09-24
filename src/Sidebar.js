@@ -88,25 +88,67 @@ const Sidebar = ({navigation, route}) => {
       });
   };
 
+  // const toggleDropdown = () => {
+  //   setDropdownVisible(!dropdownVisible);
+  // };
+
+  // const toggleDropdownSecond = () => {
+  //   setDropdownVisiblee(!dropdownVisiblee);
+  // };
+
+  // const toggleDropdownthird = () => {
+  //   setDropdownVisiblePublish(!dropdownVisiblePublish);
+  // };
+  // const toggleDropdownfourth = () => {
+  //   setDropdownVisibleProduct(!dropdownVisibleProduct);
+  // };
+
+  // const toggleDropdownOrder = () => {
+  //   setdropdownVisibleOrder(!dropdownVisibleOrder);
+  // };
+
+
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
+    setDropdownVisiblee(false);
+    setDropdownVisiblePublish(false);
+    setDropdownVisibleProduct(false);
+    setdropdownVisibleOrder(false);
   };
-
+  
   const toggleDropdownSecond = () => {
     setDropdownVisiblee(!dropdownVisiblee);
+    setDropdownVisible(false);
+    setDropdownVisiblePublish(false);
+    setDropdownVisibleProduct(false);
+    setdropdownVisibleOrder(false);
   };
-
+  
   const toggleDropdownthird = () => {
     setDropdownVisiblePublish(!dropdownVisiblePublish);
+    setDropdownVisible(false);
+    setDropdownVisiblee(false);
+    setDropdownVisibleProduct(false);
+    setdropdownVisibleOrder(false);
   };
+  
   const toggleDropdownfourth = () => {
     setDropdownVisibleProduct(!dropdownVisibleProduct);
+    setDropdownVisible(false);
+    setDropdownVisiblee(false);
+    setDropdownVisiblePublish(false);
+    setdropdownVisibleOrder(false);
   };
-
+  
   const toggleDropdownOrder = () => {
     setdropdownVisibleOrder(!dropdownVisibleOrder);
+    setDropdownVisible(false);
+    setDropdownVisiblee(false);
+    setDropdownVisiblePublish(false);
+    setDropdownVisibleProduct(false);
   };
 
+  
   const goToHome = () => {
     navigation.navigate('Home');
   };
@@ -267,6 +309,46 @@ const Sidebar = ({navigation, route}) => {
           />
           <Text style={styles.categoriestxt}>Categories</Text>
         </TouchableOpacity>
+        {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
+        <TouchableOpacity
+          style={styles.inventoryhead}
+          onPress={toggleDropdownfourth}>
+          <Image
+            style={styles.orderimg}
+            source={require('../assets/box.png')}
+          />
+          <Text style={styles.ordertxt}>Products</Text>
+          <View style={{marginLeft: 'auto'}}>
+            <Image
+              source={require('../assets/dropdown.png')}
+              style={{width: 20, height: 20}}
+            />
+          </View>
+        </TouchableOpacity>
+        {/* )} */}
+        {dropdownVisibleProduct && (
+          <View style={styles.dropdown}>
+            <TouchableOpacity
+              style={styles.inventoryhead}
+              onPress={goToProduct}>
+              <Image
+                style={styles.prodimg}
+                source={require('../assets/package.png')}
+              />
+              <Text style={styles.dropdownItem}>Product/Styles</Text>
+            </TouchableOpacity>
+            {/* <TouchableOpacity
+              style={styles.inventoryhead}
+              onPress={goToPackages}>
+              <Image
+                style={styles.prodimg}
+                source={require('../assets/package.png')}
+              />
+              <Text style={styles.dropdownItem}>Packages</Text>
+            </TouchableOpacity> */}
+            {/* Add more dropdown items here */}
+          </View>
+        )}
         <TouchableOpacity
           style={styles.inventoryhead}
           onPress={toggleDropdownOrder}>
@@ -274,7 +356,7 @@ const Sidebar = ({navigation, route}) => {
             style={styles.orderimg}
             source={require('../assets/orderr.png')}
           />
-          <Text style={styles.ordertxt}>Order</Text>
+          <Text style={styles.ordertxt}>Orders and Returns</Text>
           <View style={{marginLeft: 'auto'}}>
             <Image
               source={require('../assets/dropdown.png')}
@@ -394,7 +476,7 @@ const Sidebar = ({navigation, route}) => {
           </View>
         )}
         {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.inventoryhead}
           onPress={toggleDropdownthird}>
           <Image
@@ -408,9 +490,9 @@ const Sidebar = ({navigation, route}) => {
               style={{width: 20, height: 20}}
             />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* )} */}
-        {dropdownVisiblePublish && (
+        {/* {dropdownVisiblePublish && (
           <View style={styles.dropdown}>
             <TouchableOpacity
               style={styles.inventoryhead}
@@ -421,49 +503,9 @@ const Sidebar = ({navigation, route}) => {
               />
               <Text style={styles.dropdownItem}>Product Publish</Text>
             </TouchableOpacity>
-            {/* Add more dropdown items here */}
           </View>
-        )}
-        {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
-        <TouchableOpacity
-          style={styles.inventoryhead}
-          onPress={toggleDropdownfourth}>
-          <Image
-            style={styles.orderimg}
-            source={require('../assets/box.png')}
-          />
-          <Text style={styles.ordertxt}>Product</Text>
-          <View style={{marginLeft: 'auto'}}>
-            <Image
-              source={require('../assets/dropdown.png')}
-              style={{width: 20, height: 20}}
-            />
-          </View>
-        </TouchableOpacity>
-        {/* )} */}
-        {dropdownVisibleProduct && (
-          <View style={styles.dropdown}>
-            <TouchableOpacity
-              style={styles.inventoryhead}
-              onPress={goToProduct}>
-              <Image
-                style={styles.prodimg}
-                source={require('../assets/package.png')}
-              />
-              <Text style={styles.dropdownItem}>Product/Styles</Text>
-            </TouchableOpacity>
-            {/* <TouchableOpacity
-              style={styles.inventoryhead}
-              onPress={goToPackages}>
-              <Image
-                style={styles.prodimg}
-                source={require('../assets/package.png')}
-              />
-              <Text style={styles.dropdownItem}>Packages</Text>
-            </TouchableOpacity> */}
-            {/* Add more dropdown items here */}
-          </View>
-        )}
+        )} */}
+        
         {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
         <TouchableOpacity
           onPress={goToCustomerLocation}
@@ -472,7 +514,7 @@ const Sidebar = ({navigation, route}) => {
             style={styles.locimg}
             source={require('../assets/location-pin.png')}
           />
-          <Text style={styles.ordertxt}>Location</Text>
+          <Text style={styles.ordertxt}>Location Task</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={goToAttendence} style={styles.inventoryhead}>
           <Image

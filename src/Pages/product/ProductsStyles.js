@@ -14,6 +14,7 @@ import {
   ScrollView,
   Alert,
   useColorScheme,
+  RefreshControl,
 } from 'react-native';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import {API} from '../../config/apiConfig';
@@ -56,12 +57,18 @@ const ProductsStyles = ({route}) => {
 
   
   const [searchOptions, setSearchOptions] = useState([]);
-  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [searchKey, setSearchKey] = useState(1); // Default to "Type" or any other default
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
+
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(15);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const userData=useSelector(state=>state.loggedInUser);
   const userId=userData?.userId;
@@ -146,41 +153,90 @@ const ProductsStyles = ({route}) => {
   const handleGoBack = () => {
     navigation.goBack();
   };
-  const getAllProducts = async companyId => {
-    setLoading(true);
+  // const getAllProducts = async companyId => {
+  //   setLoading(true);
+  //   const apiUrl = `${global?.userData?.productURL}${
+  //     API.GET_ALL_STYLE_LAZY
+  //   }/${0}/${10000}/${companyId}`;
+  //   axios
+  //     .get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     })
+  //     .then(response => {
+  //       setStylesData(response?.data?.response?.stylesList || []);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // };
+
+  const getAllProducts = async (reset = false) => {
+    if (loading || loadingMore) return; 
+    setLoading(reset); 
+
     const apiUrl = `${global?.userData?.productURL}${
       API.GET_ALL_STYLE_LAZY
-    }/${0}/${10000}/${companyId}`;
-    axios
-      .get(apiUrl, {
+    }/${from}/${to}/${companyId}`;
+
+    try {
+      const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
-      })
-      .then(response => {
-        setStylesData(response?.data?.response?.stylesList || []);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      })
-      .finally(() => {
-        setLoading(false);
       });
+
+      const newTasks = response?.data?.response?.stylesList; 
+      if (reset) {
+        setStylesData(newTasks);
+      } else {
+        setStylesData(prevTasks => [...prevTasks, ...newTasks]);
+      }
+
+      if (newTasks.length < 15) {
+        setHasMoreTasks(false); 
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+  const loadMoreTasks = () => {
+    if (!hasMoreTasks || loadingMore) return; 
+
+    setLoadingMore(true);
+    const newFrom = from + 15;
+    const newTo = to + 15;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    getAllProducts(false); 
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(15);
+    setHasMoreTasks(true);
+    await getAllProducts(true); 
+    setRefreshing(false);
   };
 
 
-  const getProductLocationInventorySearch = async (initialLoad = false) => {
-    if (loading || !hasMoreData) return;
-  
-    initialLoad ? setLoading(true) : setLoadingMore(true);
-    
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_STYLE_LAZY_SEARCH}`;
+  const gettasksearch = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCT_PUBLISH}`;
     const requestBody = {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
-      from: 0,
-      to: 10000,
       companyId: companyId,
+      from: 0,
+      to: 100,
     };
 
     try {
@@ -190,43 +246,53 @@ const ProductsStyles = ({route}) => {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-      console.log('API Response:', response.data);
 
-      if (response.data && Array.isArray(response.data.response?.stylesList) && response.data.response.stylesList.length > 0) {
-        const fetchedData = response.data.response.stylesList.filter(item => item !== null);
-        
-        if (initialLoad) {
-          setStylesData(fetchedData);
-        } else {
-          setStylesData(prevData => [...prevData, ...fetchedData]);
-        }
-      
-        setHasMoreData(fetchedData.length >= 100);
+      if (response?.data?.response?.stylesList) {
+        setStylesData(response?.data?.response?.stylesList); 
+        setHasMoreTasks(false); 
       } else {
-        console.error('No valid data received from API or stylesList is empty');
+        setStylesData([]);
       }
-         
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
     }
+  };
+
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label); 
+    setSearchKey(option.value); 
+    setDropdownVisible(false); 
   };
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
+
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit the function if no search key is selected
+    }
+    
+    if (!searchQuery.trim()) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit if the search query is empty
+    }
   
-  const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
-    setSearchKey(option.value);
-    setDropdownVisible(false);
-    setSearchQuery('');
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
-    getAllProducts(companyId)
+    gettasksearch(); // Call the search function if the dropdown and query are valid
   };
   
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+  
+    // If query is cleared, reset tasks and fetch all
+    if (query.trim() === '') {
+      getAllProducts(true); // Call the fetchTasks function to load all tasks
+    }
+  };
+
+ 
   const searchOption = [
     { label: 'id', value: 1 },
     { label: 'Stl Name', value: 3 },
@@ -237,21 +303,6 @@ const ProductsStyles = ({route}) => {
   ];
 
   
-  const handleSearch = () => {
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
-  };
-  
-  const debouncedSearch = debounce(() => {
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
-  }, 300); // Adjust the debounce delay as needed
-  
-  useEffect(() => {
-    debouncedSearch();
-  }, [searchQuery, searchKey]);
 
 
   const getDistributorsDetails = () => {
@@ -633,31 +684,30 @@ const ProductsStyles = ({route}) => {
             placeholderTextColor={colorScheme === 'dark' ? '#000' : '#000'} // Adjust placeholder color based on theme
           /> */}
            <TextInput
-            style={[styles.searchInput, { color: '#000' }]}
-            value={searchQuery}
-            onChangeText={text => {
-              setSearchQuery(text);
-              if (text.length === 0) {
-                setHasMoreData(true);
-                getAllProducts(companyId);
-              }
-            }}
+            style={styles.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
           />
             <TouchableOpacity
             style={styles.searchButton}
             onPress={toggleDropdown}>
-          <Text style={{color:"#000"}}>{selectedSearchOption || 'Select'}</Text>
-          <Image
+            <Text style={{color: '#000'}}>
+              {selectedSearchOption || 'Select'}
+            </Text>
+            <Image
               style={styles.image}
               source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
        
         </View>
-        <TouchableOpacity style={{flex:0.1,marginLeft:2}} onPress={handleSearch}>
-         <Image  style={styles.imagee} source={require('../../../assets/search.png')}/>
+        <TouchableOpacity onPress={handleSearch}>
+          <Image
+            style={styles.searchIcon}
+            source={require('../../../assets/search.png')}
+          />
         </TouchableOpacity>
         <RadioGroup
           radioButtons={radioButtons}
@@ -670,7 +720,10 @@ const ProductsStyles = ({route}) => {
         <View style={styles.dropdownContent1}>
           <ScrollView>
             {searchOption.map((option, index) => (
-              <TouchableOpacity style={styles.dropdownOption} key={index} onPress={() => handleDropdownSelect(option)}>
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
                 <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
@@ -690,20 +743,35 @@ const ProductsStyles = ({route}) => {
       ) : (stylesData?.length===1 && stylesData[0]===null) || stylesData?.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
+        // <FlatList
+        //   data={filteredStylesData()}
+        //   keyExtractor={item => item?.styleId?.toString()} // Ensure styleId is unique
+        //   renderItem={renderItem}
+        //   onEndReached={handleEndReached}
+        //   onEndReachedThreshold={0.1}
+        //   onScroll={handleScroll}
+        //   ListEmptyComponent={
+        //     <Text style={styles.noDataText}>Sorry, no results found!</Text>
+        //   }
+        //   ListFooterComponent={
+        //     loading ? <ActivityIndicator size="large" color="#0000ff" /> : null
+        //   }
+        // />
         <FlatList
-          data={filteredStylesData()}
-          keyExtractor={item => item?.styleId?.toString()} // Ensure styleId is unique
-          renderItem={renderItem}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.1}
-          onScroll={handleScroll}
-          ListEmptyComponent={
-            <Text style={styles.noDataText}>Sorry, no results found!</Text>
-          }
-          ListFooterComponent={
-            loading ? <ActivityIndicator size="large" color="#0000ff" /> : null
-          }
-        />
+        data={stylesData}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `${item.styleId}-${index}`}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        onEndReached={loadMoreTasks} // Load more when scrolled to the end
+        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color="#0000ff" />
+          ) : null
+        }
+      />
       )}
       <Modal
         animationType="slide"
@@ -871,6 +939,11 @@ const styles = StyleSheet.create({
     marginLeft:3,
     marginRight:2,
     marginTop:2
+  },
+  searchIcon: {
+    width: 25,
+    height: 25,
+    marginLeft:2
   },
   imagee: {
     height: 25,

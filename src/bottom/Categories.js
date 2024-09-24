@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSelector} from 'react-redux';
@@ -366,6 +367,12 @@ const Categories = ({ navigation }) => {
     }
   };
 
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+      if (query.trim() === '') {
+      onRefresh(true); 
+    }
+  };
 
   const onChangeText = text => {
     setSearchQuery(text);
@@ -441,7 +448,7 @@ const Categories = ({ navigation }) => {
           <TextInput
             style={styles.searchInput}
             value={searchQuery}
-            onChangeText={text => setSearchQuery(text)}
+            onChangeText={handleSearchInputChange}
             placeholder="Search Categories..."
             placeholderTextColor="#888"
           />

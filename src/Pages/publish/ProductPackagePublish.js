@@ -14,6 +14,7 @@ import {
   ScrollView,
   Alert,
   useColorScheme,
+  RefreshControl,
 } from 'react-native';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import {API} from '../../config/apiConfig';
@@ -52,6 +53,16 @@ const ProductPackagePublish = () => {
     useState(null);
   const [selectAll, setSelectAll] = useState(false);
   const [selectAllModel, setSelectAllModel] = useState(false);
+
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(15);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const userData=useSelector(state=>state.loggedInUser);
   const userId=userData?.userId;
@@ -352,25 +363,150 @@ const ProductPackagePublish = () => {
   const handleGoBack = () => {
     navigation.goBack();
   };
-  const getAllProducts = async companyId => {
-    setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA_NEW}/${companyId}`;
-    axios
-      .get(apiUrl, {
+  // const getAllProducts = async companyId => {
+  //   setLoading(true);
+  //   const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA_NEW}/${companyId}`;
+  //   axios
+  //     .get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     })
+  //     .then(response => {
+  //       setStylesData(response?.data?.response?.stylesList || []);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // };
+
+  const getAllProducts = async (reset = false) => {
+    if (loading || loadingMore) return; 
+    setLoading(reset); 
+
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_ALL_PRODUCT_PUBLISH_LAZY
+    }/${from}/${to}/${companyId}`;
+
+    try {
+      const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
-      })
-      .then(response => {
-        setStylesData(response?.data?.response?.stylesList || []);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      })
-      .finally(() => {
-        setLoading(false);
       });
+
+      const newTasks = response?.data?.response?.stylesList; 
+      if (reset) {
+        setStylesData(newTasks);
+      } else {
+        setStylesData(prevTasks => [...prevTasks, ...newTasks]);
+      }
+
+      if (newTasks.length < 15) {
+        setHasMoreTasks(false); 
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
   };
+
+  const loadMoreTasks = () => {
+    if (!hasMoreTasks || loadingMore) return; 
+
+    setLoadingMore(true);
+    const newFrom = from + 15;
+    const newTo = to + 15;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    getAllProducts(false); 
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(15);
+    setHasMoreTasks(true);
+    await getAllProducts(true); 
+    setRefreshing(false);
+  };
+
+
+  const gettasksearch = async () => {
+    const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCT_PUBLISH}`;
+    const requestBody = {
+      dropdownId: searchKey,
+      fieldvalue: searchQuery,
+      companyId: companyId,
+      from: 0,
+      to: 100,
+    };
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      if (response?.data?.response?.stylesList) {
+        setStylesData(response?.data?.response?.stylesList); 
+        setHasMoreTasks(false); 
+      } else {
+        setStylesData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label); 
+    setSearchKey(option.value); 
+    setDropdownVisible(false); 
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit the function if no search key is selected
+    }
+    
+    if (!searchQuery.trim()) {
+      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      return; // Exit if the search query is empty
+    }
+  
+    gettasksearch(); // Call the search function if the dropdown and query are valid
+  };
+  
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+  
+    // If query is cleared, reset tasks and fetch all
+    if (query.trim() === '') {
+      getAllProducts(true); // Call the fetchTasks function to load all tasks
+    }
+  };
+
+  const searchOption = [
+    {label: 'id', value: 1},
+    {label: 'Sty Nme', value: 3},
+    {label: 'Sty Des', value: 4},
+    {label: 'Color', value: 5},
+  ];
 
   const getDistributorsDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTORS_DETAILS}/${companyId}`;
@@ -722,17 +858,42 @@ const ProductPackagePublish = () => {
           marginTop: 10,
         }}>
         <View style={styles.searchContainer}>
-          <TextInput
+          {/* <TextInput
             style={[
               styles.searchInput,
               {color: colorScheme === 'dark' ? '#000' : '#000'}, // Adjust text color based on theme
             ]}
             placeholder="Search"
             value={searchQueryStylesData}
-            onChangeText={setSearchQueryStylesData}
+            onChangeText={handleSearchInputChange}
             placeholderTextColor={colorScheme === 'dark' ? '#000' : '#000'} // Adjust placeholder color based on theme
+          /> */}
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search"
+            placeholderTextColor="#000"
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
           />
+          
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={toggleDropdown}>
+            <Text style={{color: '#000'}}>
+              {selectedSearchOption || 'Select'}
+            </Text>
+            <Image
+              style={styles.image}
+              source={require('../../../assets/dropdown.png')}
+            />
+          </TouchableOpacity>
         </View>
+        <TouchableOpacity onPress={handleSearch}>
+          <Image
+            style={styles.searchIcon}
+            source={require('../../../assets/search.png')}
+          />
+        </TouchableOpacity>
         <RadioGroup
           radioButtons={radioButtons}
           onPress={setSelectedId}
@@ -740,6 +901,20 @@ const ProductPackagePublish = () => {
           containerStyle={styles.radioGroup}
         />
       </View>
+      {dropdownVisible && (
+        <View style={styles.dropdownContent1}>
+          <ScrollView>
+            {searchOption.map((option, index) => (
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000'}}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
       <View style={styles.topheader}>
         <View style={{marginLeft: 10}}>
           <CustomCheckBox
@@ -756,20 +931,35 @@ const ProductPackagePublish = () => {
       ) : (stylesData?.length===1 && stylesData[0]===null) || stylesData?.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
+        // <FlatList
+        //   data={stylesData}
+        //   keyExtractor={item => item.styleId?.toString()} // Ensure styleId is unique
+        //   renderItem={renderItem}
+        //   onEndReached={handleEndReached}
+        //   onEndReachedThreshold={0.1}
+        //   onScroll={handleScroll}
+        //   ListEmptyComponent={
+        //     <Text style={styles.noDataText}>Sorry, no results found!</Text>
+        //   }
+        //   ListFooterComponent={
+        //     loading ? <ActivityIndicator size="large" color="#0000ff" /> : null
+        //   }
+        // />
         <FlatList
-          data={filteredStylesData()}
-          keyExtractor={item => item.styleId?.toString()} // Ensure styleId is unique
-          renderItem={renderItem}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.1}
-          onScroll={handleScroll}
-          ListEmptyComponent={
-            <Text style={styles.noDataText}>Sorry, no results found!</Text>
-          }
-          ListFooterComponent={
-            loading ? <ActivityIndicator size="large" color="#0000ff" /> : null
-          }
-        />
+        data={stylesData}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `${item.styleId}-${index}`}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        onEndReached={loadMoreTasks} // Load more when scrolled to the end
+        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color="#0000ff" />
+          ) : null
+        }
+      />
       )}
       <Modal
         animationType="slide"
@@ -1138,23 +1328,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 10,
-    paddingHorizontal: 10,
+   
     flex: 1,
+  },
+  searchButton: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    
   },
   searchInput: {
     flex: 1,
-    borderColor: 'gray',
-    textAlign: 'left',
-    paddingVertical: 5,
-    paddingHorizontal: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    color: '#000000',
   },
   searchInput: {},
   image: {
     height: 20,
     width: 20,
+    marginLeft:2,
+    marginRight:2
+  },
+  searchIcon: {
+    width: 25,
+    height: 25,
+    marginLeft:2
+  },
+  dropdownContent1: {
+    elevation: 5,
+    // height: 220,
+    alignSelf: 'center',
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  dropdownOption: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
   radioGroup: {
-    marginHorizontal: 10,
     flexDirection: 'row',
   },
   topheader: {

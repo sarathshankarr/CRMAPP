@@ -118,10 +118,8 @@ const Tasks = () => {
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-  
-    // If query is cleared, reset tasks and fetch all
-    if (query.trim() === '') {
-      fetchTasks(true); // Call the fetchTasks function to load all tasks
+      if (query.trim() === '') {
+      fetchTasks(true); 
     }
   };
 
