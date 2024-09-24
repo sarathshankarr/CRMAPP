@@ -254,7 +254,7 @@ const Categories = ({ navigation }) => {
     }
   }, [companyId]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = async()=>{
     setRefreshing(true);
     setSearchQuery("");
     fetchCategories(companyId, 0, 15, true);
@@ -263,7 +263,17 @@ const Categories = ({ navigation }) => {
     setPageTo(15);
     setsearchFlag(false);
     setSearchKey(0);
-  }, [companyId]);
+  }
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // setShowSearchInput(false);
+      console.log("navigation in Cat")
+      onRefresh();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
 
   const fetchCategories = (companyId, from, to, reset = false) => {
     if (!companyId || !hasMore) return;
@@ -423,7 +433,7 @@ const Categories = ({ navigation }) => {
 
 
   const searchOption = [
-    { label: 'Select', value: 0 },
+    // { label: 'Select', value: 0 },
     { label: 'Category', value: 1 },
     { label: 'Category Desc.', value: 2 },
   ];

@@ -584,7 +584,13 @@ const ProductsStyles = ({route}) => {
       isChecked={checkedStyleIds.includes(item?.styleId)}
       onToggle={() => handleCheckBoxToggleStyle(item?.styleId)}
     />}
-    <Text style={styles.cell}>{item?.styleNum}</Text>
+
+    <TouchableOpacity style={styles.cell} onPress={()=>{
+      handleCheckBoxToggleStyle(item?.styleId);
+    }}   >
+      <Text style={styles.cell}>{item?.styleNum}</Text>
+    </TouchableOpacity>
+    {/* <Text style={styles.cell}>{item?.styleNum}</Text> */}
     <Text style={styles.cell1}>{item?.styleName}</Text>
     <Text style={styles.cell2}>{item?.colorName}</Text>
     <Text style={styles.cell3}>{item?.mrp}</Text>
