@@ -21,11 +21,10 @@ import {API} from '../../config/apiConfig';
 import CustomCheckBox from '../../components/CheckBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSelector} from 'react-redux';
-import { debounce } from 'lodash';
+import {debounce} from 'lodash';
 
 const ProductsStyles = ({route}) => {
   const navigation = useNavigation();
-  const [searchQuery, setSearchQuery] = useState('');
   const [searchQueryStylesData, setSearchQueryStylesData] = useState('');
 
   const [selectedId, setSelectedId] = useState('1');
@@ -55,23 +54,24 @@ const ProductsStyles = ({route}) => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectAllModel, setSelectAllModel] = useState(false);
 
-  
   const [searchOptions, setSearchOptions] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
 
+  const [refreshing, setRefreshing] = useState(false);
   const [from, setFrom] = useState(0);
-  const [to, setTo] = useState(15);
+  const [to, setTo] = useState(20);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [selectedSearchOption, setSelectedSearchOption] = useState(null);
   const [searchKey, setSearchKey] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [filterFlag, setFilterFlag] = useState(false);
 
-  const userData=useSelector(state=>state.loggedInUser);
-  const userId=userData?.userId;
+  const userData = useSelector(state => state.loggedInUser);
+  const userId = userData?.userId;
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
@@ -107,17 +107,15 @@ const ProductsStyles = ({route}) => {
     };
 
     fetchInitialSelectedCompany();
-    
   }, []);
 
-  useEffect(()=>{
-    if(route?.params && route?.params?.reload==="true" ){
-      if(companyId){
-        getAllProducts(companyId)
+  useEffect(() => {
+    if (route?.params && route?.params?.reload === 'true') {
+      if (companyId) {
+        getAllOrders(companyId);
       }
     }
-  }, [route?.params])
-  
+  }, [route?.params]);
 
   const companyId = selectedCompany
     ? selectedCompany.id
@@ -153,35 +151,32 @@ const ProductsStyles = ({route}) => {
   const handleGoBack = () => {
     navigation.goBack();
   };
-  // const getAllProducts = async companyId => {
-  //   setLoading(true);
-  //   const apiUrl = `${global?.userData?.productURL}${
-  //     API.GET_ALL_STYLE_LAZY
-  //   }/${0}/${10000}/${companyId}`;
-  //   axios
-  //     .get(apiUrl, {
-  //       headers: {
-  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-  //       },
-  //     })
-  //     .then(response => {
-  //       setStylesData(response?.data?.response?.stylesList || []);
-  //     })
-  //     .catch(error => {
-  //       console.error('Error:', error);
-  //     })
-  //     .finally(() => {
-  //       setLoading(false);
-  //     });
-  // };
 
-  const getAllProducts = async (reset = false) => {
-    if (loading || loadingMore) return; 
-    setLoading(reset); 
+  useEffect(() => {
+    if (companyId) {
+      getAllOrders(true, 0, 20);
+    }
+  }, [companyId]);
 
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_ALL_STYLE_LAZY
-    }/${from}/${to}/${companyId}`;
+  const getAllOrders = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    // console.log("getAllOrders b ", customFrom, customTo);
+
+    if (loading || loadingMore) return;
+    setLoading(reset);
+
+    if (reset) {
+      setFrom(0); // Reset pagination
+      setTo(20);
+      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+    }
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_STYLE_LAZY}/${customFrom}/${customTo}/${companyId}`;
+
+    console.log('getAllOrders A ', customFrom, customTo);
 
     try {
       const response = await axios.get(apiUrl, {
@@ -190,15 +185,15 @@ const ProductsStyles = ({route}) => {
         },
       });
 
-      const newTasks = response?.data?.response?.stylesList; 
+      const newTasks = response?.data?.response?.stylesList;
       if (reset) {
         setStylesData(newTasks);
       } else {
-        setStylesData(prevTasks => [...prevTasks, ...newTasks]);
+        setStylesData(prevTasks => [...(prevTasks || []), ...newTasks]);
       }
 
-      if (newTasks.length < 15) {
-        setHasMoreTasks(false); 
+      if (newTasks.length < 20) {
+        setHasMoreTasks(false);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -207,37 +202,104 @@ const ProductsStyles = ({route}) => {
       setLoadingMore(false);
     }
   };
-  const loadMoreTasks = () => {
-    if (!hasMoreTasks || loadingMore) return; 
+
+  // const getAllProducts = async (reset = false) => {
+  //   if (loading || loadingMore) return;
+  //   setLoading(reset);
+
+  //   const apiUrl = `${global?.userData?.productURL}${
+  //     API.GET_ALL_STYLE_LAZY
+  //   }/${from}/${to}/${companyId}`;
+
+  //   try {
+  //     const response = await axios.get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     });
+
+  //     const newTasks = response?.data?.response?.stylesList;
+  //     if (reset) {
+  //       setStylesData(newTasks);
+  //     } else {
+  //       setStylesData(prevTasks => [...prevTasks, ...newTasks]);
+  //     }
+
+  //     if (newTasks.length < 15) {
+  //       setHasMoreTasks(false);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   } finally {
+  //     setLoading(false);
+  //     setLoadingMore(false);
+  //   }
+  // };
+
+  const loadMoreTasks = async () => {
+    if (!hasMoreTasks || loadingMore) return;
 
     setLoadingMore(true);
-    const newFrom = from + 15;
-    const newTo = to + 15;
+    const newFrom = to + 1;
+    const newTo = to + 20;
     setFrom(newFrom);
     setTo(newTo);
 
-    getAllProducts(false); 
+    if (filterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getAllOrders(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
+    // getAllOrders(); // Call getAllOrders here to fetch new data
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
     setFrom(0);
-    setTo(15);
+    setTo(20);
+    setSearchKey(0);
+    setFilterFlag(false);
+
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    setSelectedSearchOption('');
     setHasMoreTasks(true);
-    await getAllProducts(true); 
+
+    await getAllOrders(true, 0, 20);
     setRefreshing(false);
   };
 
-
-  const gettasksearch = async () => {
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCT_PUBLISH}`;
     const requestBody = {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
       companyId: companyId,
-      from: 0,
-      to: 100,
+      from: customFrom,
+      to: customTo,
     };
+
+    console.log('gettasksearch==> ', customFrom, customTo);
 
     try {
       const response = await axios.post(apiUrl, requestBody, {
@@ -248,8 +310,18 @@ const ProductsStyles = ({route}) => {
       });
 
       if (response?.data?.response?.stylesList) {
-        setStylesData(response?.data?.response?.stylesList); 
-        setHasMoreTasks(false); 
+        // setOrders(response.data.response.ordersList);
+
+        const newOrders = response?.data?.response?.stylesList.filter(
+          order => order !== null,
+        );
+
+        setStylesData(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
+        );
+        setHasMoreTasks(newOrders?.length >= 15);
+
+        // setHasMoreTasks(false);
       } else {
         setStylesData([]);
       }
@@ -258,10 +330,39 @@ const ProductsStyles = ({route}) => {
     }
   };
 
+  // const gettasksearch = async () => {
+  //   const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCT_PUBLISH}`;
+  //   const requestBody = {
+  //     dropdownId: searchKey,
+  //     fieldvalue: searchQuery,
+  //     companyId: companyId,
+  //     from: 0,
+  //     to: 100,
+  //   };
+
+  //   try {
+  //     const response = await axios.post(apiUrl, requestBody, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     });
+
+  //     if (response?.data?.response?.stylesList) {
+  //       setStylesData(response?.data?.response?.stylesList);
+  //       setHasMoreTasks(false);
+  //     } else {
+  //       setStylesData([]);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching tasks:', error);
+  //   }
+  // };
+
   const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label); 
-    setSearchKey(option.value); 
-    setDropdownVisible(false); 
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
   };
 
   const toggleDropdown = () => {
@@ -270,40 +371,43 @@ const ProductsStyles = ({route}) => {
 
   const handleSearch = () => {
     if (!searchKey) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
       return; // Exit the function if no search key is selected
     }
-    
+
     if (!searchQuery.trim()) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
       return; // Exit if the search query is empty
     }
-  
-    gettasksearch(); // Call the search function if the dropdown and query are valid
+
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(20);
+
+    gettasksearch(true, 0, 20);
   };
-  
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-  
-    // If query is cleared, reset tasks and fetch all
     if (query.trim() === '') {
-      getAllProducts(true); // Call the fetchTasks function to load all tasks
+      getAllOrders(true, 0, 20);
     }
   };
 
- 
   const searchOption = [
-    { label: 'id', value: 1 },
-    { label: 'Stl Name', value: 3 },
-    { label: 'Stl Des', value: 4 },
-    { label: 'Color', value: 5 },
-    {label :'Cre Date', value: 6},
-    {label :'Cre Name', value: 7}
+    {label: 'id', value: 1},
+    {label: 'Stl Nme', value: 3},
+    {label: 'Stl Des', value: 4},
+    {label: 'Color', value: 5},
+    {label: 'Cre Date', value: 6},
+    {label: 'user Nme', value: 7},
   ];
-
-  
-
 
   const getDistributorsDetails = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTORS_DETAILS}/${companyId}`;
@@ -362,24 +466,23 @@ const ProductsStyles = ({route}) => {
       }
     };
     const requestData = {
-      stylesPublishList: checkedStyleIds.flatMap(styleId => 
+      stylesPublishList: checkedStyleIds.flatMap(styleId =>
         checkedModalIds.map(customerId => ({
           styleId: styleId,
           customerId: customerId,
           phoneNo: getWhatsappId(customerId, selectedId === '2'),
           messageStts: 'Pending',
           customerTypes: selectedId === '2' ? 1 : 2,
-        }))
+        })),
       ),
       loggedInUserWhatsappNumber: '', // Set this to the appropriate value if available
       companyId: companyId,
-      userId:userId,
+      userId: userId,
       linkType: 3,
     };
 
-
     try {
-      const apiUrl =`${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
+      const apiUrl = `${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -424,9 +527,9 @@ const ProductsStyles = ({route}) => {
     setModalVisible(true);
   };
 
-  const fetchStyleById =(Id) => {
+  const fetchStyleById = Id => {
     setLoading(true);
-    const end="/0";
+    const end = '/0';
     const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_BY_ID}${Id}${end}`;
     axios
       .get(apiUrl, {
@@ -435,7 +538,9 @@ const ProductsStyles = ({route}) => {
         },
       })
       .then(response => {
-        navigation.navigate('AddNewStyle', {Style: response.data.response.stylesList[0]});
+        navigation.navigate('AddNewStyle', {
+          Style: response.data.response.stylesList[0],
+        });
       })
       .catch(error => {
         console.error('Error fetching Style by ID:', error);
@@ -447,7 +552,7 @@ const ProductsStyles = ({route}) => {
 
   useEffect(() => {
     if (companyId) {
-      getAllProducts(companyId);
+      getAllOrders(companyId);
     }
   }, [companyId, pageNo]);
 
@@ -578,24 +683,28 @@ const ProductsStyles = ({route}) => {
   };
 
   const renderItem = ({item}) => (
-    <TouchableOpacity style={styles.row} onPress={() => fetchStyleById(item?.styleId)}>
-    
-    {item?.styleId && <CustomCheckBox
-      isChecked={checkedStyleIds.includes(item?.styleId)}
-      onToggle={() => handleCheckBoxToggleStyle(item?.styleId)}
-    />}
+    <TouchableOpacity
+      style={styles.row}
+      onPress={() => fetchStyleById(item?.styleId)}>
+      {item?.styleId && (
+        <CustomCheckBox
+          isChecked={checkedStyleIds.includes(item?.styleId)}
+          onToggle={() => handleCheckBoxToggleStyle(item?.styleId)}
+        />
+      )}
 
-    <TouchableOpacity style={styles.cell} onPress={()=>{
-      handleCheckBoxToggleStyle(item?.styleId);
-    }}   >
-      <Text style={styles.cell}>{item?.styleNum}</Text>
+      <TouchableOpacity
+        style={styles.cell}
+        onPress={() => {
+          handleCheckBoxToggleStyle(item?.styleId);
+        }}>
+        <Text style={styles.cell}>{item?.styleNum}</Text>
+      </TouchableOpacity>
+      {/* <Text style={styles.cell}>{item?.styleNum}</Text> */}
+      <Text style={styles.cell1}>{item?.styleName}</Text>
+      <Text style={styles.cell2}>{item?.colorName}</Text>
+      <Text style={styles.cell3}>{item?.price}</Text>
     </TouchableOpacity>
-    {/* <Text style={styles.cell}>{item?.styleNum}</Text> */}
-    <Text style={styles.cell1}>{item?.styleName}</Text>
-    <Text style={styles.cell2}>{item?.colorName}</Text>
-    <Text style={styles.cell3}>{item?.mrp}</Text>
-    </TouchableOpacity>
-
   );
 
   const renderModalContent = () => {
@@ -689,14 +798,14 @@ const ProductsStyles = ({route}) => {
             onChangeText={setSearchQueryStylesData}
             placeholderTextColor={colorScheme === 'dark' ? '#000' : '#000'} // Adjust placeholder color based on theme
           /> */}
-           <TextInput
+          <TextInput
             style={styles.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
             value={searchQuery}
             onChangeText={handleSearchInputChange}
           />
-            <TouchableOpacity
+          <TouchableOpacity
             style={styles.searchButton}
             onPress={toggleDropdown}>
             <Text style={{color: '#000'}}>
@@ -707,7 +816,6 @@ const ProductsStyles = ({route}) => {
               source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
-       
         </View>
         <TouchableOpacity onPress={handleSearch}>
           <Image
@@ -737,8 +845,7 @@ const ProductsStyles = ({route}) => {
         </View>
       )}
       <View style={styles.topheader}>
-        <View style={{marginLeft: 10}}>
-        </View>
+        <View style={{marginLeft: 10}}></View>
         <Text style={styles.txtid}>ID</Text>
         <Text style={styles.txt4}>Style Name</Text>
         <Text style={styles.txt5}>Color</Text>
@@ -746,7 +853,8 @@ const ProductsStyles = ({route}) => {
       </View>
       {loading && pageNo === 1 ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : (stylesData?.length===1 && stylesData[0]===null) || stylesData?.length === 0 ? (
+      ) : (stylesData?.length === 1 && stylesData[0] === null) ||
+        stylesData?.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
         // <FlatList
@@ -763,21 +871,36 @@ const ProductsStyles = ({route}) => {
         //     loading ? <ActivityIndicator size="large" color="#0000ff" /> : null
         //   }
         // />
+        //   <FlatList
+        //   data={stylesData}
+        //   renderItem={renderItem}
+        //   keyExtractor={(item, index) => `${item.styleId}-${index}`}
+        //   refreshControl={
+        //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        //   }
+        //   onEndReached={loadMoreTasks} // Load more when scrolled to the end
+        //   onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+        //   ListFooterComponent={
+        //     loadingMore ? (
+        //       <ActivityIndicator size="small" color="#0000ff" />
+        //     ) : null
+        //   }
+        // />
         <FlatList
-        data={stylesData}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item.styleId}-${index}`}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        onEndReached={loadMoreTasks} // Load more when scrolled to the end
-        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
-        ListFooterComponent={
-          loadingMore ? (
-            <ActivityIndicator size="small" color="#0000ff" />
-          ) : null
-        }
-      />
+          data={stylesData}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => `${item?.orderId}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
+        />
       )}
       <Modal
         animationType="slide"
@@ -929,6 +1052,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 10,
+    paddingHorizontal: 0,
     flex: 1,
   },
   searchInput: {
@@ -942,14 +1066,14 @@ const styles = StyleSheet.create({
   image: {
     height: 18,
     width: 18,
-    marginLeft:3,
-    marginRight:2,
-    marginTop:2
+    marginLeft: 3,
+    marginRight: 2,
+    marginTop: 2,
   },
   searchIcon: {
     width: 25,
     height: 25,
-    marginLeft:2
+    marginLeft: 2,
   },
   imagee: {
     height: 25,
