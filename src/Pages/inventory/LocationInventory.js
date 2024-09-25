@@ -1,5 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -13,7 +13,7 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native';
-import {API} from '../../config/apiConfig';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -34,15 +34,17 @@ const LocationInventory = () => {
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const [loading, setLoading] = useState(false); // Loading state for initial fetch
-  const [hasMoreInventory, setHasMoreInventory] = useState(true); // To track if more inventory data is available
-  const [from, setFrom] = useState(0); // Starting index for pagination
-  const [to, setTo] = useState(15); // Ending index for pagination
+  const [loading, setLoading] = useState(false);
+  const [hasMoreInventory, setHasMoreInventory] = useState(true);
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(20);
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [searchFilterFlag, setsearchFilterFlag] = useState(false);
+
 
 
   const selectedCompany = useSelector(state => state.selectedCompany);
-  
+
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
@@ -66,19 +68,18 @@ const LocationInventory = () => {
     : initialSelectedCompany?.id;
 
   useEffect(() => {
-    getLocationInventory();
+    getLocationInventory(true, 0, 20);
   }, []);
 
 
 
-  const getLocationInventory = async (reset = false) => {
-    if (loading || loadingMore) return; // Prevent fetching if already loading
-    setLoading(reset); // Set loading state
-
-    const fetchFrom = reset ? 0 : from; // Determine starting index based on reset
-    const fetchTo = reset ? 15 : to; // Determine ending index based on reset
+  const getLocationInventory = async (reset = false, customFrom = from, customTo = to) => {
+    if (loading || loadingMore) return;
+    setLoading(reset);
 
     const apiUrl = `${global?.userData?.productURL}${API.ADD_LOCATION_INVENTORY_LAZY}`;
+
+    console.log("getLocationInventory", customFrom, customTo);
 
     try {
       const response = await axios.post(
@@ -86,8 +87,8 @@ const LocationInventory = () => {
         {
           companyId: companyId,
           styleName: '',
-          from: fetchFrom,
-          to: fetchTo,
+          from: customFrom,
+          to: customTo,
         },
         {
           headers: {
@@ -97,26 +98,21 @@ const LocationInventory = () => {
         },
       );
 
-      console.log('API Response:', response.data);
+      // console.log('API Response:', response.data);
 
       // Check if the response contains an array
       const newTasks = response.data.gsCodesList;
-  
+
       if (reset) {
-        // If it's a reset (like on refresh), replace tasks
         setInventoryData(newTasks);
-        setFrom(0);  // Reset 'from' to 0 after refresh
-        setTo(15);   // Reset 'to' to 15 after refresh
       } else {
-        // If not resetting, append new tasks to existing ones
         setInventoryData(prevTasks => [...prevTasks, ...newTasks]);
       }
-  
-      // If fewer than 15 items are fetched, assume no more tasks are available
-      if (newTasks.length < 15) {
-        setHasMoreInventory(false); // No more tasks to load
+
+      if (newTasks.length < 20) {
+        setHasMoreData(false);
       } else {
-        setHasMoreInventory(true); // There are more tasks to load
+        setHasMoreData(true);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -126,15 +122,17 @@ const LocationInventory = () => {
     }
   };
 
-  const gettasksearch = async () => {
+  const gettasksearch = async (reset = false, customFrom = from, customTo = to) => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_LOCATION_INVENTORY_SEARCH}`;
     const requestBody = {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
-      from: 0,
-      to: inventoryData.length,
+      from: customFrom,
+      to: customTo,
       companyId: companyId,
     };
+
+    console.log("gettasksearch==> ", customFrom, customTo);
 
     try {
       const response = await axios.post(apiUrl, requestBody, {
@@ -145,8 +143,13 @@ const LocationInventory = () => {
       });
 
       if (response.data.gsCodesList) {
-        setInventoryData(response.data.gsCodesList);
-        setHasMoreData(false);
+        
+        const newOrders = response.data.gsCodesList.filter(order => order !== null);
+
+        setInventoryData((prevDetails) =>
+          reset ? newOrders : [...prevDetails, ...newOrders]
+        );
+        setHasMoreData(newOrders?.length >= 20);
       } else {
         setInventoryData([]);
       }
@@ -182,45 +185,75 @@ const LocationInventory = () => {
       return; // Exit if the search query is empty
     }
 
-    gettasksearch(); // Call the search function if the dropdown and query are valid
+    setsearchFilterFlag(true);
+    setFrom(0);
+    setTo(20)
+    gettasksearch(true, 0, 20); 
   };
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
     if (query.trim() === '') {
-      getLocationInventory(true);
+      getLocationInventory(true, 0, 20);
+      setFrom(0),
+      setTo(0);
     }
   };
-  
+
   const searchOption = [
+    { label: 'Type', value: 1 },
+    { label: 'Customer Level', value: 2 },
     { label: 'Location Name', value: 3 },
     { label: 'Style Name', value: 4 },
     { label: 'Size', value: 5 },
-    { label: 'Type', value: 1 },
-    { label: 'Customer Level', value: 2 },
     { label: 'Sku', value: 6 },
 
   ];
   const onRefresh = async () => {
     setRefreshing(true);
-    setHasMoreInventory(true); // Reset to indicate more inventory may be available
-    await getLocationInventory(true); // Fetch inventory with reset flag
+    setsearchFilterFlag(false);
+    setHasMoreData(true); 
+    setSearchQuery('');
+    setFrom(0);
+    setSearchKey(0);
+    setSelectedSearchOption('');
+    setTo(20);
+    await getLocationInventory(true, 0, 20); 
     setRefreshing(false);
   };
 
-  const loadMoreTasks = () => {
-    if (!hasMoreData || loadingMore) return; 
-  
+  const loadMoreTasks = async() => {
+    if (!hasMoreData || loadingMore) return;
+
     setLoadingMore(true);
-    
-    setFrom(prevFrom => prevFrom + 1);
-    setTo(prevTo => prevTo + 15);
-  
-    getProductInventory(false); 
+    const newFrom = to + 1;
+    const newTo = to + 20;
+
+    if (searchFilterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getLocationInventory(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
   };
 
 
-  const renderItem = ({item}) => (
+  const renderItem = ({ item }) => (
     <View>
       <View style={styles.inventoryItem}>
         <Text style={styles.itemText}> {item.locationName}</Text>
@@ -230,7 +263,7 @@ const LocationInventory = () => {
         {/* <Text style={styles.itemText4}>{item.holdQty}</Text> */}
       </View>
       <View
-        style={{borderBottomWidth: 1, borderBottomColor: 'lightgray'}}></View>
+        style={{ borderBottomWidth: 1, borderBottomColor: 'lightgray' }}></View>
     </View>
   );
 
@@ -238,17 +271,17 @@ const LocationInventory = () => {
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
-        <TextInput
+          <TextInput
             style={styles.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
             value={searchQuery}
             onChangeText={handleSearchInputChange}
           />
-           <TouchableOpacity
+          <TouchableOpacity
             style={styles.searchButton}
             onPress={toggleDropdown}>
-            <Text style={{color: '#000'}}>
+            <Text style={{ color: '#000' }}>
               {selectedSearchOption || 'Select'}
             </Text>
             <Image
@@ -256,7 +289,7 @@ const LocationInventory = () => {
               source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
-      
+
         </View>
         <TouchableOpacity style={styles.searchIconContainer} onPress={handleSearch}>
           <Text
@@ -271,7 +304,7 @@ const LocationInventory = () => {
           </Text>
         </TouchableOpacity>
       </View>
-  
+
       {dropdownVisible && (
         <View style={styles.dropdownContent1}>
           <ScrollView>
@@ -280,15 +313,15 @@ const LocationInventory = () => {
                 style={styles.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{color: '#000'}}>{option.label}</Text>
+                <Text style={{ color: '#000' }}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
       )}
-  
-  <View style={styles.header}>
-      <Text style={styles.headerText}>Location Name</Text>
+
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Location Name</Text>
         <Text style={styles.headerText1}>Style Name</Text>
         <Text style={styles.headerText2}>Size</Text>
         <Text style={styles.headerText3}>Avail Qty</Text>
@@ -317,7 +350,7 @@ const LocationInventory = () => {
       )}
     </View>
   );
-  
+
 };
 
 const styles = StyleSheet.create({
@@ -347,6 +380,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     paddingHorizontal: 10,
+    color:'#000'
   },
   searchIconContainer: {
     padding: 10,
@@ -365,22 +399,22 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1.2,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
   headerText1: {
     flex: 2,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
   headerText2: {
     flex: 1,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
   headerText3: {
     flex: 1,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
   noResultsText: {
     top: 40,
@@ -406,32 +440,32 @@ const styles = StyleSheet.create({
   itemText: {
     flex: 1.2,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
   itemText1: {
     flex: 2,
     textAlign: 'center',
-    marginLeft:10,
-    color:"#000"
+    marginLeft: 10,
+    color: "#000"
   },
   itemText2: {
     flex: 1,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
   itemText3: {
     flex: 1,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
   itemText4: {
     flex: 1,
     textAlign: 'center',
-    color:"#000"
+    color: "#000"
   },
-  noCategoriesText:{
+  noCategoriesText: {
     top: 40,
-    textAlign:"center",
+    textAlign: "center",
     color: '#000000',
     fontSize: 20,
     fontWeight: 'bold',
@@ -445,7 +479,7 @@ const styles = StyleSheet.create({
     height: 20,
     width: 20,
     marginLeft: 10,
-    marginRight:10
+    marginRight: 10
   },
   dropdownContent1: {
     elevation: 5,

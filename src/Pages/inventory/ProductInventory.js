@@ -1,5 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,9 +14,9 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import {API} from '../../config/apiConfig';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProductInventory = () => {
@@ -28,18 +28,19 @@ const ProductInventory = () => {
   const [searchOptions, setSearchOptions] = useState([]);
   const [selectedSearchOption, setSelectedSearchOption] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [searchKey, setSearchKey] = useState(1); // Default to "Type" or any other default
+  const [searchKey, setSearchKey] = useState(1); 
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const [loading, setLoading] = useState(false); // Loading state for initial fetch
-  const [hasMoreInventory, setHasMoreInventory] = useState(true); // To track if more inventory data is available
-  const [from, setFrom] = useState(0); // Starting index for pagination
-  const [to, setTo] = useState(15); // Ending index for pagination
-  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [from, setFrom] = useState(0); 
+  const [to, setTo] = useState(20); 
+  const [searchFilterFlag, setsearchFilterFlag] = useState(false);
+
 
   const selectedCompany = useSelector(state => state.selectedCompany);
+
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
@@ -63,18 +64,17 @@ const ProductInventory = () => {
     : initialSelectedCompany?.id;
 
   useEffect(() => {
-    getProductInventory();
+    getProductInventory(true, 0, 20);
   }, []);
-  
 
-  const getProductInventory = async (reset = false) => {
-    if (loading || loadingMore) return; // Prevent fetching if already loading
-    setLoading(reset); // Set loading state
 
-    const fetchFrom = reset ? 0 : from; // Determine starting index based on reset
-    const fetchTo = reset ? 15 : to; // Determine ending index based on reset
+  const getProductInventory = async (reset = false, customFrom = from, customTo = to) => {
+    if (!hasMoreData || loadingMore) return;
+    setLoading(reset);
 
     const apiUrl = `${global?.userData?.productURL}${API.ADD_ALL_INVENTORY_LAZY}`;
+
+    console.log("getProductInventory", customFrom, customTo);
 
     try {
       const response = await axios.post(
@@ -82,8 +82,8 @@ const ProductInventory = () => {
         {
           companyId: companyId,
           styleName: '',
-          from: fetchFrom,
-          to: fetchTo,
+          from: customFrom,
+          to: customTo,
         },
         {
           headers: {
@@ -93,26 +93,19 @@ const ProductInventory = () => {
         },
       );
 
-      console.log('API Response:', response.data);
 
-      // Check if the response contains an array
       const newTasks = response.data.gsCodesList;
-  
+
       if (reset) {
-        // If it's a reset (like on refresh), replace tasks
         setInventoryData(newTasks);
-        setFrom(0);  // Reset 'from' to 0 after refresh
-        setTo(15);   // Reset 'to' to 15 after refresh
       } else {
-        // If not resetting, append new tasks to existing ones
         setInventoryData(prevTasks => [...prevTasks, ...newTasks]);
       }
-  
-      // If fewer than 15 items are fetched, assume no more tasks are available
-      if (newTasks.length < 15) {
-        setHasMoreInventory(false); // No more tasks to load
+
+      if (newTasks.length < 20) {
+        setHasMoreData(false);
       } else {
-        setHasMoreInventory(true); // There are more tasks to load
+        setHasMoreData(true);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -122,21 +115,49 @@ const ProductInventory = () => {
     }
   };
 
-  const loadMoreTasks = () => {
-    if (!hasMoreData || loadingMore) return; 
-  
+  const loadMoreTasks = async () => {
+    if (!hasMoreData || loadingMore) return;
+
     setLoadingMore(true);
-    
-    setFrom(prevFrom => prevFrom + 1);
-    setTo(prevTo => prevTo + 15);
-  
-    getProductInventory(false); 
+    const newFrom = to + 1;
+    const newTo = to + 20;
+
+    if (searchFilterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getProductInventory(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
+
+    // getProductInventory(false); 
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setHasMoreInventory(true); // Reset to indicate more inventory may be available
-    await getProductInventory(true); // Fetch inventory with reset flag
+    setsearchFilterFlag(false);
+    // setHasMoreInventory(true); 
+    setHasMoreData(false);
+    setSearchQuery('');
+    setFrom(0);
+    setSearchKey(0);
+    setSelectedSearchOption('');
+    setTo(20);
+    await getProductInventory(true, 0, 20);
     setRefreshing(false);
   };
 
@@ -167,34 +188,45 @@ const ProductInventory = () => {
       return; // Exit if the search query is empty
     }
 
-    gettasksearch(); // Call the search function if the dropdown and query are valid
+    setsearchFilterFlag(true);
+    setFrom(0);
+    setTo(20);
+    gettasksearch(true, 0, 20);
   };
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
     if (query.trim() === '') {
-      getProductInventory(true);
+      getProductInventory(true, 0, 20);
+      setFrom(0);
+      setTo(20);
+      setSearchKey(0);
+      setSelectedSearchOption('');
+      setHasMoreData(false);
+      setsearchFilterFlag(true);
+
     }
   };
 
   const searchOption = [
-    {label: 'Style Name', value: 3},
-    {label: 'Size', value: 4},
-    {label: 'Type', value: 1},
-    {label: 'Customer Level', value: 2},
-    {label: 'SKU', value: 5},
+    { label: 'Style Name', value: 3 },
+    { label: 'Size', value: 4 },
+    { label: 'Type', value: 1 },
+    { label: 'Customer Level', value: 2 },
+    { label: 'SKU', value: 5 },
   ];
 
-  const gettasksearch = async () => {
+  const gettasksearch = async (reset = false, customFrom = from, customTo = to) => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_INVENTORY_SEARCH}`;
     const requestBody = {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
-      from: 0,
-      to: inventoryData.length,
+      from: customFrom,
+      to: customTo,
       companyId: companyId,
     };
 
+    console.log("gettasksearch==> ", customFrom, customTo);
     try {
       const response = await axios.post(apiUrl, requestBody, {
         headers: {
@@ -203,9 +235,13 @@ const ProductInventory = () => {
         },
       });
 
-      if (response.data.gsCodesList) {
-        setInventoryData(response.data.gsCodesList);
-        setHasMoreData(false);
+      if (response?.data?.gsCodesList) {
+        const newOrders = response.data.gsCodesList.filter(order => order !== null);
+
+        setInventoryData((prevDetails) =>
+          reset ? newOrders : [...prevDetails, ...newOrders]
+        );
+        setHasMoreData(newOrders?.length >= 20);
       } else {
         setInventoryData([]);
       }
@@ -214,13 +250,14 @@ const ProductInventory = () => {
     }
   };
 
-  const renderItem = ({item}) => (
+
+  const renderItem = ({ item }) => (
     <View>
       <View style={styles.inventoryItem}>
-        <View style={{flex: 3}}>
+        <View style={{ flex: 3 }}>
           <Text style={styles.itemText1}>{item.styleName}</Text>
           <Text style={styles.itemText1}>
-            <Text style={{color: '#000', fontWeight: 500}}>{'SKU  :  '}</Text>
+            <Text style={{ color: '#000', fontWeight: 500 }}>{'SKU  :  '}</Text>
             {item.gsCode}
           </Text>
         </View>
@@ -228,7 +265,7 @@ const ProductInventory = () => {
         <Text style={styles.itemText}>{item.availQty}</Text>
       </View>
       <View
-        style={{borderBottomWidth: 1, borderBottomColor: 'lightgray'}}></View>
+        style={{ borderBottomWidth: 1, borderBottomColor: 'lightgray' }}></View>
     </View>
   );
 
@@ -247,7 +284,7 @@ const ProductInventory = () => {
           <TouchableOpacity
             style={styles.searchButton}
             onPress={toggleDropdown}>
-            <Text style={{color: '#000'}}>
+            <Text style={{ color: '#000' }}>
               {selectedSearchOption || 'Select'}
             </Text>
             <Image
@@ -280,7 +317,7 @@ const ProductInventory = () => {
                 style={styles.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{color: '#000'}}>{option.label}</Text>
+                <Text style={{ color: '#000' }}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -288,7 +325,7 @@ const ProductInventory = () => {
       )}
 
       <View style={styles.header}>
-        <View style={{flex: 3}}>
+        <View style={{ flex: 3 }}>
           <Text style={styles.headerText1}>Style Name</Text>
         </View>
         <Text style={styles.headerText}>Size</Text>
@@ -347,6 +384,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     paddingHorizontal: 10,
+    color:'#000'
   },
   searchIconContainer: {
     padding: 10,

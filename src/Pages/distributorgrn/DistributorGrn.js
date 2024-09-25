@@ -51,7 +51,7 @@ const DistributorGrn = () => {
 
   useEffect(() => {
     if (companyId) {
-      getDistributorGrn(true);
+      getDistributorGrn(true, 0, 15);
     }
   }, [companyId]);
 
@@ -242,7 +242,7 @@ const DistributorGrn = () => {
     }
    
     if (searchQuery.trim().length > 0 && searchKey > 0) {
-      searchAPI(true);
+      searchAPI(true, 0, 15);
       setFrom(0);
       setTo(15);
     }

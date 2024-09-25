@@ -149,7 +149,7 @@ const HomeAllProducts = ({ navigation }) => {
     setSelectedSearchOption('');
     setSearchFilterFlag(false);
     if (companyId) {
-      await getAllProducts(companyId, true);
+      await getAllProducts(companyId, true, 0);
     }
     setRefreshing(false);
   };
@@ -310,7 +310,7 @@ const HomeAllProducts = ({ navigation }) => {
 
 
   const searchOption = [
-    { label: 'Select', value: 0 },
+    // { label: 'Select', value: 0 },
     { label: 'Style Name', value: 1 },
     { label: 'Color', value: 2 },
     { label: 'Price', value: 3 },

@@ -50,7 +50,7 @@ const UploadProductImage = ({ route }) => {
     if (styleDetails) {
       setProductStyle(styleDetails);
 
-      if (styleDetails?.imageUrls && styleDetails?.imageUrls.length > 0 && selectedImages?.length===0) {
+      if (styleDetails?.imageUrls && styleDetails?.imageUrls.length > 0 && selectedImages?.length === 0) {
         const imageArray = styleDetails.imageUrls.map((url, index) => ({
           uri: url,
           width: 100,
@@ -196,6 +196,8 @@ const UploadProductImage = ({ route }) => {
     formData.append("logoId", productStyle.logo);
     formData.append("decId", productStyle.decoration);
     formData.append("trimId", productStyle.trims);
+    formData.append("gsm", productStyle.gsm);
+    formData.append("hsn", productStyle.hsn);
 
     selectedImages.forEach((image, index) => {
       formData.append('files', {
@@ -205,7 +207,8 @@ const UploadProductImage = ({ route }) => {
       });
     });
 
-
+    // console.log("data before submit ==> ", formData)
+    // return;
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_STYLE}`;
     const URL = apiUrl0
@@ -221,7 +224,7 @@ const UploadProductImage = ({ route }) => {
       })
       .then(response => {
         Alert.alert('New style created successfully');
-        navigation.navigate('ProductsStyles', {reload:"true"});
+        navigation.navigate('ProductsStyles', { reload: "true" });
         setIsLoading(false);
       })
       .catch(error => {
@@ -326,7 +329,7 @@ const UploadProductImage = ({ route }) => {
       .then(response => {
         Alert.alert('Style edited successfully');
         setIsLoading(false);
-        navigation.navigate('ProductsStyles', {reload:"true"});
+        navigation.navigate('ProductsStyles', { reload: "true" });
       })
       .catch(error => {
         console.error('Error:', error.response ? error.response.data : error.message);
@@ -341,7 +344,7 @@ const UploadProductImage = ({ route }) => {
         <Image style={{ height: 80, width: 80 }} source={require('../../../assets/uploadsel.png')} />
 
         <Text
-          style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold',color:"#000" }}
+          style={{ textAlign: 'center', marginVertical: 20, fontWeight: 'bold', color: "#000" }}
         >
           Upload Product Image
         </Text>
