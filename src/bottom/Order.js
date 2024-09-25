@@ -694,7 +694,7 @@ const Order = () => {
       // Reset orders and fetch new data
       setFrom(0); // Reset the starting index
       setTo(20); // Reset the ending index
-      getAllOrders(true); // Fetch the first 20 orders
+      getAllOrders(true, 0, 20); // Fetch the first 20 orders
       setFilterFlag(false);
     });
     return unsubscribe;
