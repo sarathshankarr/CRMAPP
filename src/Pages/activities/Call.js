@@ -24,17 +24,23 @@ const Call = () => {
   const [loading, setLoading] = useState(false);
   const [calls, setCalls] = useState([]);
   const [filteredCalls, setFilteredCalls] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [hasMoreCalls, setHasMoreCalls] = useState(true);
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  
+  const [tasks, setTasks] = useState([]);
+
   const [refreshing, setRefreshing] = useState(false);
   const [from, setFrom] = useState(0);
   const [to, setTo] = useState(20);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMoreCalls, setHasMoreCalls] = useState(true);
-  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
   const [selectedSearchOption, setSelectedSearchOption] = useState(null);
   const [searchKey, setSearchKey] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  
+  const [filterFlag, setFilterFlag]=useState(false);
+
   const selectedCompany = useSelector(state => state.selectedCompany);
 
   useEffect(() => {
@@ -55,17 +61,24 @@ const Call = () => {
 
   const companyId = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
 
-  const getCallSearch = async () => {
+
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_CALL_SEARCH}`;
     const requestBody = {
       searchKey: searchKey,
-      searchValue: searchQuery,
-      from: 0,
-      to: calls.length,
-      t_company_id: companyId,
-      customerId: 0,
-      customerType: 0,
+    searchValue: searchQuery,
+    from: customFrom,
+    to: customTo,
+    t_company_id: companyId,
+    customerId: 0,
+    customerType: 0,
     };
+
+    console.log('gettasksearch==> ', customFrom, customTo);
 
     try {
       const response = await axios.post(apiUrl, requestBody, {
@@ -76,15 +89,29 @@ const Call = () => {
       });
 
       if (response.data) {
-        setCalls(response.data);
-        setHasMoreCalls(false);
+        // setOrders(response.data.response.ordersList);
+
+        const newOrders = response.data.filter(
+          order => order !== null,
+        );
+
+        setTasks(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
+        );
+        setHasMoreTasks(newOrders?.length >= 15);
+
+        // setHasMoreTasks(false);
       } else {
-        setCalls([]);
+        setTasks([]);
       }
     } catch (error) {
-      console.error('Error fetching calls:', error);
+      console.error('Error fetching tasks:', error);
     }
   };
+
+
+
+
 
   const handleDropdownSelect = option => {
     setSelectedSearchOption(option.label);
@@ -92,30 +119,39 @@ const Call = () => {
     setDropdownVisible(false);
   };
 
+
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
 
-
   const handleSearch = () => {
     if (!searchKey) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
-      return; 
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit the function if no search key is selected
     }
-    
+
     if (!searchQuery.trim()) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
-      return; 
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit if the search query is empty
     }
-  
-    getCallSearch();
+
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(20);
+
+    gettasksearch(true, 0, 20);
   };
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-
     if (query.trim() === '') {
-      fetchCalls(true); // Reload all calls if query is cleared
+      getAllOrders(true, 0, 20);
     }
   };
 
@@ -126,50 +162,47 @@ const Call = () => {
     {label: 'Status', value: 4},
   ];
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (companyId) {
-        fetchCalls(true); // Fetch calls when the screen is focused
-      }
-    }, [companyId])
-  );
+  useEffect(() => {
+    if (companyId) {
+      getAllOrders(true, 0, 20);
+    }
+  }, [companyId]);
 
+  const getAllOrders = async (reset = false, customFrom = from, customTo = to) => {
+    // console.log("getAllOrders b ", customFrom, customTo);
 
-  const fetchCalls = async (reset = false) => {
     if (loading || loadingMore) return;
-    setLoading(reset); 
-  
-    const fetchFrom = reset ? 0 : from;
-    const fetchTo = reset ? 15 : to;
-  
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_ALL_CALL_LAZY
-    }/${fetchFrom}/${fetchTo}/${companyId}/${0}/${0}`;
-  
+    setLoading(reset);
+
+    if (reset) {
+      setFrom(0); // Reset pagination
+      setTo(20);
+      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+    }
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_CALL_LAZY}/${customFrom}/${customTo}/${companyId}/${0}/${0}`;
+
+    console.log("getAllOrders A ", customFrom, customTo);
+
+
     try {
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-  
+
+      
       const newTasks = response.data;
-  
+      // console.log("response.data",response.data)
       if (reset) {
-        // If it's a reset (like on refresh), replace tasks
-        setCalls(newTasks);
-        setFrom(0);  // Reset 'from' to 0 after refresh
-        setTo(15);   // Reset 'to' to 15 after refresh
+        setTasks(newTasks); 
       } else {
-        // If not resetting, append new tasks to existing ones
-        setCalls(prevTasks => [...prevTasks, ...newTasks]);
+        setTasks((prevTasks) => [...(prevTasks || []), ...newTasks]);
       }
-  
-      // If fewer than 15 items are fetched, assume no more tasks are available
-      if (newTasks.length < 15) {
-        setHasMoreCalls(false); // No more tasks to load
-      } else {
-        setHasMoreCalls(true); // There are more tasks to load
+
+      if (newTasks.length < 20) {
+        setHasMoreTasks(false);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -179,46 +212,87 @@ const Call = () => {
     }
   };
 
+  const loadMoreTasks = async () => {
+    if (!hasMoreTasks || loadingMore) return;
 
- 
-  const loadMoreCalls = () => {
-    if (!hasMoreCalls || loadingMore) return; 
-  
     setLoadingMore(true);
-    
-    // Increment 'from' and 'to' to load the next set of tasks
-    setFrom(prevFrom => prevFrom + 1);
-    setTo(prevTo => prevTo + 15);
-  
-    fetchCalls(false); // Fetch the next page
+    const newFrom = to + 1;
+    const newTo = to + 20;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    if (filterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getAllOrders(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
+    // getAllOrders(); // Call getAllOrders here to fetch new data
   };
-  
 
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setHasMoreCalls(true); // Allow more tasks to be loaded after refreshing
-    await fetchCalls(true); // Fetch tasks from the start (reset = true)
+    setFrom(0);
+    setTo(20);
+    setSearchKey(0);
+    setFilterFlag(false);
+
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    setSelectedSearchOption('');
+    setHasMoreTasks(true);
+    
+    await getAllOrders(true, 0, 20);
     setRefreshing(false);
   };
+
+
+ 
+
   
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     console.log("Screen focused, clearing search");
+  //     setSearchQuery('');
+  //     setSelectedSearchOption(null);
+  //     setSearchKey(null);
+  //     setDropdownVisible(false);
   
+  //     getAllOrders(true); // Re-fetch tasks, if necessary
+  //   });
+  
+  //   return unsubscribe;
+  // }, [navigation]);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      console.log("Screen focused, clearing search");
-      setSearchQuery('');
-      setSelectedSearchOption(null);
-      setSearchKey(null);
-      setDropdownVisible(false);
-  
-      fetchCalls(true); // Re-fetch tasks, if necessary
+      // setShowSearchInput(false);
+      console.log("navigation in tas")
+      onRefresh();
     });
-  
     return unsubscribe;
   }, [navigation]);
+  
+
   const fetchCallById = callId => {
     navigation.navigate('NewCall', {
-      call: calls.find(call => call.id === callId),
+      call: tasks.find(call => call.id === callId),
     });
   };
 
@@ -290,20 +364,35 @@ const Call = () => {
 
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : calls.length === 0 ? (
+      ) : tasks.length === 0 ? (
         <Text style={styles.noCategoriesText}>No calls found!</Text>
       ) : (
+        // <FlatList
+        //   data={calls}
+        //   renderItem={renderItem}
+        //   keyExtractor={(item, index) => `${item.id}-${index}`}
+        //   refreshControl={
+        //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        //   }
+        //   onEndReached={loadMoreCalls}
+        //   onEndReachedThreshold={0.2}
+        //   ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
+        // />
         <FlatList
-          data={calls}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => `${item.id}-${index}`}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          onEndReached={loadMoreCalls}
-          onEndReachedThreshold={0.2}
-          ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
-        />
+        data={tasks}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        onEndReached={loadMoreTasks} // Load more when scrolled to the end
+        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color="#0000ff" />
+          ) : null
+        }
+      />
       )}
     </View>
   );

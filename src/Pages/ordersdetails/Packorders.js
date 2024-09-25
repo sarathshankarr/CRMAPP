@@ -10,6 +10,8 @@ import {
   TextInput,
   Image,
   ScrollView,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -26,28 +28,41 @@ const Packorders = () => {
   const [firstLoad, setFirstLoad] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [refreshingOrders, setRefreshingOrders] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showSearchInput, setShowSearchInput] = useState(false);
 
-  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [searchKey, setSearchKey] = useState(1); // Default to "Type" or any other default
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(20);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
+  const selectedCompany = useSelector(state => state.selectedCompany);
+
+  const [filterFlag, setFilterFlag]=useState(false);
+
 
   const navigation = useNavigation();
-  const selectedCompany = useSelector(state => state.selectedCompany);
   const handleGoBack = () => {
     navigation.goBack();
   };
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      setSearchQuery('');
-      setShowSearchInput(false);
-    });
-    return unsubscribe;
-  }, [navigation]);
+
+
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     setSearchQuery('');
+  //     setShowSearchInput(false);
+  //   });
+  //   return unsubscribe;
+  // }, [navigation]);
+
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
@@ -70,139 +85,227 @@ const Packorders = () => {
     ? selectedCompany.id
     : initialSelectedCompany?.id;
 
-  useEffect(() => {
-    if (companyId) {
-      getAllOrders();
-    }
-  }, [companyId]);
-
-  const getAllOrders = () => {
-    setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_ALL_ORDER_LAZY
-    }/${0}/${10000}/${companyId}/${2}`;
-
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      })
-      .then(response => {
-        setOrders(response.data.response.ordersList);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      })
-      .finally(() => {
-        setLoading(false);
+    useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+        // Reset search query and visibility of search input
+        setSearchQuery('');
+        setShowSearchInput(false);
+        // Reset orders and fetch new data
+        setFrom(0); // Reset the starting index
+        setTo(20); // Reset the ending index
+        getAllOrders(true); // Fetch the first 20 orders
+        setFilterFlag(false);
       });
-  };
+      return unsubscribe;
+    }, [navigation]);
+  
 
-  const getProductInventorySearch = async (initialLoad = false) => {
-    if (loading || !hasMoreData) return;
+    useEffect(() => {
+      if (companyId) {
+        getAllOrders(true, 0, 20);
+      }
+    }, [companyId]);
 
-    initialLoad ? setLoading(true) : setLoadingMore(true);
-
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_SEARCH}`;
-    const requestBody = {
-      dropdownId: searchKey,
-      fieldvalue: searchQuery,
-      from: 0,
-      to: 10000,
-      companyId: companyId,
-      pdfFlag: 2,
+    const getAllOrders = async (reset = false, customFrom = from, customTo = to) => {
+      // console.log("getAllOrders b ", customFrom, customTo);
+  
+      if (loading || loadingMore) return;
+      setLoading(reset);
+  
+      if (reset) {
+        setFrom(0); // Reset pagination
+        setTo(20);
+        setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+      }
+  
+      const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_LAZY}/${customFrom}/${customTo}/${companyId}/${2}`;
+  
+      console.log("getAllOrders A ", customFrom, customTo);
+  
+  
+      try {
+        const response = await axios.get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          },
+        });
+  
+        const newTasks = response.data.response.ordersList;
+        if (reset) {
+          setOrders(newTasks); 
+        } else {
+          setOrders((prevTasks) => [...(prevTasks || []), ...newTasks]);
+        }
+  
+        if (newTasks.length < 20) {
+          setHasMoreTasks(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    };
+    const loadMoreTasks = async () => {
+      if (!hasMoreTasks || loadingMore) return;
+  
+      setLoadingMore(true);
+      const newFrom = to + 1;
+      const newTo = to + 20;
+      setFrom(newFrom);
+      setTo(newTo);
+  
+      if (filterFlag) {
+        try {
+          await gettasksearch(false, newFrom, newTo);
+        } catch (error) {
+          console.error('Error while loading more orders:', error);
+        } finally {
+          setFrom(newFrom);
+          setTo(newTo);
+          setLoadingMore(false);
+        }
+      } else {
+        try {
+          await getAllOrders(false, newFrom, newTo);
+        } catch (error) {
+          console.error('Error while loading more orders:', error);
+        } finally {
+          setFrom(newFrom);
+          setTo(newTo);
+          setLoadingMore(false);
+        }
+      }
+      // getAllOrders(); // Call getAllOrders here to fetch new data
+    };
+  
+  
+    const onRefresh = async () => {
+      setRefreshing(true);
+      setFrom(0);
+      setTo(20);
+      setSearchKey(0);
+      setFilterFlag(false);
+  
+      setSearchQuery('');
+      // setShowSearchInput(false);
+      setSelectedSearchOption('');
+      setHasMoreTasks(true);
+      
+      await getAllOrders(true, 0, 20);
+      setRefreshing(false);
     };
 
-    try {
-      const response = await axios.post(apiUrl, requestBody, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      });
-      const fetchedData = response.data.gsCodesList.filter(
-        item => item !== null,
-      );
-      if (initialLoad) {
-        setOrders(fetchedData);
-      } else {
-        setOrders(prevData => [...prevData, ...fetchedData]);
+    const gettasksearch = async (reset = false, customFrom = from, customTo = to) => {
+      const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_SEARCH}`;
+      const requestBody = {
+        dropdownId: searchKey,
+        fieldvalue: searchQuery,
+        from: customFrom,
+        to: customTo,
+        companyId: companyId,
+        pdfFlag: 0,
+      };
+  
+      console.log("gettasksearch==> ",customFrom,customTo);
+  
+      try {
+        const response = await axios.post(apiUrl, requestBody, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          },
+        });
+  
+        if (response.data.response.ordersList) {
+          // setOrders(response.data.response.ordersList);
+  
+  
+          const newOrders = response.data.response.ordersList.filter(order => order !== null);
+  
+          setOrders((prevDetails) =>
+              reset ? newOrders : [...prevDetails, ...newOrders]
+            );
+            setHasMoreTasks(newOrders?.length >= 15)
+  
+  
+          // setHasMoreTasks(false);
+        } else {
+          setOrders([]);
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
       }
-      setHasMoreData(fetchedData.length >= 100);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  };
+    };
 
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
-
-  const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
-    setSearchKey(option.value);
-    setDropdownVisible(false);
-    setSearchQuery('');
-    setPage(1);
-    setHasMoreData(true);
-    getAllOrders(true);
-  };
-
-  const searchOption = [
-    {label: 'Order No', value: 5},
-    {label: 'Retailer', value: 2},
-    {label: 'Agent', value: 3},
-    {label: 'Sub Agent', value: 4},
-    {label: 'Distributor', value: 1},
-    {label: 'Retailer', value: 5},
-    {label: 'Order Date', value: 6},
-    {label: 'Order status', value: 7},
-    {label: 'Packing status', value: 8},
-  ];
-  const handleSearch = () => {
-    console.log('handleSearch======>', searchQuery);
-    setPage(1); // Reset page to 1 for fresh search
-    setHasMoreData(true); // Reset data fetching status
-    // Filter the orders based on the search query
-    const filteredOrders = orders.filter(item => {
-      if (!item) return false;
-      const customerName = item.customerName
-        ? item.customerName.toLowerCase()
-        : '';
-      const orderNum = item.orderNum
-        ? item.orderNum.toString().toLowerCase()
-        : '';
-      const query = searchQuery.toLowerCase();
-      return customerName.includes(query) || orderNum.includes(query);
-    });
-    setOrders(filteredOrders); // Update the state with filtered orders
-  };
-
-  useEffect(() => {
-    if (firstLoad) {
-      getAllOrders();
-      setFirstLoad(false);
-    }
-  }, [firstLoad, getAllOrders]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!firstLoad) {
-        getAllOrders();
+    const handleDropdownSelect = option => {
+      setSelectedSearchOption(option.label);
+      setSearchKey(option.value);
+      setDropdownVisible(false);
+    };
+  
+    const toggleDropdown = () => {
+      setDropdownVisible(!dropdownVisible);
+    };
+  
+    const handleSearch = () => {
+      if (!searchKey) {
+        Alert.alert(
+          'Alert',
+          'Please select an option from the dropdown before searching',
+        );
+        return; // Exit the function if no search key is selected
       }
-    }, [firstLoad, getAllOrders]),
-  );
+  
+      if (!searchQuery.trim()) {
+        Alert.alert(
+          'Alert',
+          'Please select an option from the dropdown before searching',
+        );
+        return; // Exit if the search query is empty
+      }
+  
+      setFilterFlag(true);
+      setFrom(0);
+      setTo(20);
+  
+      gettasksearch(true, 0, 20); 
+    };
+  
+    const handleSearchInputChange = query => {
+      setSearchQuery(query);
+      if (query.trim() === '') {
+        getAllOrders(true, 0, 20);
+      }
+    };
 
-  const loadMoreOrders = () => {
-    if (!loading) {
-      setPageNo(pageNo + 1);
-      setLoading(true);
-    }
-  };
+    const searchOption = [
+      { label: 'Order No', value: 5 },
+      { label: 'Retailer', value: 2 },
+      { label: 'Distributor', value: 1 },
+      { label: 'Order Date', value: 6 },
+      { label: 'Order status', value: 7 },
+      { label: 'Packing status', value: 8 },
+    ];
+  
+
+
+  // useEffect(() => {
+  //   if (firstLoad) {
+  //     getAllOrders();
+  //     setFirstLoad(false);
+  //   }
+  // }, [firstLoad, getAllOrders]);
+
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     if (!firstLoad) {
+  //       getAllOrders();
+  //     }
+  //   }, [firstLoad, getAllOrders]),
+  // );
+
 
   const handleOrderPress = item => {
     if (item.packedStts === 'YET TO PACK') {
@@ -325,22 +428,16 @@ const Packorders = () => {
     <View style={style.container}>
       <View style={style.searchContainer}>
         <View style={style.searchInputContainer}>
-          <TextInput
-            style={[style.searchInput, {color: '#000'}]}
-            value={searchQuery}
-            onChangeText={text => {
-              setSearchQuery(text);
-              if (text.length === 0) {
-                setHasMoreData(true);
-                getAllOrders(true);
-              }
-            }}
+        <TextInput
+            style={style.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
           />
 
-          <TouchableOpacity style={style.searchButton} onPress={toggleDropdown}>
-            <Text style={{color: '#000'}}>
+<TouchableOpacity style={style.dropdownButton} onPress={toggleDropdown}>
+            <Text style={{ color: '#000' }}>
               {selectedSearchOption || 'Select'}
             </Text>
             <Image
@@ -355,11 +452,14 @@ const Packorders = () => {
           onPress={handleSearch}>
           <Text
             style={{
-              color: '#000',
+              color: '#fff',
               borderWidth: 1,
               paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 10,
+              paddingVertical: 6,
+              borderRadius: 25,
+              // height: 40,
+              alignItems: 'center',
+              backgroundColor:'#1f74ba'
             }}>
             Search
           </Text>
@@ -374,7 +474,7 @@ const Packorders = () => {
                 style={style.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{color: '#000'}}>{option.label}</Text>
+                <Text style={{ color: '#000' }}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -386,25 +486,24 @@ const Packorders = () => {
           color="#390050"
           style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
         />
-      ) : filteredOrders.length === 0 ? (
+      ) : orders.length === 0 ? (
         <Text style={style.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
         <FlatList
-          data={filteredOrders}
-          renderItem={renderItem}
-          keyExtractor={(item, index) =>
-            item && item.orderId ? item.orderId.toString() : index.toString()
-          }
-          onEndReached={loadMoreOrders}
-          onEndReachedThreshold={0.1}
-          refreshing={refreshingOrders}
-          onRefresh={() => {
-            setRefreshingOrders(true);
-            setPageNo(1);
-            setRefreshingOrders(false);
-          }}
-          contentContainerStyle={{paddingBottom: 70}} // Add padding to ensure space at the bottom
-        />
+        data={orders}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `${item?.orderId}-${index}`}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        onEndReached={loadMoreTasks} // Load more when scrolled to the end
+        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color="#0000ff" />
+          ) : null
+        }
+      />
       )}
       {selectedOrder && (
         <Modal visible={true} transparent={true} animationType="fade">
@@ -550,7 +649,14 @@ const style = StyleSheet.create({
     borderRadius: 15,
     marginHorizontal: 10,
   },
-
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 7,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
+  },
   searchInput: {
     flex: 1,
     height: 40,
@@ -569,7 +675,7 @@ const style = StyleSheet.create({
     height: 20,
     width: 20,
     marginLeft: 10,
-    marginRight: 10,
+    marginRight: 5,
   },
   noCategoriesText: {
     top: 40,

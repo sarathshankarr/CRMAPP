@@ -690,6 +690,7 @@ const Order = () => {
       // Reset search query and visibility of search input
       setSearchQuery('');
       setShowSearchInput(false);
+      setSelectedSearchOption(null);
       // Reset orders and fetch new data
       setFrom(0); // Reset the starting index
       setTo(20); // Reset the ending index
@@ -1049,8 +1050,8 @@ const Order = () => {
             style={{
               color: '#fff',
               borderWidth: 1,
-              paddingHorizontal: 10,
-              paddingVertical: 10,
+              paddingHorizontal: 17,
+              paddingVertical: 7,
               borderRadius: 25,
               // height: 40,
               alignItems: 'center',
@@ -1263,14 +1264,19 @@ const style = StyleSheet.create({
     color: '#000',
   },
   searchButton: {
-    marginLeft: 'auto',
-    flexDirection: 'row',
+            flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 7,
+      backgroundColor: '#e6e6e6',
+      borderRadius: 15,
   },
   image: {
-    height: 20,
-    width: 20,
-    marginLeft: 10,
-    marginRight: 10,
+      width: 15,
+      height: 15,
+      marginLeft:3,
+      marginRight:3,
+      tintColor: '#000',
   },
   noCategoriesText: {
     top: 40,

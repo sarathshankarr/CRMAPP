@@ -24,10 +24,11 @@ const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+
+  const [refreshing, setRefreshing] = useState(false);
   const [from, setFrom] = useState(0);
-  const [to, setTo] = useState(15);
+  const [to, setTo] = useState(20);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,7 +36,7 @@ const Tasks = () => {
   const [selectedSearchOption, setSelectedSearchOption] = useState(null);
   const [searchKey, setSearchKey] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-
+  const [filterFlag, setFilterFlag] = useState(false);
   const selectedCompany = useSelector(state => state.selectedCompany);
 
   useEffect(() => {
@@ -60,17 +61,23 @@ const Tasks = () => {
     ? selectedCompany.id
     : initialSelectedCompany?.id;
 
-  const gettasksearch = async () => {
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_TASK__SEARCH}`;
     const requestBody = {
       searchKey: searchKey,
       searchValue: searchQuery,
-      from: 0,
-      to: tasks.length,
+      from: customFrom,
+      to: customTo,
       t_company_id: companyId,
       customerId: 0,
       customerType: 0,
     };
+
+    console.log('gettasksearch==> ', customFrom, customTo);
 
     try {
       const response = await axios.post(apiUrl, requestBody, {
@@ -81,8 +88,16 @@ const Tasks = () => {
       });
 
       if (response.data) {
-        setTasks(response.data); 
-        setHasMoreTasks(false); 
+        // setOrders(response.data.response.ordersList);
+
+        const newOrders = response.data.filter(order => order !== null);
+
+        setTasks(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
+        );
+        setHasMoreTasks(newOrders?.length >= 15);
+
+        // setHasMoreTasks(false);
       } else {
         setTasks([]);
       }
@@ -91,10 +106,41 @@ const Tasks = () => {
     }
   };
 
+  // const gettasksearch = async () => {
+  //   const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_TASK__SEARCH}`;
+  //   const requestBody = {
+  //     searchKey: searchKey,
+  //     searchValue: searchQuery,
+  //     from: 0,
+  //     to: tasks.length,
+  //     t_company_id: companyId,
+  //     customerId: 0,
+  //     customerType: 0,
+  //   };
+
+  //   try {
+  //     const response = await axios.post(apiUrl, requestBody, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     });
+
+  //     if (response.data) {
+  //       setTasks(response.data);
+  //       setHasMoreTasks(false);
+  //     } else {
+  //       setTasks([]);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching tasks:', error);
+  //   }
+  // };
+
   const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label); 
-    setSearchKey(option.value); 
-    setDropdownVisible(false); 
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
   };
 
   const toggleDropdown = () => {
@@ -103,23 +149,32 @@ const Tasks = () => {
 
   const handleSearch = () => {
     if (!searchKey) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
       return; // Exit the function if no search key is selected
     }
-    
+
     if (!searchQuery.trim()) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
       return; // Exit if the search query is empty
     }
-  
-    gettasksearch(); // Call the search function if the dropdown and query are valid
+
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(20);
+
+    gettasksearch(true, 0, 20);
   };
-  
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-      if (query.trim() === '') {
-      fetchTasks(true); 
+    if (query.trim() === '') {
+      getAllOrders(true, 0, 20);
     }
   };
 
@@ -131,50 +186,51 @@ const Tasks = () => {
     {label: 'Desc', value: 5},
   ];
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (companyId) {
-        fetchTasks(true);
-      }
-    }, [companyId]),
-  );
-  
+  useEffect(() => {
+    if (companyId) {
+      getAllOrders(true, 0, 20);
+    }
+  }, [companyId]);
 
-  const fetchTasks = async (reset = false) => {
+  const getAllOrders = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    // console.log("getAllOrders b ", customFrom, customTo);
+
     if (loading || loadingMore) return;
-    setLoading(reset); 
-  
-    const fetchFrom = reset ? 0 : from;
-    const fetchTo = reset ? 15 : to;
-  
+    setLoading(reset);
+
+    if (reset) {
+      setFrom(0); // Reset pagination
+      setTo(20);
+      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+    }
+
     const apiUrl = `${global?.userData?.productURL}${
       API.GET_ALL_TASK_LAZY
-    }/${fetchFrom}/${fetchTo}/${companyId}/${0}/${0}`;
-  
+    }/${customFrom}/${customTo}/${companyId}/${0}/${0}`;
+
+    console.log('getAllOrders A ', customFrom, customTo);
+
     try {
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-  
+
       const newTasks = response.data;
-  
+      console.log("response.data====>",response.data)
       if (reset) {
-        // If it's a reset (like on refresh), replace tasks
         setTasks(newTasks);
-        setFrom(0);  // Reset 'from' to 0 after refresh
-        setTo(15);   // Reset 'to' to 15 after refresh
       } else {
-        // If not resetting, append new tasks to existing ones
-        setTasks(prevTasks => [...prevTasks, ...newTasks]);
+        setTasks(prevTasks => [...(prevTasks || []), ...newTasks]);
       }
-  
-      // If fewer than 15 items are fetched, assume no more tasks are available
-      if (newTasks.length < 15) {
-        setHasMoreTasks(false); // No more tasks to load
-      } else {
-        setHasMoreTasks(true); // There are more tasks to load
+
+      if (newTasks.length < 20) {
+        setHasMoreTasks(false);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -183,41 +239,148 @@ const Tasks = () => {
       setLoadingMore(false);
     }
   };
-  
-  const loadMoreTasks = () => {
-    if (!hasMoreTasks || loadingMore) return; 
-  
+
+  const loadMoreTasks = async () => {
+    if (!hasMoreTasks || loadingMore) return;
+
     setLoadingMore(true);
-    
-    setFrom(prevFrom => prevFrom + 1);
-    setTo(prevTo => prevTo + 15);
-  
-    fetchTasks(false); 
+    const newFrom = to + 1;
+    const newTo = to + 20;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    if (filterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getAllOrders(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
+    // getAllOrders(); // Call getAllOrders here to fetch new data
   };
-  
+
   const onRefresh = async () => {
     setRefreshing(true);
-    setHasMoreTasks(true); 
-    await fetchTasks(true); 
+    setFrom(0);
+    setTo(20);
+    setSearchKey(0);
+    setFilterFlag(false);
+
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    setSelectedSearchOption('');
+    setHasMoreTasks(true);
+
+    await getAllOrders(true, 0, 20);
     setRefreshing(false);
   };
-  
-  
+
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     if (companyId) {
+  //       fetchTasks(true);
+  //     }
+  //   }, [companyId]),
+  // );
+
+  // const fetchTasks = async (reset = false) => {
+  //   if (loading || loadingMore) return;
+  //   setLoading(reset);
+
+  //   const fetchFrom = reset ? 0 : from;
+  //   const fetchTo = reset ? 15 : to;
+
+  //   const apiUrl = `${global?.userData?.productURL}${
+  //     API.GET_ALL_TASK_LAZY
+  //   }/${fetchFrom}/${fetchTo}/${companyId}/${0}/${0}`;
+
+  //   try {
+  //     const response = await axios.get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     });
+
+  //     const newTasks = response.data;
+
+  //     if (reset) {
+  //       // If it's a reset (like on refresh), replace tasks
+  //       setTasks(newTasks);
+  //       setFrom(0);  // Reset 'from' to 0 after refresh
+  //       setTo(15);   // Reset 'to' to 15 after refresh
+  //     } else {
+  //       // If not resetting, append new tasks to existing ones
+  //       setTasks(prevTasks => [...prevTasks, ...newTasks]);
+  //     }
+
+  //     // If fewer than 15 items are fetched, assume no more tasks are available
+  //     if (newTasks.length < 15) {
+  //       setHasMoreTasks(false); // No more tasks to load
+  //     } else {
+  //       setHasMoreTasks(true); // There are more tasks to load
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   } finally {
+  //     setLoading(false);
+  //     setLoadingMore(false);
+  //   }
+  // };
+
+  // const loadMoreTasks = () => {
+  //   if (!hasMoreTasks || loadingMore) return;
+
+  //   setLoadingMore(true);
+
+  //   setFrom(prevFrom => prevFrom + 1);
+  //   setTo(prevTo => prevTo + 15);
+
+  //   fetchTasks(false);
+  // };
+
+  // const onRefresh = async () => {
+  //   setRefreshing(true);
+  //   setHasMoreTasks(true);
+  //   await fetchTasks(true);
+  //   setRefreshing(false);
+  // };
+
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     console.log("Screen focused, clearing search");
+  //     setSearchQuery('');
+  //     setSelectedSearchOption(null);
+  //     setSearchKey(null);
+  //     setDropdownVisible(false);
+
+  //     getAllOrders(true); // Re-fetch tasks, if necessary
+  //   });
+
+  //   return unsubscribe;
+  // }, [navigation]);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      console.log("Screen focused, clearing search");
-      setSearchQuery('');
-      setSelectedSearchOption(null);
-      setSearchKey(null);
-      setDropdownVisible(false);
-  
-      fetchTasks(true); // Re-fetch tasks, if necessary
+      // setShowSearchInput(false);
+      console.log('navigation in Cat');
+      onRefresh();
     });
-  
     return unsubscribe;
   }, [navigation]);
-  
-
 
   const fetchTaskById = taskId => {
     navigation.navigate('NewTask', {
