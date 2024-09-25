@@ -81,7 +81,7 @@ export const API = {
   GET_CLEARALL_MESSAGE:'erpportal/api/master/clearAllNotifications',
   ADD_ALL_INVENTORY_LAZY:'erpportal/api/style/cedge/getAllInventoryLazy',
   GET_ALL_INVENTORY_SEARCH:'erpportal/api/filter/getStyleInventoryForsearchLazyLoad',
-  ADD_LOCATION_INVENTORY_LAZY:'erpportal/api/style/cedge/getLocationInventory',
+  ADD_LOCATION_INVENTORY_LAZY:'erpportal/api/style/cedge/getLocationInventoryLazy',
   GET_ALL_LOCATION_INVENTORY_SEARCH:'erpportal/api/filter/getLocationInventoryForsearchLazyLoad',
   GET_ALL_ORDER_LAZY: 'erpportal/api/ordermgmt/getAllOrdersForLazyLoad',
   GET_ALL_ORDER_SEARCH:'erpportal/api/filter/getAllOrdersSearchForLazyLoad',

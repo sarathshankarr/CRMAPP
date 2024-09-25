@@ -10,14 +10,14 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {useSelector} from 'react-redux';
-import {API} from '../../config/apiConfig';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import CustomCheckBox from '../../components/CheckBox';
 
-const NewStyleDetail = ({route}) => {
+const NewStyleDetail = ({ route }) => {
   const navigation = useNavigation();
   const selectedCompany = useSelector(state => state.selectedCompany);
   const userId = useSelector(state => state?.loggedInUser?.userId);
@@ -34,6 +34,7 @@ const NewStyleDetail = ({route}) => {
   const [kapture_task_flag, setkaptureFlag] = useState(
     selectedCompany?.kapture_task_flag,
   );
+
 
   // const companyId = selectedCompany?.id;
   // const cedge_flag = selectedCompany?.cedge_flag;
@@ -223,6 +224,10 @@ const NewStyleDetail = ({route}) => {
   const [editScale, setEditScale] = useState(true);
   const [editStyleName, seteditStyleName] = useState(true);
   const [editAvailQty, seteditAvailQty] = useState(true);
+  const [editShortcutKey, setEditShortcutKey] = useState(true);
+  const [editProcessWF, seteditProcessWF] = useState(true);
+
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     getCategoriesList();
@@ -244,11 +249,15 @@ const NewStyleDetail = ({route}) => {
     if (route.params && route?.params?.styleDetails) {
       const styleDetails = route?.params?.styleDetails;
 
+      console.log("Style Details ==> ", styleDetails);
+
       if (styleDetails.categoryId) {
         setSelectedCategoryId(styleDetails?.categoryId);
       }
       if (styleDetails?.styleName) {
         setStyleName(styleDetails?.styleName);
+        seteditStyleName(false);
+        setEditShortcutKey(false);
       }
       if (styleDetails?.styleDesc) {
         setStyleDesc(styleDetails?.styleDesc);
@@ -295,7 +304,9 @@ const NewStyleDetail = ({route}) => {
         setSelectedTypeId(styleDetails?.typeId);
       }
       if (styleDetails?.processId) {
+        // console.log("SEtted PWF ID ===> ")
         setSelectedProcessWorkflowId(styleDetails?.processId);
+        seteditProcessWF(false);
       }
       if (styleDetails?.locationId) {
         setSelectedLocationId(styleDetails?.locationId);
@@ -527,9 +538,13 @@ const NewStyleDetail = ({route}) => {
 
   useEffect(() => {
     if (selectedProcessWorkflowId && processWorkflowList.length > 0) {
+
+     
+
       const found = processWorkflowList?.filter(
         item => item.id === selectedProcessWorkflowId,
       );
+
       if (found) {
         setSelectedProcessWorkflow(found[0]?.configName);
       }
@@ -544,6 +559,7 @@ const NewStyleDetail = ({route}) => {
 
   useEffect(() => {
     if (processWorkflowList?.length > 0) {
+      if(!editProcessWF) return;
       const foundItem = processWorkflowList?.filter(
         proc => proc.priority === 1,
       );
@@ -1317,8 +1333,12 @@ const NewStyleDetail = ({route}) => {
   };
 
   const ValidateNewCategory = async () => {
+    if (processing) return;
+    setProcessing(true);
+
     if (mCategoryName.length === 0 || mCategoryDesc.length === 0) {
       Alert.alert(' Please fill all mandatory fields');
+      setProcessing(false);
       return;
     }
     const slash = '/';
@@ -1340,11 +1360,18 @@ const NewStyleDetail = ({route}) => {
         'Error',
         'There was a problem checking the Category validity. Please try again.',
       );
+    } finally {
+      setProcessing(false);
     }
   };
+
   const ValidateNewColor = async () => {
+    if (processing) return;
+    setProcessing(true);
+
     if (mColorName.length === 0 || mColorDesc.length === 0) {
       Alert.alert(' Please fill all mandatory fields');
+      setProcessing(false);
       return;
     }
     const trimmedColor = mColorName.trim().toLowerCase();
@@ -1369,11 +1396,19 @@ const NewStyleDetail = ({route}) => {
         'Error',
         'There was a problem checking the Color validity. Please try again.',
       );
+    } finally {
+      setProcessing(false);
     }
   };
+
+
   const ValidateNewType = async () => {
+    if (processing) return;
+    setProcessing(true);
+
     if (mTypeName.length === 0 || mTypeDesc.length === 0) {
       Alert.alert(' Please fill all mandatory fields');
+      setProcessing(false);
       return;
     }
 
@@ -1396,11 +1431,18 @@ const NewStyleDetail = ({route}) => {
         'Error',
         'There was a problem checking the Type validity. Please try again.',
       );
+    } finally {
+      setProcessing(false);
     }
   };
+
   const ValidateSeasonGroup = async () => {
+    if (processing) return;
+    setProcessing(true);
+
     if (mSeasonGroupName.length === 0 || mSeasonGroupDesc.length === 0) {
       Alert.alert(' Please fill all mandatory fields');
+      setProcessing(false);
       return;
     }
     const slash = '/';
@@ -1422,11 +1464,19 @@ const NewStyleDetail = ({route}) => {
         'Error',
         'There was a problem checking the Category validity. Please try again.',
       );
+    } finally {
+      setProcessing(false);
     }
   };
+
   const ValidateNewScale = async () => {
+    if (processing) return;
+    setProcessing(true);
+
+
     if (mSize.length === 0) {
       Alert.alert(' Please fill all mandatory fields');
+      setProcessing(false);
       return;
     }
     const slash = '/';
@@ -1448,6 +1498,8 @@ const NewStyleDetail = ({route}) => {
         'Error',
         'There was a problem checking the Scale size validity. Please try again.',
       );
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -1497,7 +1549,7 @@ const NewStyleDetail = ({route}) => {
       decoration: selectedDecorationId,
       trims: selectedTrimsId,
     };
-    navigation.navigate('Product Images', {productStyle: styleDetails});
+    navigation.navigate('Product Images', { productStyle: styleDetails });
   };
 
   const handleInputChange = (index, field, value) => {
@@ -1507,6 +1559,9 @@ const NewStyleDetail = ({route}) => {
   };
 
   const handleSaveNewSizesToSeasonGroup = async () => {
+    if (processing) return;
+    setProcessing(true);
+
     // setIsLoading(true);
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_SCALE}`;
     const requestData = {
@@ -1535,6 +1590,7 @@ const NewStyleDetail = ({route}) => {
         // setShowScaleTable(true);
 
         // setSelectedScaleId(response?.data?.response?.scaleAddRequest[0]?.scaleId);
+        setProcessing(false);
 
         setIsLoading(false);
       })
@@ -1550,16 +1606,17 @@ const NewStyleDetail = ({route}) => {
             : 'An unknown error occurred',
         );
         setIsLoading(false);
-      });
+        setProcessing(false);
+      })
     toggleScalesModal(false);
   };
 
   const getAllKapture = flagValue => {
-  
+
     const apiUrl = `${global?.userData?.productURL}${API.GET_KAPTURE}/${flagValue}/${companyId}`;
-  
+
     setIsKapturLoading(true); // Start loading
-  
+
     axios
       .get(apiUrl, {
         headers: {
@@ -1567,7 +1624,7 @@ const NewStyleDetail = ({route}) => {
         },
       })
       .then(response => {
-  
+
         // Update the appropriate state based on the flag
         if (flagValue === 1) {
           setClosureData(response.data);
@@ -1588,7 +1645,7 @@ const NewStyleDetail = ({route}) => {
         setIsKapturLoading(false); // End loading
       });
   };
-  
+
 
   const toggleClosure = () => {
     setShowClosure(!showClosure);
@@ -1645,11 +1702,15 @@ const NewStyleDetail = ({route}) => {
   };
 
   const ValidateAllKapture = async (flag, typeName, name) => {
+
+    if (processing) return;
+
     if (!name) {
       Alert.alert('Please enter a name');
       return;
     }
 
+    setProcessing(true);
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_KAPTURE}/${name}/${companyId}/${flag}`;
 
     try {
@@ -1682,7 +1743,7 @@ const NewStyleDetail = ({route}) => {
           setTrimsName('');
           getAllKapture(5);
         }
-        handleSaveKaptureModal(flag, name); // Pass flag and name to handleSaveKaptureModal
+        handleSaveKaptureModal(flag, name);
       } else {
         Alert.alert(
           'crm.codeverse.co says',
@@ -1692,6 +1753,8 @@ const NewStyleDetail = ({route}) => {
     } catch (error) {
       console.error('Error validating:', error);
       Alert.alert('An error occurred during validation');
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -1747,7 +1810,7 @@ const NewStyleDetail = ({route}) => {
       } else if (flag === 5) {
         setSelectedTrimsId(response?.data?.m_id);
       }
-  
+
       // Alert.alert('Success', `${typeName} saved successfully!`);
       getAllKapture(1)
       getAllKapture(2)
@@ -1784,20 +1847,20 @@ const NewStyleDetail = ({route}) => {
         />
       ) : (
         <ScrollView style={style.conatiner}>
-          <View style={{marginTop: 15}} />
+          <View style={{ marginTop: 15 }} />
           <Text style={style.headerTxt}>{'Category *'}</Text>
           <View style={style.container1}>
             <View style={style.container2}>
               <TouchableOpacity
                 style={style.container3}
                 onPress={handleCategoryDropDown}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
+                <Text style={{ fontWeight: '600', color: '#000' }}>
                   {selectedCategory?.length > 0 ? selectedCategory : 'Select'}
                 </Text>
 
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                 />
               </TouchableOpacity>
             </View>
@@ -1814,7 +1877,7 @@ const NewStyleDetail = ({route}) => {
                     // tintColor:'#1F74BA',
                   }}
                   source={require('../../../assets/plus.png')}
-                  // source={require('../../../assets/plus11.png')}
+                // source={require('../../../assets/plus11.png')}
                 />
               </TouchableOpacity>
             </View>
@@ -1880,14 +1943,14 @@ const NewStyleDetail = ({route}) => {
           )}
 
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'Style Name *'}
           </Text>
           <View style={style.inputContainer}>
             <TextInput
               style={[
                 style.txtinput,
-                {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
               ]}
               placeholder="Style name"
               placeholderTextColor="#000"
@@ -1897,7 +1960,7 @@ const NewStyleDetail = ({route}) => {
             />
           </View>
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'Style Description *'}
           </Text>
 
@@ -1911,7 +1974,7 @@ const NewStyleDetail = ({route}) => {
             />
           </View>
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'Dealer Price *'}
           </Text>
 
@@ -1928,7 +1991,7 @@ const NewStyleDetail = ({route}) => {
             />
           </View>
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'Retailer Price '}
           </Text>
 
@@ -1946,7 +2009,7 @@ const NewStyleDetail = ({route}) => {
           </View>
 
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'MRP '}
           </Text>
 
@@ -1963,7 +2026,7 @@ const NewStyleDetail = ({route}) => {
             />
           </View>
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'Fixed Discount '}
           </Text>
 
@@ -1978,7 +2041,7 @@ const NewStyleDetail = ({route}) => {
           </View>
           <Text style={style.headerTxt}>{'Customer Level '}</Text>
 
-          <View style={{flexDirection: 'row', marginTop: 13}}>
+          <View style={{ flexDirection: 'row', marginTop: 13 }}>
             <TouchableOpacity
               style={{
                 width: '90%',
@@ -1994,13 +2057,13 @@ const NewStyleDetail = ({route}) => {
                 marginHorizontal: 20,
               }}
               onPress={handleCustomerLevelDropDown}>
-              <Text style={{fontWeight: '600', color: '#000'}}>
+              <Text style={{ fontWeight: '600', color: '#000' }}>
                 {selectedCustomerLevel ? selectedCustomerLevel : 'Select'}
               </Text>
 
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
+                style={{ width: 20, height: 20 }}
               />
             </TouchableOpacity>
           </View>
@@ -2184,22 +2247,22 @@ const NewStyleDetail = ({route}) => {
               <TouchableOpacity
                 style={[
                   style.container3,
-                  {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                  { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
                 ]}
                 onPress={handleColorDropDown}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
+                <Text style={{ fontWeight: '600', color: '#000' }}>
                   {selectedColorIds.length > 0
                     ? filteredColorList
-                        .filter(color =>
-                          selectedColorIds.includes(color.colorId),
-                        )
-                        .map(color => color.colorName)
-                        .join(', ')
+                      .filter(color =>
+                        selectedColorIds.includes(color.colorId),
+                      )
+                      .map(color => color.colorName)
+                      .join(', ')
                     : 'Select'}
                 </Text>
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                 />
               </TouchableOpacity>
             </View>
@@ -2242,7 +2305,7 @@ const NewStyleDetail = ({route}) => {
                     isChecked={isSelectAll}
                     onToggle={handleSelectAll}
                   />
-                  <Text style={{color: '#000', marginLeft: 10}}>
+                  <Text style={{ color: '#000', marginLeft: 10 }}>
                     Select All
                   </Text>
                 </TouchableOpacity>
@@ -2264,9 +2327,9 @@ const NewStyleDetail = ({route}) => {
                 onChangeText={filterColors}
               />
               {filteredColorList?.length === 0 ||
-              (filteredColorList?.length === 1 &&
-                !filteredColorList[0] &&
-                !isLoading) ? (
+                (filteredColorList?.length === 1 &&
+                  !filteredColorList[0] &&
+                  !isLoading) ? (
                 <Text style={style.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -2310,7 +2373,7 @@ const NewStyleDetail = ({route}) => {
           )}
 
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'Color Code '}
           </Text>
           <View style={style.inputContainer}>
@@ -2331,13 +2394,13 @@ const NewStyleDetail = ({route}) => {
               <TouchableOpacity
                 style={style.container3}
                 onPress={handleTypesDropDown}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
+                <Text style={{ fontWeight: '600', color: '#000' }}>
                   {selectedType ? selectedType : 'Select'}
                 </Text>
 
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                 />
               </TouchableOpacity>
             </View>
@@ -2385,9 +2448,9 @@ const NewStyleDetail = ({route}) => {
               />
 
               {filteredTypesList.length === 0 ||
-              (filteredTypesList?.length === 1 &&
-                !filteredTypesList[0] &&
-                !isLoading) ? (
+                (filteredTypesList?.length === 1 &&
+                  !filteredTypesList[0] &&
+                  !isLoading) ? (
                 <Text style={style.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -2426,16 +2489,16 @@ const NewStyleDetail = ({route}) => {
               <TouchableOpacity
                 style={[
                   style.container3,
-                  {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                  { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
                 ]}
                 onPress={handleSeasonGroupsDropDown}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
+                <Text style={{ fontWeight: '600', color: '#000' }}>
                   {selectedSeasonGroup ? selectedSeasonGroup : 'Select'}
                 </Text>
 
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                 />
               </TouchableOpacity>
             </View>
@@ -2483,9 +2546,9 @@ const NewStyleDetail = ({route}) => {
               />
 
               {filteredSeasonGroupsList.length === 0 ||
-              (filteredSeasonGroupsList?.length === 1 &&
-                !filteredSeasonGroupsList[0] &&
-                !isLoading) ? (
+                (filteredSeasonGroupsList?.length === 1 &&
+                  !filteredSeasonGroupsList[0] &&
+                  !isLoading) ? (
                 <Text style={style.noCategoriesText}>
                   Sorry, no results found!
                 </Text>
@@ -2517,7 +2580,7 @@ const NewStyleDetail = ({route}) => {
             </View>
           )}
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
             {'GSM  '}
           </Text>
 
@@ -2527,12 +2590,13 @@ const NewStyleDetail = ({route}) => {
               placeholder="GSM  "
               placeholderTextColor="#000"
               value={gsm}
+               keyboardType='numeric'
               onChangeText={text => setGsm(text)}
             />
           </View>
           <Text
-            style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
-            {'HSN  '}
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
+            {'HSN'}
           </Text>
 
           <View style={style.inputContainer}>
@@ -2541,6 +2605,7 @@ const NewStyleDetail = ({route}) => {
               placeholder="HSN  "
               placeholderTextColor="#000"
               value={hsn}
+              keyboardType='numeric'
               onChangeText={text => setHsn(text)}
             />
           </View>
@@ -2554,11 +2619,11 @@ const NewStyleDetail = ({route}) => {
                   <TouchableOpacity
                     style={style.dropdownButton}
                     onPress={toggleClosure}>
-                    <Text style={{fontWeight: '600', color: '#000'}}>
+                    <Text style={{ fontWeight: '600', color: '#000' }}>
                       {selectedClosureId ? selectedClosure : 'Select'}
                     </Text>
                     <Image
-                      style={{width: 20, height: 20}}
+                      style={{ width: 20, height: 20 }}
                       source={require('../../../assets/dropdown.png')}
                     />
                   </TouchableOpacity>
@@ -2586,7 +2651,7 @@ const NewStyleDetail = ({route}) => {
                   />
                   <ScrollView nestedScrollEnabled={true}>
                     {isKaptureLoading ? (
-                      <Text style={{color: '#000'}}>Loading...</Text>
+                      <Text style={{ color: '#000' }}>Loading...</Text>
                     ) : filteredClosureData.length === 0 &&
                       !isKaptureLoading ? (
                       <Text style={style.noCategoriesText}>
@@ -2625,29 +2690,29 @@ const NewStyleDetail = ({route}) => {
               <Text style={style.headerTxt}>{'Peak'}</Text>
               <View style={style.container1}>
                 <View style={style.container2}>
-              <TouchableOpacity
-                style={style.dropdownButton}
-                onPress={togglePeak}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
-                  {selectedPeakId ? selectedPeak : 'Select'}
-                </Text>
-                <Image
-                  style={{width: 20, height: 20}}
-                  source={require('../../../assets/dropdown.png')}
-                />
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.dropdownButton}
+                    onPress={togglePeak}>
+                    <Text style={{ fontWeight: '600', color: '#000' }}>
+                      {selectedPeakId ? selectedPeak : 'Select'}
+                    </Text>
+                    <Image
+                      style={{ width: 20, height: 20 }}
+                      source={require('../../../assets/dropdown.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={style.container4}>
+                  <TouchableOpacity
+                    onPress={togglePeakModal}
+                    style={style.plusButton}>
+                    <Image
+                      style={style.plusIcon}
+                      source={require('../../../assets/plus.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={style.container4}>
-              <TouchableOpacity
-            onPress={togglePeakModal}
-            style={style.plusButton}>
-            <Image
-              style={style.plusIcon}
-              source={require('../../../assets/plus.png')}
-            />
-          </TouchableOpacity>
-          </View>
-          </View>
               {showPeak && (
                 <View style={style.dropdownContent}>
                   <TextInput
@@ -2659,7 +2724,7 @@ const NewStyleDetail = ({route}) => {
                   />
                   <ScrollView nestedScrollEnabled={true}>
                     {isKaptureLoading ? (
-                      <Text style={{color: '#000'}}>Loading...</Text>
+                      <Text style={{ color: '#000' }}>Loading...</Text>
                     ) : filteredPeakData.length === 0 && !isKaptureLoading ? (
                       <Text style={style.noCategoriesText}>
                         Sorry, no results found!
@@ -2696,30 +2761,30 @@ const NewStyleDetail = ({route}) => {
             <View style={style.dropdownContainer}>
               <Text style={style.headerTxt}>{'Logo'}</Text>
               <View style={style.container1}>
-              <View style={style.container2}>
-              <TouchableOpacity
-                style={style.dropdownButton}
-                onPress={toggleLogo}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
-                  {selectedLogoId ? selectedLogo : 'Select'}
-                </Text>
-                <Image
-                  style={{width: 20, height: 20}}
-                  source={require('../../../assets/dropdown.png')}
-                />
-              </TouchableOpacity>
+                <View style={style.container2}>
+                  <TouchableOpacity
+                    style={style.dropdownButton}
+                    onPress={toggleLogo}>
+                    <Text style={{ fontWeight: '600', color: '#000' }}>
+                      {selectedLogoId ? selectedLogo : 'Select'}
+                    </Text>
+                    <Image
+                      style={{ width: 20, height: 20 }}
+                      source={require('../../../assets/dropdown.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={style.container4}>
+                  <TouchableOpacity
+                    onPress={toggleLogoModal}
+                    style={style.plusButton}>
+                    <Image
+                      style={style.plusIcon}
+                      source={require('../../../assets/plus.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={style.container4}>
-              <TouchableOpacity
-            onPress={toggleLogoModal}
-            style={style.plusButton}>
-            <Image
-              style={style.plusIcon}
-              source={require('../../../assets/plus.png')}
-            />
-          </TouchableOpacity>
-          </View>
-          </View>
               {showLogo && (
                 <View style={style.dropdownContent}>
                   <TextInput
@@ -2731,7 +2796,7 @@ const NewStyleDetail = ({route}) => {
                   />
                   <ScrollView>
                     {isKaptureLoading ? (
-                      <Text style={{color: '#000'}}>Loading...</Text>
+                      <Text style={{ color: '#000' }}>Loading...</Text>
                     ) : filteredLogoData.length === 0 && !isKaptureLoading ? (
                       <Text style={style.noCategoriesText}>
                         Sorry, no results found!
@@ -2767,30 +2832,30 @@ const NewStyleDetail = ({route}) => {
             <View style={style.dropdownContainer}>
               <Text style={style.headerTxt}>{'Decoration'}</Text>
               <View style={style.container1}>
-              <View style={style.container2}>
-              <TouchableOpacity
-                style={style.dropdownButton}
-                onPress={toggleDecoration}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
-                  {selectedDecorationId ? selectedDecoration : 'Select'}
-                </Text>
-                <Image
-                  style={{width: 20, height: 20}}
-                  source={require('../../../assets/dropdown.png')}
-                />
-              </TouchableOpacity>
+                <View style={style.container2}>
+                  <TouchableOpacity
+                    style={style.dropdownButton}
+                    onPress={toggleDecoration}>
+                    <Text style={{ fontWeight: '600', color: '#000' }}>
+                      {selectedDecorationId ? selectedDecoration : 'Select'}
+                    </Text>
+                    <Image
+                      style={{ width: 20, height: 20 }}
+                      source={require('../../../assets/dropdown.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={style.container4}>
+                  <TouchableOpacity
+                    onPress={toggleDecorationModal}
+                    style={style.plusButton}>
+                    <Image
+                      style={style.plusIcon}
+                      source={require('../../../assets/plus.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={style.container4}>
-              <TouchableOpacity
-            onPress={toggleDecorationModal}
-            style={style.plusButton}>
-            <Image
-              style={style.plusIcon}
-              source={require('../../../assets/plus.png')}
-            />
-          </TouchableOpacity>
-          </View>
-          </View>
               {showDecoration && (
                 <View style={style.dropdownContent}>
                   <TextInput
@@ -2802,7 +2867,7 @@ const NewStyleDetail = ({route}) => {
                   />
                   <ScrollView>
                     {isKaptureLoading ? (
-                      <Text style={{color: '#000'}}>Loading...</Text>
+                      <Text style={{ color: '#000' }}>Loading...</Text>
                     ) : filteredDecorationData.length === 0 &&
                       !isKaptureLoading ? (
                       <Text style={style.noCategoriesText}>
@@ -2839,42 +2904,42 @@ const NewStyleDetail = ({route}) => {
             <View style={style.dropdownContainer}>
               <Text style={style.headerTxt}>{'Trims'}</Text>
               <View style={style.container1}>
-              <View style={style.container2}>
-              <TouchableOpacity
-                style={{
-                  width: '90%',
-                  height: 50,
-                  borderRadius: 10,
-                  borderWidth: 0.5,
-                  alignSelf: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingLeft: 15,
-                  paddingRight: 15,
-                  marginHorizontal: 20,
-                }}
-                onPress={toggleTrims}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
-                  {selectedTrimsId ? selectedTrims : 'Select'}
-                </Text>
-                <Image
-                  style={{width: 20, height: 20}}
-                  source={require('../../../assets/dropdown.png')}
-                />
-              </TouchableOpacity>
+                <View style={style.container2}>
+                  <TouchableOpacity
+                    style={{
+                      width: '90%',
+                      height: 50,
+                      borderRadius: 10,
+                      borderWidth: 0.5,
+                      alignSelf: 'center',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingLeft: 15,
+                      paddingRight: 15,
+                      marginHorizontal: 20,
+                    }}
+                    onPress={toggleTrims}>
+                    <Text style={{ fontWeight: '600', color: '#000' }}>
+                      {selectedTrimsId ? selectedTrims : 'Select'}
+                    </Text>
+                    <Image
+                      style={{ width: 20, height: 20 }}
+                      source={require('../../../assets/dropdown.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={style.container4}>
+                  <TouchableOpacity
+                    onPress={toggleTrimsModal}
+                    style={style.plusButton}>
+                    <Image
+                      style={style.plusIcon}
+                      source={require('../../../assets/plus.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={style.container4}>
-              <TouchableOpacity
-            onPress={toggleTrimsModal}
-            style={style.plusButton}>
-            <Image
-              style={style.plusIcon}
-              source={require('../../../assets/plus.png')}
-            />
-          </TouchableOpacity>
-          </View>
-          </View>
               {showTrims && (
                 <View style={style.dropdownContent}>
                   <TextInput
@@ -2886,7 +2951,7 @@ const NewStyleDetail = ({route}) => {
                   />
                   <ScrollView>
                     {isKaptureLoading ? (
-                      <Text style={{color: '#000'}}>Loading...</Text>
+                      <Text style={{ color: '#000' }}>Loading...</Text>
                     ) : filteredTrimsData.length === 0 && !isKaptureLoading ? (
                       <Text style={style.noCategoriesText}>
                         Sorry, no results found!
@@ -2922,7 +2987,7 @@ const NewStyleDetail = ({route}) => {
           )}
 
           {cedge_flag === 1 && (
-            <View style={{flexDirection: 'row', marginTop: 10}}>
+            <View style={{ flexDirection: 'row', marginTop: 10 }}>
               <TouchableOpacity
                 style={{
                   width: '90%',
@@ -2938,18 +3003,18 @@ const NewStyleDetail = ({route}) => {
                   marginHorizontal: 20,
                 }}
                 onPress={handleProcessWorkflowDropDown}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
+                <Text style={{ fontWeight: '600', color: '#000' }}>
                   {selectedProcessWorkflow ? selectedProcessWorkflow : 'Select'}
                 </Text>
 
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                 />
               </TouchableOpacity>
             </View>
           )}
-          {showProcessWorkflowList && (
+          {showProcessWorkflowList && editProcessWF && (
             <View
               style={{
                 elevation: 5,
@@ -3010,7 +3075,7 @@ const NewStyleDetail = ({route}) => {
 
           <Text style={style.headerTxt}>{'Location *'}</Text>
 
-          <View style={{flexDirection: 'row', marginTop: 10}}>
+          <View style={{ flexDirection: 'row', marginTop: 10 }}>
             <TouchableOpacity
               style={{
                 width: '90%',
@@ -3027,13 +3092,13 @@ const NewStyleDetail = ({route}) => {
                 backgroundColor: editColor ? '#fff' : '#f1e8e6',
               }}
               onPress={handleLocationDropDown}>
-              <Text style={{fontWeight: '600', color: '#000'}}>
+              <Text style={{ fontWeight: '600', color: '#000' }}>
                 {selectedLocation ? selectedLocation : 'Select'}
               </Text>
 
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
+                style={{ width: 20, height: 20 }}
               />
             </TouchableOpacity>
           </View>
@@ -3102,15 +3167,15 @@ const NewStyleDetail = ({route}) => {
               <TouchableOpacity
                 style={[
                   style.container3,
-                  {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                  { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
                 ]}
                 onPress={handleScalesDropDown}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
+                <Text style={{ fontWeight: '600', color: '#000' }}>
                   {selectedScale ? selectedScale : 'Select'}
                 </Text>
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{width: 20, height: 20}}
+                  style={{ width: 20, height: 20 }}
                 />
               </TouchableOpacity>
             </View>
@@ -3194,7 +3259,7 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={categoryModal}
+            visible={categoryModal && editShortcutKey}
             onRequestClose={() => {
               toggleCategoryModal();
             }}>
@@ -3214,40 +3279,42 @@ const NewStyleDetail = ({route}) => {
                     marginBottom: 15,
                   }}>
                   <Text
-                    style={[style.modalTitle, {textAlign: 'center', flex: 1}]}>
+                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
                     {'Add New Category'}
                   </Text>
                   <TouchableOpacity
                     onPress={handleCloseCategoryModal}
-                    style={{alignSelf: 'flex-end'}}>
+                    style={{ alignSelf: 'flex-end' }}>
                     <Image
-                      style={{height: 30, width: 30, marginRight: 5}}
+                      style={{ height: 30, width: 30, marginRight: 5 }}
                       source={require('../../../assets/close.png')}
                     />
                   </TouchableOpacity>
                 </View>
 
-                <Text style={{fontWeight: 'bold'}}>{'Category Name * '}</Text>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Category Name * '}</Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmCategoryName(text)}
                 />
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>
                   {'Category Description * '}
                 </Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmCategoryDesc(text)}
                 />
                 <TouchableOpacity
                   style={style.saveButton}
-                  onPress={ValidateNewCategory}>
-                  <Text style={style.saveButtonText}>Save</Text>
+                  // style={[style.saveButton, processing && { opacity: 0.5 }]}
+                  onPress={ValidateNewCategory}
+                  disabled={processing}>
+                  <Text style={style.saveButtonText}>{processing ? "Processing..." : "Save"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -3256,7 +3323,7 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={colorModal}
+            visible={colorModal && editShortcutKey}
             onRequestClose={() => {
               toggleColorModal();
             }}>
@@ -3276,48 +3343,50 @@ const NewStyleDetail = ({route}) => {
                     marginBottom: 15,
                   }}>
                   <Text
-                    style={[style.modalTitle, {textAlign: 'center', flex: 1}]}>
+                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
                     {'Add New Color'}
                   </Text>
                   <TouchableOpacity
                     onPress={handleCloseColorModal}
-                    style={{alignSelf: 'flex-end'}}>
+                    style={{ alignSelf: 'flex-end' }}>
                     <Image
-                      style={{height: 30, width: 30, marginRight: 5}}
+                      style={{ height: 30, width: 30, marginRight: 5 }}
                       source={require('../../../assets/close.png')}
                     />
                   </TouchableOpacity>
                 </View>
 
-                <Text style={{fontWeight: 'bold'}}>{'Color Name * '}</Text>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Color Name * '}</Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmColorName(text)}
                 />
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>
                   {'Color Description * '}
                 </Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmColorDesc(text)}
                 />
 
-                <Text style={{fontWeight: 'bold'}}>{'Color Code '}</Text>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Color Code '}</Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmColorCode(text)}
                 />
                 <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={ValidateNewColor}>
-                  <Text style={style.saveButtonText}>Save</Text>
+                  // style={style.saveButton}
+                  style={[style.saveButton, processing && { opacity: 0.5 }]}
+                  onPress={ValidateNewColor}
+                  disabled={processing}>
+                  <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -3326,7 +3395,7 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={typesModal}
+            visible={typesModal && editShortcutKey}
             onRequestClose={() => {
               toggleTypesModal();
             }}>
@@ -3346,41 +3415,44 @@ const NewStyleDetail = ({route}) => {
                     marginBottom: 15,
                   }}>
                   <Text
-                    style={[style.modalTitle, {textAlign: 'center', flex: 1}]}>
+                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
                     {'Add New Type'}
                   </Text>
                   <TouchableOpacity
                     onPress={handleCloseTypesModal}
-                    style={{alignSelf: 'flex-end'}}>
+                    style={{ alignSelf: 'flex-end' }}>
                     <Image
-                      style={{height: 30, width: 30, marginRight: 5}}
+                      style={{ height: 30, width: 30, marginRight: 5 }}
                       source={require('../../../assets/close.png')}
                     />
                   </TouchableOpacity>
                 </View>
 
-                <Text style={{fontWeight: 'bold'}}>{'Type Name * '}</Text>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Type Name * '}</Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmTypeName(text)}
                 />
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>
                   {'Type Description * '}
                 </Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmTypeDesc(text)}
                 />
 
                 <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={ValidateNewType}>
-                  <Text style={style.saveButtonText}>Save</Text>
+                  // style={style.saveButton}
+                  style={[style.saveButton, processing && { opacity: 0.5 }]}
+
+                  onPress={ValidateNewType}
+                  disabled={processing}>
+                  <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -3389,7 +3461,7 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={seasonGroupsModal}
+            visible={seasonGroupsModal && editShortcutKey}
             onRequestClose={() => {
               toggleSeasonGroupsModal();
             }}>
@@ -3409,43 +3481,45 @@ const NewStyleDetail = ({route}) => {
                     marginBottom: 15,
                   }}>
                   <Text
-                    style={[style.modalTitle, {textAlign: 'center', flex: 1}]}>
+                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
                     {'Add New Season Group'}
                   </Text>
                   <TouchableOpacity
                     onPress={handleCloseSeasonGroupsModal}
-                    style={{alignSelf: 'flex-end'}}>
+                    style={{ alignSelf: 'flex-end' }}>
                     <Image
-                      style={{height: 30, width: 30, marginRight: 5}}
+                      style={{ height: 30, width: 30, marginRight: 5 }}
                       source={require('../../../assets/close.png')}
                     />
                   </TouchableOpacity>
                 </View>
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>
                   {'Season Group Name * '}
                 </Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmSeasonGroupName(text)}
                 />
 
-                <Text style={{fontWeight: 'bold'}}>
+                <Text style={{ fontWeight: 'bold', color: '#000' }}>
                   {'Season Group Description * '}
                 </Text>
                 <TextInput
-                  style={[style.input, {color: '#000'}]}
+                  style={[style.input, { color: '#000' }]}
                   placeholder=""
                   placeholderTextColor="#000"
                   onChangeText={text => setmSeasonGroupDesc(text)}
                 />
 
                 <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={ValidateSeasonGroup}>
-                  <Text style={style.saveButtonText}>Save</Text>
+                  // style={style.saveButton}
+                  style={[style.saveButton, processing && { opacity: 0.5 }]}
+                  onPress={ValidateSeasonGroup}
+                  disabled={processing}>
+                  <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -3454,7 +3528,7 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={scalesModal}
+            visible={scalesModal && editShortcutKey}
             onRequestClose={() => {
               toggleScalesModal();
             }}>
@@ -3477,38 +3551,41 @@ const NewStyleDetail = ({route}) => {
                     <Text
                       style={[
                         style.modalTitle,
-                        {textAlign: 'center', flex: 1},
+                        { textAlign: 'center', flex: 1 },
                       ]}>
                       {'Add New Scale'}
                     </Text>
                     <TouchableOpacity
                       onPress={handleCloseScalesModal}
-                      style={{alignSelf: 'flex-end'}}>
+                      style={{ alignSelf: 'flex-end' }}>
                       <Image
-                        style={{height: 30, width: 30, marginRight: 5}}
+                        style={{ height: 30, width: 30, marginRight: 5 }}
                         source={require('../../../assets/close.png')}
                       />
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={{fontWeight: 'bold'}}>{'Size * '}</Text>
+                  <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Size * '}</Text>
                   <TextInput
-                    style={[style.input, {color: '#000'}]}
+                    style={[style.input, { color: '#000' }]}
                     placeholder=""
                     placeholderTextColor="#000"
                     onChangeText={text => setmSize(text)}
                   />
                   <TouchableOpacity
-                    style={style.saveButton}
-                    onPress={ValidateNewScale}>
-                    <Text style={style.saveButtonText}>Save</Text>
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && { opacity: 0.5 }]}
+
+                    onPress={ValidateNewScale}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                   </TouchableOpacity>
 
-                  <Text style={[style.headerTxt, {textAlign: 'left'}]}>
+                  <Text style={[style.headerTxt, { textAlign: 'left' }]}>
                     {'Season Group *'}
                   </Text>
 
-                  <View style={{flexDirection: 'row', marginTop: 13}}>
+                  <View style={{ flexDirection: 'row', marginTop: 13 }}>
                     <TouchableOpacity
                       style={{
                         width: '90%',
@@ -3524,7 +3601,7 @@ const NewStyleDetail = ({route}) => {
                         marginHorizontal: 20,
                       }}
                       onPress={handleModalSeasonGroupsDropDown}>
-                      <Text style={{fontWeight: '600', color: '#000'}}>
+                      <Text style={{ fontWeight: '600', color: '#000' }}>
                         {selectedModalSeasonGroup
                           ? selectedModalSeasonGroup
                           : 'Select'}
@@ -3532,7 +3609,7 @@ const NewStyleDetail = ({route}) => {
 
                       <Image
                         source={require('../../../assets/dropdown.png')}
-                        style={{width: 20, height: 20}}
+                        style={{ width: 20, height: 20 }}
                       />
                     </TouchableOpacity>
                   </View>
@@ -3564,9 +3641,9 @@ const NewStyleDetail = ({route}) => {
                       />
 
                       {filteredModalSeasonGroupsList.length === 0 ||
-                      (filteredModalSeasonGroupsList?.length === 1 &&
-                        !filteredModalSeasonGroupsList[0] &&
-                        !isLoading) ? (
+                        (filteredModalSeasonGroupsList?.length === 1 &&
+                          !filteredModalSeasonGroupsList[0] &&
+                          !isLoading) ? (
                         <Text style={style.noCategoriesText}>
                           Sorry, no results found!
                         </Text>
@@ -3600,15 +3677,15 @@ const NewStyleDetail = ({route}) => {
                     </View>
                   )}
 
-                  <Text style={{fontWeight: 'bold', marginTop: 10}}>
+                  <Text style={{ fontWeight: 'bold', marginTop: 10, color: '#000' }}>
                     {'Sizes :'}
                   </Text>
 
-                  <View style={{height: 180, width: '90%', marginTop: 10}}>
+                  <View style={{ height: 180, width: '90%', marginTop: 10 }}>
                     {allSizesInScales.length === 0 ||
-                    (allSizesInScales?.length === 1 &&
-                      !allSizesInScales[0] &&
-                      !isLoading) ? (
+                      (allSizesInScales?.length === 1 &&
+                        !allSizesInScales[0] &&
+                        !isLoading) ? (
                       <Text style={style.noCategoriesText}>
                         Sorry, no results found!
                       </Text>
@@ -3649,9 +3726,11 @@ const NewStyleDetail = ({route}) => {
                     )}
                   </View>
                   <TouchableOpacity
-                    style={style.saveButton}
-                    onPress={handleSaveNewSizesToSeasonGroup}>
-                    <Text style={style.saveButtonText}>Save</Text>
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && { opacity: 0.5 }]}
+                    onPress={handleSaveNewSizesToSeasonGroup}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -3662,35 +3741,37 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={closureModal}
+            visible={closureModal && editShortcutKey}
             onRequestClose={toggleClosureModal}>
-              <ScrollView>
-             <View style={style.modalContainerr1}>
-             <View style={style.modalContentt}>
-                <View style={style.modalHeader}>
-                  <Text style={[style.modalTitle, {textAlign: 'center', flex: 1}]}> {'Add New Closure'}</Text>
-                  <TouchableOpacity onPress={toggleClosureModal}>
-                    <Image
-                      style={style.closeIcon}
-                      source={require('../../../assets/close.png')}
-                    />
+            <ScrollView>
+              <View style={style.modalContainerr1}>
+                <View style={style.modalContentt}>
+                  <View style={style.modalHeader}>
+                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Closure'}</Text>
+                    <TouchableOpacity onPress={toggleClosureModal}>
+                      <Image
+                        style={style.closeIcon}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={style.modalLabel}>Closure Name *</Text>
+                  <TextInput
+                    style={style.input}
+                    placeholder="Enter Closure Name"
+                    placeholderTextColor="#000"
+                    value={closureName}
+                    onChangeText={setClosureName}
+                  />
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && { opacity: 0.5 }]}
+                    disabled={processing}
+                    onPress={() => ValidateAllKapture(1, 'Closure', closureName)}>
+                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={style.modalLabel}>Closure Name *</Text>
-                <TextInput
-                  style={style.input}
-                  placeholder="Enter Closure Name"
-                  placeholderTextColor="#000"
-                  value={closureName}
-                  onChangeText={setClosureName}
-                />
-                <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={() => ValidateAllKapture(1, 'Closure', closureName)}>
-                  <Text style={style.saveButtonText}>Save</Text>
-                </TouchableOpacity>
               </View>
-            </View>
             </ScrollView>
           </Modal>
 
@@ -3698,35 +3779,37 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={peakModal}
+            visible={peakModal && editShortcutKey}
             onRequestClose={togglePeakModal}>
-              <ScrollView>
-            <View style={style.modalContainerr1}>
-            <View style={style.modalContentt}>
-                <View style={style.modalHeader}>
-                <Text style={[style.modalTitle, {textAlign: 'center', flex: 1}]}> {'Add New Peak'}</Text>
-                  <TouchableOpacity onPress={togglePeakModal}>
-                    <Image
-                      style={style.closeIcon}
-                      source={require('../../../assets/close.png')}
-                    />
+            <ScrollView>
+              <View style={style.modalContainerr1}>
+                <View style={style.modalContentt}>
+                  <View style={style.modalHeader}>
+                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Peak'}</Text>
+                    <TouchableOpacity onPress={togglePeakModal}>
+                      <Image
+                        style={style.closeIcon}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={style.modalLabel}>Peak Name *</Text>
+                  <TextInput
+                    style={style.input}
+                    placeholder="Enter Peak Name"
+                    placeholderTextColor="#000"
+                    value={peakName}
+                    onChangeText={setPeakName}
+                  />
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && { opacity: 0.5 }]}
+                    onPress={() => ValidateAllKapture(2, 'Peak', peakName)}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={style.modalLabel}>Peak Name *</Text>
-                <TextInput
-                  style={style.input}
-                  placeholder="Enter Peak Name"
-                  placeholderTextColor="#000"
-                  value={peakName}
-                  onChangeText={setPeakName}
-                />
-                <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={() => ValidateAllKapture(2, 'Peak', peakName)}>
-                  <Text style={style.saveButtonText}>Save</Text>
-                </TouchableOpacity>
               </View>
-            </View>
             </ScrollView>
           </Modal>
 
@@ -3734,35 +3817,38 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={logoModal}
+            visible={logoModal && editShortcutKey}
             onRequestClose={toggleLogoModal}>
-              <ScrollView>
-            <View style={style.modalContainerr1}>
-            <View style={style.modalContentt}>
-                <View style={style.modalHeader}>
-                <Text style={[style.modalTitle, {textAlign: 'center', flex: 1}]}> {'Add New Logo'}</Text>
-                  <TouchableOpacity onPress={toggleLogoModal}>
-                    <Image
-                      style={style.closeIcon}
-                      source={require('../../../assets/close.png')}
-                    />
+            <ScrollView>
+              <View style={style.modalContainerr1}>
+                <View style={style.modalContentt}>
+                  <View style={style.modalHeader}>
+                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Logo'}</Text>
+                    <TouchableOpacity onPress={toggleLogoModal}>
+                      <Image
+                        style={style.closeIcon}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={style.modalLabel}>Logo Name *</Text>
+                  <TextInput
+                    style={style.input}
+                    placeholder="Enter Logo Name"
+                    placeholderTextColor="#000"
+                    value={logoName}
+                    onChangeText={setLogoName}
+                  />
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && { opacity: 0.5 }]}
+
+                    onPress={() => ValidateAllKapture(3, 'Logo', logoName)}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={style.modalLabel}>Logo Name *</Text>
-                <TextInput
-                  style={style.input}
-                  placeholder="Enter Logo Name"
-                  placeholderTextColor="#000"
-                  value={logoName}
-                  onChangeText={setLogoName}
-                />
-                <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={() => ValidateAllKapture(3, 'Logo', logoName)}>
-                  <Text style={style.saveButtonText}>Save</Text>
-                </TouchableOpacity>
               </View>
-            </View>
             </ScrollView>
           </Modal>
 
@@ -3770,37 +3856,40 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={decorationModal}
+            visible={decorationModal && editShortcutKey}
             onRequestClose={toggleDecorationModal}>
-              <ScrollView>
+            <ScrollView>
               <View style={style.modalContainerr1}>
-              <View style={style.modalContentt}>
-                <View style={style.modalHeader}>
-                <Text style={[style.modalTitle, {textAlign: 'center', flex: 1}]}> {'Add New Decoration'}</Text>
-                  <TouchableOpacity onPress={toggleDecorationModal}>
-                    <Image
-                      style={style.closeIcon}
-                      source={require('../../../assets/close.png')}
-                    />
+                <View style={style.modalContentt}>
+                  <View style={style.modalHeader}>
+                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Decoration'}</Text>
+                    <TouchableOpacity onPress={toggleDecorationModal}>
+                      <Image
+                        style={style.closeIcon}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={style.modalLabel}>Decoration Name *</Text>
+                  <TextInput
+                    style={style.input}
+                    placeholder="Enter Decoration Name"
+                    placeholderTextColor="#000"
+                    value={decorationName}
+                    onChangeText={setDecorationName}
+                  />
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && { opacity: 0.5 }]}
+
+                    onPress={() =>
+                      ValidateAllKapture(4, 'Decoration', decorationName)
+                    }
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={style.modalLabel}>Decoration Name *</Text>
-                <TextInput
-                  style={style.input}
-                  placeholder="Enter Decoration Name"
-                  placeholderTextColor="#000"
-                  value={decorationName}
-                  onChangeText={setDecorationName}
-                />
-                <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={() =>
-                    ValidateAllKapture(4, 'Decoration', decorationName)
-                  }>
-                  <Text style={style.saveButtonText}>Save</Text>
-                </TouchableOpacity>
               </View>
-            </View>
             </ScrollView>
           </Modal>
 
@@ -3808,35 +3897,37 @@ const NewStyleDetail = ({route}) => {
           <Modal
             animationType="fade"
             transparent={true}
-            visible={trimsModal}
+            visible={trimsModal && editShortcutKey}
             onRequestClose={toggleTrimsModal}>
-              <ScrollView>
+            <ScrollView>
               <View style={style.modalContainerr1}>
-              <View style={style.modalContentt}>
-                <View style={style.modalHeader}>
-                  <Text style={style.modalTitle}>Add New Trims</Text>
-                  <TouchableOpacity onPress={toggleTrimsModal}>
-                    <Image
-                      style={style.closeIcon}
-                      source={require('../../../assets/close.png')}
-                    />
+                <View style={style.modalContentt}>
+                  <View style={style.modalHeader}>
+                    <Text style={style.modalTitle}>Add New Trims</Text>
+                    <TouchableOpacity onPress={toggleTrimsModal}>
+                      <Image
+                        style={style.closeIcon}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Trims Name *'}</Text>
+                  <TextInput
+                    style={style.input}
+                    placeholder="Enter Trims Name"
+                    placeholderTextColor="#000"
+                    value={trimsName}
+                    onChangeText={setTrimsName}
+                  />
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && { opacity: 0.5 }]}
+                    disabled={processing}
+                    onPress={() => ValidateAllKapture(5, 'Trim', trimsName)}>
+                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={[style.modalTitle, {textAlign: 'center', flex: 1}]}> {'Trims Name *'}</Text>
-                <TextInput
-                  style={style.input}
-                  placeholder="Enter Trims Name"
-                  placeholderTextColor="#000"
-                  value={trimsName}
-                  onChangeText={setTrimsName}
-                />
-                <TouchableOpacity
-                  style={style.saveButton}
-                  onPress={() => ValidateAllKapture(5, 'Trim', trimsName)}>
-                  <Text style={style.saveButtonText}>Save</Text>
-                </TouchableOpacity>
               </View>
-            </View>
             </ScrollView>
           </Modal>
 
@@ -3936,7 +4027,7 @@ const NewStyleDetail = ({route}) => {
             <Text style={style.saveButtonText}>Next</Text>
           </TouchableOpacity>
 
-          <View style={{marginBottom: 50}} />
+          <View style={{ marginBottom: 50 }} />
         </ScrollView>
       )}
     </>
@@ -4019,8 +4110,8 @@ const style = StyleSheet.create({
     // marginBottom: 20,
     color: '#000',
   },
-  modalLabel:{
-color:"#000"
+  modalLabel: {
+    color: "#000"
   },
   saveButton: {
     backgroundColor: '#1F74BA',
@@ -4142,7 +4233,7 @@ color:"#000"
     alignItems: 'center',
     // tintColor:'#1F74BA',
   },
-  modalHeader:{
+  modalHeader: {
     backgroundColor: '#1F74BA',
     borderRadius: 10,
     marginHorizontal: 10,
@@ -4154,7 +4245,7 @@ color:"#000"
     justifyContent: 'space-between',
     marginBottom: 15,
   },
-  closeIcon:{
+  closeIcon: {
     height: 30, width: 30, marginRight: 5
   }
   // input1: {
