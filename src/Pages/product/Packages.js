@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import {useSelector} from 'react-redux';
@@ -22,14 +23,22 @@ const Packages = ({navigation}) => {
   const [packagesList, setPackagesList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stylesData, setStylesData] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [searchOptions, setSearchOptions] = useState([]);
-  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [searchKey, setSearchKey] = useState(1); // Default to "Type" or any other default
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
+
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(20);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [filterFlag, setFilterFlag] = useState(false);
 
   const companyId = selectedCompany
     ? selectedCompany.id
@@ -53,49 +62,127 @@ const Packages = ({navigation}) => {
     fetchInitialSelectedCompany();
   }, []);
 
+
   useEffect(() => {
     if (companyId) {
-      getAllPackages(companyId);
+      getAllOrders(true, 0, 20);
     }
   }, [companyId]);
 
-  const getAllPackages = async (companyId, page = 0, limit = 100) => {
-    setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.GET_PACKAGES}/${page}/${limit}/${companyId}`;
+  const getAllOrders = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    // console.log("getAllOrders b ", customFrom, customTo);
+
+    if (loading || loadingMore) return;
+    setLoading(reset);
+
+    if (reset) {
+      setFrom(0); // Reset pagination
+      setTo(20);
+      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+    }
+
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_PACKAGES
+    }/${customFrom}/${customTo}/${companyId}`;
+
+    console.log('getAllOrders A ', customFrom, customTo);
+
     try {
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-      if (response.data?.status?.success) {
-        setStylesData(prevData => [
-          ...prevData, 
-          ...(response.data?.response?.packagesList || [])
-        ]);
-        // Handle pagination if fewer items were fetched than limit
-        setHasMoreData(response.data?.response?.packagesList.length >= limit);
+
+      const newTasks = response.data?.response?.packagesList;
+      // console.log("response.data====>",response.data?.response?.packagesList)
+      if (reset) {
+        setStylesData(newTasks);
+      } else {
+        setStylesData(prevTasks => [...(prevTasks || []), ...newTasks]);
+      }
+
+      if (newTasks.length < 20) {
+        setHasMoreTasks(false);
       }
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
-  
-  const getProductLocationInventorySearch = async (initialLoad = false) => {
-    if (loading || !hasMoreData) return;
 
-    initialLoad ? setLoading(true) : setLoadingMore(true);
+  const loadMoreTasks = async () => {
+    if (!hasMoreTasks || loadingMore) return;
 
+    setLoadingMore(true);
+    const newFrom = to + 1;
+    const newTo = to + 20;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    if (filterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getAllOrders(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
+    // getAllOrders(); // Call getAllOrders here to fetch new data
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(20);
+    setSearchKey(0);
+    setFilterFlag(false);
+
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    setSelectedSearchOption('');
+    setHasMoreTasks(true);
+
+    await getAllOrders(true, 0, 20);
+    setRefreshing(false);
+  };
+
+
+
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_PACKAGES_SERACH}`;
     const requestBody = {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
-      from: 0,
-      to: 1000,
+      from: customFrom,
+      to: customTo,
       companyId: companyId,
     };
+
+    console.log('gettasksearch==> ', customFrom, customTo);
 
     try {
       const response = await axios.post(apiUrl, requestBody, {
@@ -105,44 +192,66 @@ const Packages = ({navigation}) => {
         },
       });
 
-      if (
-        response.data &&
-        Array.isArray(response.data.response?.packagesList) &&
-        response.data.response.packagesList.length > 0
-      ) {
-        const fetchedData = response.data.response.packagesList.filter(
-          item => item !== null,
+      if (response.data.response.packagesList) {
+        // setOrders(response.data.response.ordersList);
+
+        const newOrders = response.data.response.packagesList.filter(order => order !== null);
+
+        setStylesData(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
         );
+        setHasMoreTasks(newOrders?.length >= 15);
 
-        if (initialLoad) {
-          setStylesData(fetchedData);
-        } else {
-          setStylesData(prevData => [...prevData, ...fetchedData]);
-        }
-
-        setHasMoreData(fetchedData.length >= 100);
+        // setHasMoreTasks(false);
       } else {
-        console.error('No valid data received from API or stylesList is empty');
+        setStylesData([]);
       }
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
     }
+  };
+
+
+
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
   };
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
 
-  const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
-    setSearchKey(option.value);
-    setDropdownVisible(false);
-    setSearchQuery('');
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
-    getAllPackages(companyId);
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit the function if no search key is selected
+    }
+
+    if (!searchQuery.trim()) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit if the search query is empty
+    }
+
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(20);
+
+    gettasksearch(true, 0, 20);
+  };
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      getAllOrders(true, 0, 20);
+    }
   };
 
   const searchOption = [
@@ -152,21 +261,7 @@ const Packages = ({navigation}) => {
     {label: 'MRP', value: 4},
   ];
 
-  const handleSearch = () => {
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
-  };
 
-  const debouncedSearch = debounce(() => {
-    setPage(1);
-    setHasMoreData(true);
-    getProductLocationInventorySearch(true);
-  }, 300); // Adjust the debounce delay as needed
-
-  useEffect(() => {
-    debouncedSearch();
-  }, [searchQuery, searchKey]);
 
   const renderProductItem = ({item}) => {
     const {packageName, imageUrls, packageId} = item;
@@ -203,34 +298,28 @@ const Packages = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <TextInput
-          style={[styles.searchInput, {color: '#000'}]}
-          value={searchQuery}
-          onChangeText={text => {
-            setSearchQuery(text);
-            if (text.length === 0) {
-              setHasMoreData(true);
-              getAllPackages(companyId);
-            }
-          }}
-          placeholder="Search"
-          placeholderTextColor="#000"
-        />
-        <TouchableOpacity style={styles.searchButton} onPress={toggleDropdown}>
-          <Text style={{color: '#000'}}>
-            {selectedSearchOption || 'Select'}
-          </Text>
-          <Image
-            style={styles.image}
-            source={require('../../../assets/dropdown.png')}
+      <TextInput
+            style={styles.searchInput}
+            placeholder="Search"
+            placeholderTextColor="#000"
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
           />
-        </TouchableOpacity>
-
         <TouchableOpacity
-          style={styles.searchIconContainer}
-          onPress={handleSearch}>
+            style={styles.searchButton}
+            onPress={toggleDropdown}>
+            <Text style={{color: '#000'}}>
+              {selectedSearchOption || 'Select'}
+            </Text>
+            <Image
+              style={styles.image}
+              source={require('../../../assets/dropdown.png')}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleSearch}>
           <Image
-            style={styles.imagee}
+            style={styles.searchIcon}
             source={require('../../../assets/search.png')}
           />
         </TouchableOpacity>
@@ -250,26 +339,28 @@ const Packages = ({navigation}) => {
           </ScrollView>
         </View>
       )}
-      {loading ? (
+       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
+      ) : stylesData.length === 0 ? (
+        <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
-        <FlatList
-        data={stylesData}
-        renderItem={renderProductItem}
-        keyExtractor={item => item.packageId.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        onEndReachedThreshold={0.5}
-        onEndReached={() => {
-          if (hasMoreData && !loadingMore) {
-            setPage(prevPage => prevPage + 1);
-            getAllPackages(companyId, page + 1);
-          }
-        }}
-        initialNumToRender={10}
-        windowSize={5}
-        maxToRenderPerBatch={10}
-      />
+      <FlatList
+      data={stylesData}
+      renderItem={renderProductItem}
+      keyExtractor={(item, index) => `${item.packageId}-${index}`}
+      numColumns={2}
+      columnWrapperStyle={styles.row}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      onEndReached={loadMoreTasks} // Load more when scrolled to the end
+      onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+      ListFooterComponent={
+        loadingMore ? (
+          <ActivityIndicator size="small" color="#0000ff" />
+        ) : null
+      }
+    />
       )}
     </View>
   );
@@ -307,6 +398,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
     padding: 5,
   },
+  noCategoriesText: {
+    top: 40,
+    textAlign: 'center',
+    color: '#000000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    padding: 5,
+  },
   packageNameText: {
     color: '#fff',
     fontSize: 16,
@@ -334,10 +434,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    height: 18,
-    width: 18,
-    marginLeft: 5,
+    height: 20,
+    width: 20,
+    marginLeft: 10,
+    marginRight: 10,
   },
+  searchIcon: {
+    width: 25,
+    height: 25,
+    marginHorizontal: 5, // Add margin to properly separate icon from input
+  },
+
   imagee: {
     height: 25,
     width: 25,

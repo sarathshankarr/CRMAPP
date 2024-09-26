@@ -337,7 +337,7 @@ const Sidebar = ({navigation, route}) => {
               />
               <Text style={styles.dropdownItem}>Product/Styles</Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity
+            <TouchableOpacity
               style={styles.inventoryhead}
               onPress={goToPackages}>
               <Image
@@ -345,8 +345,7 @@ const Sidebar = ({navigation, route}) => {
                 source={require('../assets/package.png')}
               />
               <Text style={styles.dropdownItem}>Packages</Text>
-            </TouchableOpacity> */}
-            {/* Add more dropdown items here */}
+            </TouchableOpacity>
           </View>
         )}
         <TouchableOpacity
