@@ -57,15 +57,37 @@ const Details = ({ route }) => {
           <Text style={styles.detailLabel}>Style Name</Text>
           <Text style={styles.detailValue}>{item.styleName}</Text>
         </View>
+        <View style={styles.tagsContainer}>
+          <Text style={styles.detailLabel}>Mrp</Text>
+          <Text style={styles.detailValue}>{item.realMrp}</Text>
+        </View>
+        <View style={styles.tagsContainer}>
+          <Text style={styles.detailLabel}>Sizes</Text>
+          <Text style={styles.detailValue}>{item.sizes}</Text>
+        </View>
+        <View style={styles.tagsContainer}>
+          <Text style={styles.detailLabel}>Type</Text>
+          <Text style={styles.detailValue}>{item.type}</Text>
+        </View>
+        <View style={styles.tagsContainer}>
+          <Text style={styles.detailLabel}>Fabric</Text>
+          <Text style={styles.detailValue}>{item.fabricQuality}</Text>
+        </View>
+        <View style={styles.tagsContainer}>
+          <Text style={styles.detailLabel}>GSM</Text>
+          <Text style={styles.detailValue}>{item.gsm}</Text>
+        </View>
         <View style={styles.priceContainer}>
-          <Text style={styles.priceText}>Price: {item.mrp}</Text>
+          <Text style={styles.priceText}>Price</Text>
+          <Text style={styles.detailValue}>{item.mrp}</Text>
+
         </View>
         <View style={styles.setContainer}>
-          <Text style={styles.detailLabel}>Color Name:</Text>
+          <Text style={styles.detailLabel}>Color Name</Text>
           <Text style={styles.detailValue}>{item.colorName}</Text>
         </View>
         <View style={styles.notesContainer}>
-          <Text style={styles.notesLabel}>Description:</Text>
+          <Text style={styles.notesLabel}>Description</Text>
           <Text style={styles.txt}>{item.styleDesc}</Text>
         </View>
       </ScrollView>
@@ -92,9 +114,6 @@ const styles = StyleSheet.create({
     paddingBottom: 60, // Ensure space for the button
   },
   priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginTop: 20,
     paddingHorizontal: 10,
     width: '100%',
@@ -107,16 +126,14 @@ const styles = StyleSheet.create({
     width: '100%',
     borderBottomWidth: 1,
     borderBottomColor: '#000',
-    marginVertical: 10,
+    marginVertical: 7,
   },
   setContainer: {
-    flexDirection: 'row',
     paddingHorizontal: 10,
     width: '100%',
     borderBottomWidth: 1,
     borderBottomColor: '#000',
     marginVertical: 10,
-    alignItems: "center"
   },
   notesContainer: {
     marginHorizontal: 10,

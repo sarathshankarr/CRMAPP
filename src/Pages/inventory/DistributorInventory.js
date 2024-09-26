@@ -217,7 +217,7 @@ const DistributorInventory = () => {
     if (query.trim() === '') {
       getDistributorInventory(true, 0, 20);
       setFrom(0),
-        setTo(0);
+        setTo(20);
       setSearchKey(0);
     }
   };

@@ -1061,6 +1061,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     paddingVertical: 5,
     paddingHorizontal: 1,
+    color:"#000"
   },
 
   image: {

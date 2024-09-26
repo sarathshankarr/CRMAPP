@@ -69,7 +69,7 @@ const ProductInventory = () => {
 
 
   const getProductInventory = async (reset = false, customFrom = from, customTo = to) => {
-    if (!hasMoreData || loadingMore) return;
+    if (loading || loadingMore) return;
     setLoading(reset);
 
     const apiUrl = `${global?.userData?.productURL}${API.ADD_ALL_INVENTORY_LAZY}`;
@@ -202,7 +202,6 @@ const ProductInventory = () => {
       setTo(20);
       setSearchKey(0);
       setSelectedSearchOption('');
-      setHasMoreData(false);
       setsearchFilterFlag(true);
 
     }

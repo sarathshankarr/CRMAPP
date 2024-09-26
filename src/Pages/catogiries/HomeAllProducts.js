@@ -314,6 +314,11 @@ const HomeAllProducts = ({ navigation }) => {
     { label: 'Style Name', value: 1 },
     { label: 'Color', value: 2 },
     { label: 'Price', value: 3 },
+    { label: 'realMrp', value: 4 },
+    { label: 'sizes', value: 5 },
+    { label: 'type', value: 6 },
+    { label: 'fabricQuality', value:  7},
+    { label: 'gsm', value:  8},
 
   ];
 

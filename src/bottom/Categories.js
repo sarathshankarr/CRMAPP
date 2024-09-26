@@ -459,8 +459,8 @@ const Categories = ({ navigation }) => {
             style={styles.searchInput}
             value={searchQuery}
             onChangeText={handleSearchInputChange}
-            placeholder="Search Categories..."
-            placeholderTextColor="#888"
+            placeholder="Search"
+            placeholderTextColor="#000"
           />
           <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
             <Text style={{ color: "#000", marginRight: 5 }}>

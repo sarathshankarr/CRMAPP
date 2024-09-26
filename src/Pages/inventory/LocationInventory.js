@@ -196,7 +196,7 @@ const LocationInventory = () => {
     if (query.trim() === '') {
       getLocationInventory(true, 0, 20);
       setFrom(0),
-      setTo(0);
+      setTo(20);
     }
   };
 
