@@ -9,12 +9,17 @@ import {
   ActivityIndicator,
   Modal,
   TextInput,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
 import {API} from '../../config/apiConfig';
 import {useNavigation} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux'; // Import these for Redux actions
-import { addItemToCart, updateCartItem } from '../../redux/actions/Actions';
+import {
+  addItemToCart,
+  setSourceScreen,
+  updateCartItem,
+} from '../../redux/actions/Actions';
 
 const PackageDetail = ({route}) => {
   const {packageId} = route.params;
@@ -25,6 +30,17 @@ const PackageDetail = ({route}) => {
   const [inputValues, setInputValues] = useState({});
   const cartItems = useSelector(state => state.cartItems);
   const dispatch = useDispatch(); // Initialize the dispatch function
+  const currentScreen = useSelector(
+    state => state.cartItems.currentSourceScreen,
+  );
+
+  // In PackageDetail component
+  useEffect(() => {
+    dispatch(setSourceScreen('PackageDetail')); // Track the current screen
+    return () => {
+      dispatch(setSourceScreen(null)); // Reset screen on unmount
+    };
+  }, [dispatch]);
 
   const getAllPackages = async () => {
     setLoading(true);
@@ -46,7 +62,9 @@ const PackageDetail = ({route}) => {
   };
 
   const getAllPackagesModel = async () => {
-    const apiUrl = `${global?.userData?.productURL}${API.GET_PACKAGES_MODEL}/${packageId}/${2}`;
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_PACKAGES_MODEL
+    }/${packageId}/${2}`;
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -64,47 +82,58 @@ const PackageDetail = ({route}) => {
     }
   };
 
-  const openModal = () => {
-    getAllPackagesModel();
-    setModalVisible(true);
+  const openModal = async () => {
+    await getAllPackagesModel();  // Fetch data before showing the modal
+    setModalVisible(true);  // Open the modal only after data has been fetched
   };
+  
 
   useEffect(() => {
-    getAllPackages();
+    getAllPackages();  // This fetches packages on screen load
+    getAllPackagesModel();  // Preload modal data when the component mounts
   }, [packageId]);
 
   const handleSaveItem = () => {
-    if (!modalData) return; // Prevent save action if modalData is null
-  
+    if (!modalData) return;
+
+    // Check if there are any items from a different screen
+    const existingItemFromOtherScreen = cartItems.find(
+      item => item.sourceScreen && item.sourceScreen !== 'PackageDetail',
+    );
+
+    if (existingItemFromOtherScreen) {
+      Alert.alert('Cannot add items from two screens simultaneously.');
+      return;
+    }
+
     let itemsToUpdate = [];
-  
+
     modalData.lineItems.forEach(item => {
       const inputValue = inputValues[item.styleId] || '0';
-  
+
       if (parseInt(inputValue, 10) > 0) {
         const itemBaseDetails = {
           styleId: item.styleId,
           styleName: item.styleName,
-          colorName:item.colorName,
+          colorName: item.colorName,
           sizeDesc: item.size,
           quantity: inputValue,
           dealerPrice: modalData?.dealerPrice,
           retailerPrice: modalData?.retailerPrice,
-          price: modalData?.price // Ensure this is being set correctly
+          price: modalData?.price,
+          sourceScreen: 'PackageDetail',
         };
-  
-        console.log('Item to be added/updated:', itemBaseDetails); // Debugging line
-  
+
         const existingItemIndex = cartItems.findIndex(
           cartItem => cartItem.styleId === item.styleId,
         );
-  
+
         if (existingItemIndex !== -1) {
           const updatedQuantity = parseInt(inputValue, 10);
           const updatedItem = {
             ...cartItems[existingItemIndex],
             quantity: updatedQuantity.toString(),
-            price: modalData?.price // Make sure to update price for existing items
+            price: modalData?.price,
           };
           dispatch(updateCartItem(existingItemIndex, updatedItem));
         } else {
@@ -112,14 +141,18 @@ const PackageDetail = ({route}) => {
         }
       }
     });
-  
+
     if (itemsToUpdate.length > 0) {
       itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
     }
-    setInputValues({}); // Clear input values
-    setModalVisible(false); // Close modal
+
+    setInputValues({});
+    setModalVisible(false);
   };
-  
+
+  const isSaveButtonEnabled = () => {
+    return Object.values(inputValues).some(value => parseInt(value, 10) > 0);
+  };
 
   const renderSizeItem = ({item}) => (
     <View style={styles.sizeItem}>
@@ -208,7 +241,15 @@ const PackageDetail = ({route}) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.headerRow}>
-              {['Name', 'Size', 'Qty(Box)', 'Box (pc)', 'Qty (pc)', 'Price', 'Ret Price'].map((title, index) => (
+              {[
+                'Name',
+                'Size',
+                'Qty.Box',
+                'Box (pc)',
+                'Qty (pc)',
+                'Price',
+                'Ret Price',
+              ].map((title, index) => (
                 <Text key={index} style={styles.txtt}>
                   {title}
                 </Text>
@@ -224,7 +265,11 @@ const PackageDetail = ({route}) => {
                   <TextInput
                     style={styles.stylenametxt}
                     keyboardType="numeric"
-                    value={inputValues[item.styleId] !== undefined ? inputValues[item.styleId] : '0'}
+                    value={
+                      inputValues[item.styleId] !== undefined
+                        ? inputValues[item.styleId]
+                        : '0'
+                    }
                     onChangeText={value => {
                       setInputValues(prev => ({
                         ...prev,
@@ -251,7 +296,16 @@ const PackageDetail = ({route}) => {
                 style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleSaveItem} style={styles.closeButton}>
+              {/* <TouchableOpacity onPress={handleSaveItem} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Save</Text>
+              </TouchableOpacity> */}
+              <TouchableOpacity
+                onPress={isSaveButtonEnabled() ? handleSaveItem : null}
+                disabled={!isSaveButtonEnabled()}
+                style={[
+                  styles.closeButton,
+                  {backgroundColor: isSaveButtonEnabled() ? '#F09120' : 'gray'},
+                ]}>
                 <Text style={styles.closeButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
@@ -316,6 +370,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 10,
+    backgroundColor:"#F09120"
   },
   modalContainer: {
     flex: 1,
@@ -360,6 +415,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-
 
 export default PackageDetail;

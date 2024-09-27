@@ -29,6 +29,7 @@ const NewTask = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const {task} = route.params;
+  // console.log("task==========>",task)
   const callData = route.params?.call;
   const [isDatePickerVisibleDue, setDatePickerVisibilityDue] = useState(false);
   const [selectedDateDue, setSelectedDateDue] = useState('Due Date');
@@ -702,9 +703,10 @@ const NewTask = () => {
       companyId: companyId,
       type: 2,
       complete_date: complete_date,
-      del_stts: 0,
+      del_stts: task.del_stts,
+      created_by:task.created_by
     };
-    console.log('requestData======>', requestData);
+    // console.log('requestData======>', requestData);
 
     axios
       .post(global?.userData?.productURL + API.ADD_UPDATE_TASK, requestData, {

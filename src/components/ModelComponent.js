@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {useDispatch, useSelector} from 'react-redux';
-import {addItemToCart, updateCartItem} from '../redux/actions/Actions';
+import {addItemToCart, setCurrentScreen, setSourceScreen, updateCartItem} from '../redux/actions/Actions';
 import axios from 'axios';
 import {API} from '../config/apiConfig';
 
@@ -34,6 +34,15 @@ const ModalComponent = ({
   const [inputValues, setInputValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
+  const currentScreen = useSelector(state => state.cartItems.currentSourceScreen);
+
+  useEffect(() => {
+    dispatch(setSourceScreen('ModalComponent')); // Track current screen
+    return () => {
+      dispatch(setSourceScreen(null)); // Reset screen on unmount
+    };
+  }, [dispatch]);
+  
 
   useEffect(() => {
     const hasNonZeroQuantity = Object.values(inputValues).some(
@@ -94,8 +103,24 @@ const ModalComponent = ({
     setSelectedItem(updatedItem);
     setInputValues({});
   };
+
+
   const handleSaveItem = () => {
     if (isSaveDisabled) return; // Prevent save action if button is disabled
+
+    const existingItemFromOtherScreen = cartItems.find(
+      item => item.sourceScreen && item.sourceScreen !== 'ModalComponent'
+    );
+  
+    if (existingItemFromOtherScreen) {
+      Alert.alert('Cannot add items from two screens simultaneously.');
+      return;
+    }
+
+    if (currentScreen && currentScreen !== 'ModalComponent') {
+      Alert.alert('Cannot add items from two screens simultaneously.');
+      return;
+    }
 
     let itemsToUpdate = [];
 
@@ -127,6 +152,7 @@ const ModalComponent = ({
             quantity: inputValue,
             dealerPrice:dealerPrice,
             retailerPrice:retailerPrice,
+            sourceScreen: 'ModalComponent', // Include source screen
             // sizeList:style.sizeList,
           };
 
@@ -158,6 +184,71 @@ const ModalComponent = ({
     closeModal();
   };
 
+
+  // const handleSaveItem = () => {
+  //   if (isSaveDisabled) return; // Prevent save action if button is disabled
+  
+  //   // Check if there are any items from a different screen
+  //   const existingItemFromOtherScreen = cartItems.find(
+  //     item => item.sourceScreen && item.sourceScreen !== 'ModalComponent'
+  //   );
+  
+  //   if (existingItemFromOtherScreen) {
+  //     Alert.alert('Cannot add items from two screens simultaneously.');
+  //     return;
+  //   }
+  
+  //   let itemsToUpdate = [];
+  
+  //   stylesData.forEach(style => {
+  //     if (!style.sizeList || style.sizeList.length === 0) return;
+  
+  //     style.sizeList.forEach(size => {
+  //       const sizeDesc = size.sizeDesc;
+  //       const dealerPrice = size.dealerPrice;
+  //       const retailerPrice = size.retailerPrice;
+  //       const inputValue = inputValues[sizeDesc] || '0';
+  
+  //       if (parseInt(inputValue, 10) > 0) {
+  //         const itemBaseDetails = {
+  //           styleId: style.styleId,
+  //           styleName: style.styleName,
+  //           colorName: style.colorName,
+  //           sizeDesc: sizeDesc,
+  //           quantity: inputValue,
+  //           dealerPrice: dealerPrice,
+  //           retailerPrice: retailerPrice,
+  //           price: dealerPrice || retailerPrice,
+  //           sourceScreen: 'ModalComponent',
+  //         };
+  
+  //         const existingItemIndex = cartItems.findIndex(
+  //           cartItem => cartItem.styleId === style.styleId,
+  //         );
+  
+  //         if (existingItemIndex !== -1) {
+  //           const updatedQuantity = parseInt(inputValue, 10);
+  //           const updatedItem = {
+  //             ...cartItems[existingItemIndex],
+  //             quantity: updatedQuantity.toString(),
+  //             price: dealerPrice || retailerPrice,
+  //           };
+  //           dispatch(updateCartItem(existingItemIndex, updatedItem));
+  //         } else {
+  //           itemsToUpdate.push(itemBaseDetails);
+  //         }
+  //       }
+  //     });
+  //   });
+  
+  //   if (itemsToUpdate.length > 0) {
+  //     itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
+  //   }
+  
+  //   clearAllInputs();
+  //   closeModal();
+  // };
+  
 
   useEffect(() => {
     if (modalVisible && stylesData.length > 0) {

@@ -29,6 +29,8 @@ const NewCall = () => {
 
   const navigation = useNavigation();
   const callData = route.params?.call;
+  console.log("callData==========>",callData)
+
   const {call} = route.params;
   const callId = route.params?.callId;
   const [isDatePickerVisibleUntil, setIsDatePickerVisibleUntil] =
@@ -746,8 +748,11 @@ const NewCall = () => {
       customerType: customerType,
       companyId:companyId,
       userId:userId,
-      type: 2
+      type: 2,
+      created_by:callData?.created_by
+
     };
+     console.log('requestData======>', requestData);
 
     axios
       .post(global?.userData?.productURL + API.ADD_NEW_CALL, requestData, {

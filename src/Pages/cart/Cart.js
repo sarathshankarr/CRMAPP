@@ -738,15 +738,15 @@ const Cart = () => {
         return;
       }
     }
-    for (let i = 0; i < cartItems.length; i++) {
-      if (!cartItems[i].price || parseFloat(cartItems[i].price) === 0) {
-        Alert.alert(
-          'crm.codeverse.co.says',
-          'Style price is mandatory for creating an order..',
-        );
-        return;
-      }
-    }
+    // for (let i = 0; i < cartItems.length; i++) {
+    //   if (!cartItems[i].price || parseFloat(cartItems[i].price) === 0) {
+    //     Alert.alert(
+    //       'crm.codeverse.co.says',
+    //       'Style price is mandatory for creating an order..',
+    //     );
+    //     return;
+    //   }
+    // }
 
     if (!selectedLocationId) {
       Alert.alert('Alert', 'Please select a Billing to location.');
@@ -771,6 +771,7 @@ const Cart = () => {
 
     setIsSubmitting(true);
 
+    const d_pkg_flag = cartItems.some(item => item.sourceScreen === 'PackageDetail') ? 1 : 0;
 
     // if (!loggedInUser || !userRole) {
     //   // Redirect to login screen or handle not logged in scenario
@@ -851,12 +852,13 @@ const Cart = () => {
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
         // gross: (parseFloat(item.price) * parseInt(item.quantity)).toString(),
-        price: isEnabled ?item?.retailerPrice.toString():item?.dealerPrice.toString(),
-        gross: (parseFloat(isEnabled ? item?.retailerPrice.toString():item?.dealerPrice.toString()) * parseInt(item.quantity)).toString(),
+        price: isEnabled ?item?.retailerPrice?.toString():item?.dealerPrice?.toString() ||item?.price?.toString(),
+        gross: (parseFloat(isEnabled ? item?.retailerPrice?.toString():item?.dealerPrice?.toString()) || (isEnabled ? item?.retailerPrice : item?.price?.toString()) * parseInt(item.quantity))?.toString(),
+        // gross: (parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) || item?.price) * parseInt(item.quantity),
         discountPercentage: '0',
         discountAmount: '0',
         gst: 5,
-        total: (parseFloat(isEnabled ? item?.retailerPrice.toString():item?.dealerPrice.toString()) * parseInt(item.quantity)).toString(),
+        total: (parseFloat(isEnabled ? item?.retailerPrice?.toString():item?.dealerPrice?.toString()) || item?.price?.toString() * parseInt(item.quantity))?.toString(),
         itemStatus: 'OPEN',
         pcqty: '0',
         pack_qty: 0,
@@ -893,12 +895,14 @@ const Cart = () => {
       gTranspExp: 0,
       gOtherExp: 0,
       companyId: companyId,
-      d_pkg_flag:0,
+      d_pkg_flag:d_pkg_flag,
       // companyLocId: selectedCompanyLocationId,
       linkType: 3,
       currentCreditLimit:0.00
     };
     // return;
+
+    console.log("requestData:", JSON.stringify(requestData, null, 2));
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
         headers: {
@@ -1119,7 +1123,7 @@ const Cart = () => {
   const totalPrice = cartItems
     .reduce((total, item) => {
       // Parse price and quantity to floats and integers respectively
-      const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString());
+      const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString());
       const parsedQuantity = parseInt(item.quantity);
 
       // Check if parsedPrice and parsedQuantity are valid numbers

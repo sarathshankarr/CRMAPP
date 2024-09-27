@@ -6,10 +6,12 @@ import {
   DELETE_NOTE,
   REMOVE_FROM_CART,
   REMOVE_SELECTED_IMAGE,
+  SET_CURRENT_SCREEN,
   SET_LOGGED_IN_USER,
   SET_NOTE_DETAILS,
   SET_NOTE_SAVED,
   SET_SELECTED_COMPANY,
+  SET_SOURCE_SCREEN,
   SET_USER_ROLE,
   STORE_CATEGORY_IDS,
   UPDATE_CART_ITEM,
@@ -29,15 +31,25 @@ const initialState = {
   loggedInUser: null,
   selectedCompany: null,
   categoryIds: [],
+  currentSourceScreen: null,
 };
 
 const reducers = (state = initialState, action) => {
     switch (action.type) {
       case ADD_TO_CART:
+        console.log('Attempting to add to cart:', action.payload);
+        const existingItemFromOtherScreen = state.cartItems.find(
+          item => item.sourceScreen && item.sourceScreen !== action.payload.sourceScreen
+        );
+        if (existingItemFromOtherScreen) {
+          alert('You can only add items from one screen at a time!');
+          return state; 
+        }
         return {
           ...state,
           cartItems: [...state.cartItems, action.payload],
         };
+    
   
         case REMOVE_FROM_CART:
           // Check if action.payload is a number (index) or an object with styleId, colorId, and sizeId
@@ -159,7 +171,11 @@ const reducers = (state = initialState, action) => {
         ...state,
         categoryIds: action.payload,
       };
-
+      case SET_SOURCE_SCREEN:
+        return {
+          ...state,
+          currentSourceScreen: action.payload,
+        };  
     default:
       return state;
   }
