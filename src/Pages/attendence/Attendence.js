@@ -10,6 +10,7 @@ import {
   Modal,
   Pressable,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import {useSelector} from 'react-redux';
@@ -47,6 +48,8 @@ const Attendance = () => {
 
   const [punchRecords, setPunchRecords] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
@@ -78,7 +81,7 @@ const Attendance = () => {
         second: '2-digit',
       });
       setCurrentTime(timeString);
-      const dayString = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const dayString = now.toLocaleDateString('en-US', {weekday: 'long'});
       setCurrentDay(dayString);
     }, 1000); // Update every second
 
@@ -172,35 +175,37 @@ const Attendance = () => {
   };
 
   const handleSignToggle = async () => {
+    if (loading) return; // Prevent multiple clicks
+
+    setLoading(true); // Start loading
     const now = new Date();
     const currentDateTime = formatDateTime(now);
-    const day = now.toLocaleDateString('en-US', { weekday: 'long' });
-  
+    const day = now.toLocaleDateString('en-US', {weekday: 'long'});
+
     try {
-      // Wait for the location to be fetched before proceeding
       const location = await getLocation();
-  
       if (!isSignedIn) {
-        setSignInTime(extractTime(currentDateTime)); // Display only time
+        setSignInTime(extractTime(currentDateTime));
         setSignInDay(day);
         setSignInDate(currentDateTime.split('T')[0]);
         setSignInLocation(location);
       } else {
-        setSignOutTime(extractTime(currentDateTime)); // Display only time
+        setSignOutTime(extractTime(currentDateTime));
         setSignOutDay(day);
         setSignOutDate(currentDateTime.split('T')[0]);
         setSignOutLocation(location);
       }
-  
-      // Call PunchInPunchOut only after setting location
-      PunchInPunchOut();
+
+      await PunchInPunchOut(); // Await API call
+
       setIsSignedIn(prevState => !prevState);
     } catch (error) {
-      console.error('Error fetching location:', error);
+      console.error('Error:', error);
       Alert.alert('Error', 'Could not get current location.');
+    } finally {
+      setLoading(false); // Stop loading after request is done
     }
   };
-  
 
   const PunchInPunchOut = async () => {
     const now = new Date();
@@ -338,12 +343,25 @@ const Attendance = () => {
           <TouchableOpacity style={styles.SwipesButton} onPress={openModal}>
             <Text style={{color: '#fff', fontSize: 15}}>View Swipes</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.signOutButton}
             onPress={handleSignToggle}>
             <Text style={{color: '#fff', fontSize: 15}}>
               {isSignedIn ? 'Punch Out' : 'Punch In'}
             </Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity
+            style={[styles.signOutButton, loading ? {opacity: 0.5} : {}]}
+            onPress={handleSignToggle}
+            disabled={loading} // Disable button while loading
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" /> // Show spinner during loading
+            ) : (
+              <Text style={{color: '#fff', fontSize: 15}}>
+                {isSignedIn ? 'Punch Out' : 'Punch In'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -435,7 +453,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 75,
     paddingVertical: 55,
-    paddingHorizontal: 5,
+    paddingHorizontal: 12,
   },
   shiftDetails: {
     flex: 1.8,
@@ -453,7 +471,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     alignItems: 'flex-end',
-    fontSize:18
+    fontSize: 18,
   },
   SwipesButton: {
     paddingVertical: 8,
@@ -476,7 +494,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
     fontWeight: 'bold',
-    fontSize:15
+    fontSize: 15,
   },
   locationText: {
     fontSize: 14,
@@ -513,7 +531,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     fontSize: 18,
-    marginHorizontal:10
+    marginHorizontal: 10,
   },
 
   modalContent: {
