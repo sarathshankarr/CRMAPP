@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Text,
   View,
@@ -6,11 +6,14 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { addItemToCart } from '../../redux/actions/Actions';
 import ModalComponent from '../../components/ModelComponent';
 import ImageSlider from '../../components/ImageSlider';  // Adjust the import path as necessary
+import { API } from '../../config/apiConfig';
+import axios from 'axios';
 
 const Details = ({ route }) => {
   const {
@@ -32,6 +35,10 @@ const Details = ({ route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const [loading, setLoading] = useState(false);
+  const [imageUrls, setImageUrls] = useState([]); // New state for image URLs
+  const [stylesData, setStylesData] = useState([]);
+  
   const openModal = item => {
     if (item && item.styleId) {
       setSelectedItem(item);
@@ -49,10 +56,54 @@ const Details = ({ route }) => {
     dispatch(addItemToCart(item));
   };
 
+  useEffect(()=>{
+    getAllImages()
+  },[])
+
+ 
+  const getAllImages = () => {
+    setLoading(true);
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_IMAGES}/${item.styleId}`;
+    
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        if (response?.data?.response?.stylesList?.length > 0) {
+          // Assuming the first style contains the relevant images
+          const fetchedStyle = response?.data?.response?.stylesList[0];
+          
+          // Check if imageUrls array exists
+          if (fetchedStyle.imageUrls && fetchedStyle?.imageUrls?.length > 0) {
+            // Set image URLs directly from API response
+            setImageUrls(fetchedStyle?.imageUrls);
+          } else {
+            console.error("No imageUrls found in the response.");
+          }
+        } else {
+          console.error("stylesList is empty or not available.");
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-        <ImageSlider imageUrls={item && item.imageUrls ? item.imageUrls : []} />
+      {loading ? (
+          <ActivityIndicator size="small" color="#0000ff" /> // Show ActivityIndicator when loading
+        ) : (
+          <ImageSlider imageUrls={imageUrls.length > 0 ? imageUrls : []} />
+        )}
         <View style={styles.tagsContainer}>
           <Text style={styles.detailLabel}>Style Name</Text>
           <Text style={styles.detailValue}>{item.styleName}</Text>

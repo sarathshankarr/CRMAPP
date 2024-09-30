@@ -104,7 +104,8 @@ export const API = {
   ALL_CATEGORIES_LL_LIST: 'erpportal/api/category/getAllCategoryLazyLoadForMob',
   GET_DISTRIBUTOR_GRN_LL:'erpportal/api/ordermgmt/getAllDistributorGRNLazyLoad',
   GET_ALL_PRODUCT_PUBLISH_LAZY:'erpportal/api/style/getAllStyleLazy',
-  SEARCH_ALL_PRODUCT_PUBLISH:'erpportal/api/filter/getStyleProductDataForLazyLoad'
+  SEARCH_ALL_PRODUCT_PUBLISH:'erpportal/api/filter/getStyleProductDataForLazyLoad',
+  GET_ALL_IMAGES:'erpportal/api/style/getImgBasedOnId'
 };
 
 export const USER_ID = 'adminClientId';
