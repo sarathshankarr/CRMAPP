@@ -279,7 +279,7 @@ const LocationInventory = () => {
             onChangeText={handleSearchInputChange}
           />
           <TouchableOpacity
-            style={styles.searchButton}
+            style={styles.dropdownButton}
             onPress={toggleDropdown}>
             <Text style={{ color: '#000' }}>
               {selectedSearchOption || 'Select'}
@@ -291,14 +291,10 @@ const LocationInventory = () => {
           </TouchableOpacity>
 
         </View>
-        <TouchableOpacity style={styles.searchIconContainer} onPress={handleSearch}>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text
             style={{
               color: '#000',
-              borderWidth: 1,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 10,
             }}>
             Search
           </Text>
@@ -471,9 +467,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     padding: 5,
   },
-  searchButton: {
-    marginLeft: 'auto',
+  dropdownButton: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
+  },
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    elevation: 3,
   },
   image: {
     height: 20,

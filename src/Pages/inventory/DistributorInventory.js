@@ -247,26 +247,8 @@ const DistributorInventory = () => {
 
   return (
     <View style={styles.container}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginHorizontal: 10,
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            flex: 1, // Ensures this view takes up available space
-            paddingHorizontal: 20,
-            marginTop: 5,
-            marginBottom: 10,
-            borderRadius: 30,
-            backgroundColor: 'white',
-            elevation: 5,
-            marginRight: 10, // Adds space between the input and button
-          }}>
+      <View style={styles.searchContainer}>
+      <View style={styles.searchInputContainer}>
           <TextInput
             style={styles.searchInput}
             placeholder="Search"
@@ -275,7 +257,7 @@ const DistributorInventory = () => {
             onChangeText={handleSearchInputChange}
           />
           <TouchableOpacity
-            style={styles.searchButton}
+            style={styles.dropdownButton}
             onPress={toggleDropdown}>
             <Text style={{ color: '#000' }}>
               {selectedSearchOption || 'Select'}
@@ -291,10 +273,6 @@ const DistributorInventory = () => {
           <Text
             style={{
               color: '#000',
-              borderWidth: 1,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 10,
             }}>
             Search
           </Text>
@@ -425,15 +403,16 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 5,
-    marginBottom: 10,
-    // borderWidth:1,
-    borderRadius: 30,
+    paddingHorizontal: 10,
+    marginVertical: 10,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'lightgray',
+    borderRadius: 15,
     marginHorizontal: 10,
-    // backgroundColor:'#f1e8e6',
-    backgroundColor: 'white',
-    elevation: 5,
   },
   searchInput: {
     flex: 1,
@@ -446,9 +425,20 @@ const styles = StyleSheet.create({
   searchInputActive: {
     color: '#000',
   },
-  searchButton: {
-    marginLeft: 'auto',
+  dropdownButton: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
+  },
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    elevation: 3,
   },
   image: {
     height: 20,

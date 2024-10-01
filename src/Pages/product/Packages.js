@@ -297,6 +297,8 @@ const Packages = ({navigation}) => {
 
   return (
     <View style={styles.container}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginVertical: 10 }}>
+
       <View style={styles.searchContainer}>
       <TextInput
             style={styles.searchInput}
@@ -306,7 +308,7 @@ const Packages = ({navigation}) => {
             onChangeText={handleSearchInputChange}
           />
         <TouchableOpacity
-            style={styles.searchButton}
+            style={styles.dropdownButton}
             onPress={toggleDropdown}>
             <Text style={{color: '#000'}}>
               {selectedSearchOption || 'Select'}
@@ -316,15 +318,11 @@ const Packages = ({navigation}) => {
               source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
-
-          <TouchableOpacity onPress={handleSearch}>
-          <Image
-            style={styles.searchIcon}
-            source={require('../../../assets/search.png')}
-          />
-        </TouchableOpacity>
       </View>
-
+      <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
+        </View>
       {dropdownVisible && (
         <View style={styles.dropdownContent1}>
           <ScrollView>
@@ -415,11 +413,16 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginVertical: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    paddingLeft: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 4,
+    flex: 1,
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
@@ -427,11 +430,24 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     paddingVertical: 5,
   },
-  searchButton: {
-    padding: 5,
-    alignItems: 'center',
+  dropdownButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
+  },
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    elevation: 3,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   image: {
     height: 20,
