@@ -21,20 +21,32 @@ import axios from 'axios';
 const HomeCategories = ({ navigation }) => {
   const [selectedDetails, setSelectedDetails] = useState([]);
   const [showSearchInput, setShowSearchInput] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
   // const [from, setFrom] = useState(1);
   // const [to, setTo] = useState(15);
   const [pageFrom, setPageFrom] = useState(0);
   const [pageTo, setPageTo] = useState(15);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [selectedSearchOption, setSelectedSearchOption] = useState('');
-  const [searchKey, setSearchKey] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [categories, setCategories] = useState([]);
   const [searchFlag, setsearchFlag] = useState(false);
+
+
+  const [tasks, setTasks] = useState([]);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [from, setFrom] = useState(0);
+  const [to, setTo] = useState(20);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [filterFlag, setFilterFlag] = useState(false);
+
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -61,140 +73,238 @@ const HomeCategories = ({ navigation }) => {
     : initialSelectedCompany?.id;
 
 
+
+    const gettasksearch = async (
+      reset = false,
+      customFrom = from,
+      customTo = to,
+    ) => {
+      const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_CATEGORIES_LL}`;
+      const requestBody = {
+        fieldvalue: searchQuery,
+        from: customFrom,
+        to: customTo,
+        t_company_id: companyId,
+        dropdownId :searchKey,
+        companyId: companyId,
+      };
+  
+      console.log('gettasksearch==> ', customFrom, customTo);
+  
+      try {
+        const response = await axios.post(apiUrl, requestBody, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          },
+        });
+  
+        if (response.data) {
+          // setOrders(response.data.response.ordersList);
+  
+          const newOrders = response.data.filter(order => order !== null);
+  
+          setCategories(prevDetails =>
+            reset ? newOrders : [...prevDetails, ...newOrders],
+          );
+          setHasMoreTasks(newOrders?.length >= 15);
+  
+          // setHasMoreTasks(false);
+        } else {
+          setCategories([]);
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+  
+    const handleDropdownSelect = option => {
+      setSelectedSearchOption(option.label);
+      setSearchKey(option.value);
+      setDropdownVisible(false);
+    };
+  
+    const toggleDropdown = () => {
+      setDropdownVisible(!dropdownVisible);
+    };
+  
+    const handleSearch = () => {
+      if (!searchKey) {
+        Alert.alert(
+          'Alert',
+          'Please select an option from the dropdown before searching',
+        );
+        return; // Exit the function if no search key is selected
+      }
+  
+      if (!searchQuery.trim()) {
+        Alert.alert(
+          'Alert',
+          'Please select an option from the dropdown before searching',
+        );
+        return; // Exit if the search query is empty
+      }
+  
+      setFilterFlag(true);
+      setFrom(0);
+      setTo(20);
+  
+      gettasksearch(true, 0, 20);
+    };
+  
+    const handleSearchInputChange = query => {
+      setSearchQuery(query);
+      if (query.trim() === '') {
+        fetchCategories(true, 0, 20);
+      }
+    };
+
+
+    const searchOption = [
+      { label: 'Category', value: 1 },
+      { label: 'Category Desc.', value: 2 },
+    ];
+  
+  
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     // setShowSearchInput(false);
+  //     console.log("navigation in Cat")
+  //     onRefresh();
+  //   });
+  //   return unsubscribe;
+  // }, [navigation]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Reset search query and visibility of search input
+      setSearchQuery('');
+      setShowSearchInput(false);
+      setDropdownVisible(false);
+      setSelectedSearchOption(null);
+      
+      // Reset pagination
+      setFrom(0);
+      setTo(20);
+      setFilterFlag(false);
+  
+      // Fetch categories whenever the screen is focused
+      if (companyId) {
+        fetchCategories(true, 0, 20);
+      }
+    });
+    return unsubscribe;
+  }, [navigation, companyId]); // Add companyId to the dependencies
+  
+
   useEffect(() => {
     if (companyId) {
-      fetchCategories(companyId, 0, 15, true);
+      fetchCategories(true, 0, 20);
     }
   }, [companyId]);
 
 
-  const onRefresh = async() => {
-    console.log("Refreshing in cat ...........");
-    setRefreshing(true);
-    setSearchQuery("");
-    if (companyId) {
-      await fetchCategories(companyId, 0, 15, true);
-    }
-    setSelectedSearchOption('');
-    setPageFrom(0);
-    setPageTo(15);
-    setsearchFlag(false);
-    setSearchKey(0);
-    setRefreshing(false);
-  }
+  
+  const fetchCategories = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    // console.log("fetchCategories b ", customFrom, customTo);
 
+    if (loading || loadingMore) return;
+    setLoading(reset);
 
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      // setShowSearchInput(false);
-      console.log("navigation in Cat")
-      onRefresh();
-    });
-    return unsubscribe;
-  }, [navigation]);
-
-  const fetchCategories = (companyId, from, to, reset = false) => {
-
-    if (!companyId || !hasMore) return;
-
-    console.log("fetchCategories", from, to);
-
-
-    setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ALL_CATEGORIES_LL_LIST}/${from}/${to}/${companyId}`;
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      })
-      .then((response) => {
-        const fetchedData = response?.data || [];
-        setCategories((prevDetails) =>
-          reset ? fetchedData : [...prevDetails, ...fetchedData]
-        );
-        setHasMore(fetchedData.length > 0); // Set hasMore based on returned data
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-        setRefreshing(false);
-      });
-  };
-
-  const searchAPI = async (from = 0, to = 15, reset = false) => {
-    if (!companyId || searchQuery.trim().length === 0) {
-      return;
+    if (reset) {
+      setFrom(0); // Reset pagination
+      setTo(20);
+      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
     }
 
-    const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_CATEGORIES_LL}`;
-    const requestBody = {
-      fieldvalue: searchQuery,
-      from: from,
-      to: to,
-      dropdownId: searchKey,
-      companyId: companyId,
-    };
+    const apiUrl = `${global?.userData?.productURL}${
+      API.ALL_CATEGORIES_LL_LIST
+    }/${customFrom}/${customTo}/${companyId}`;
 
-    console.log("searchAPI", requestBody);
+    console.log('fetchCategories A ', customFrom, customTo);
+
     try {
-      setLoading(true);
-      const response = await axios.post(apiUrl, requestBody, {
+      const response = await axios.get(apiUrl, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
 
-      console.log("response data==> ", response?.data);
-      const fetchedData = response?.data || [];
-      setCategories((prevDetails) =>
-        reset ? fetchedData : [...prevDetails, ...fetchedData]
-      );
-      setHasMore(fetchedData.length > 0);
+      const newTasks = response.data;
+      // console.log("response.data====>",response.data)
+      if (reset) {
+        setCategories(newTasks);
+      } else {
+        setCategories(prevTasks => [...(prevTasks || []), ...newTasks]);
+      }
+
+      if (newTasks.length < 20) {
+        setHasMoreTasks(false);
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const handleSearch = () => {
-    if (searchKey === 0) {
-      Alert.alert('Please select an option from the dropdown before searching.');
-      return;
-    }
+  const loadMoreTasks = async () => {
+    if (!hasMoreTasks || loadingMore) return;
 
-    if (searchQuery?.trim()?.length === 0) {
-      console.log("empty string");
-      return;
-    }
+    setLoadingMore(true);
+    const newFrom = to + 1;
+    const newTo = to + 20;
+    setFrom(newFrom);
+    setTo(newTo);
 
-    setPageFrom(0);
-    setPageTo(15);
-    setsearchFlag(true);
-    searchAPI(0, 15, true);
-  };
-
-  const handleLoadMore = () => {
-    if (!loading && hasMore) {
-      const newFrom = pageTo + 1;
-      const newTo = pageTo + 15;
-
-      console.log("handleLoadMore", newFrom, newTo);
-
-      if (searchFlag) {
-        searchAPI(newFrom, newTo);
-      } else {
-        fetchCategories(companyId, newFrom, newTo);
+    if (filterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
       }
-      setPageFrom(newFrom);
-      setPageTo(newTo);
+    } else {
+      try {
+        await fetchCategories(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
     }
+    // fetchCategories(); // Call fetchCategories here to fetch new data
   };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(20);
+    setSearchKey(0);
+    setFilterFlag(false);
+
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    setSelectedSearchOption('');
+    setHasMoreTasks(true);
+
+    await fetchCategories(true, 0, 20);
+    setRefreshing(false);
+  };
+
+
+ 
+
 
 
   const onChangeText = text => {
@@ -245,29 +355,6 @@ const HomeCategories = ({ navigation }) => {
   };
 
 
-  const searchOption = [
-    // { label: 'Select', value: 0 },
-    { label: 'Category', value: 1 },
-    { label: 'Category Desc.', value: 2 },
-  ];
-
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
-
-  const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
-    setSearchKey(option.value);
-    setDropdownVisible(false);
-    console.log("handleDropdownSelect");
-  };
-
-  const handleSearchInputChange = query => {
-    setSearchQuery(query);
-    if (query.trim() === '') {
-      onRefresh();
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -280,7 +367,7 @@ const HomeCategories = ({ navigation }) => {
             value={searchQuery}
             onChangeText={handleSearchInputChange}
             placeholder="Search"
-            placeholderTextColor="#888"
+            placeholderTextColor="#000"
           />
           <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
             <Text style={{ color: "#000", marginRight: 5 }}>
@@ -309,7 +396,7 @@ const HomeCategories = ({ navigation }) => {
         </View>
       )}
 
-      {loading && !refreshing ? (
+      {/* {loading && !refreshing ? (
         <ActivityIndicator size="large" color="#390050" />
       ) : categories.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
@@ -325,6 +412,30 @@ const HomeCategories = ({ navigation }) => {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+        />
+        
+      )} */}
+       {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : categories.length === 0 ? (
+        <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
+      ) : (
+        <FlatList
+          data={categories}
+          renderItem={renderProductItem}
+          keyExtractor={(item, index) => index.toString()}
+          numColumns={2}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
+          contentContainerStyle={{ paddingBottom: 70 }}
         />
       )}
     </View>

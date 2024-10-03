@@ -24,6 +24,8 @@ const DistributorGrn = () => {
   const [hasMoreOrders, setHasMoreOrders] = useState(true);
   const [searchFilterFlag, setsearchFilterFlag] = useState(false);
 
+  const [filterFlag, setFilterFlag] = useState(false);
+  const [hasMoreTasks, setHasMoreTasks] = useState(true);
 
 
 
@@ -51,35 +53,49 @@ const DistributorGrn = () => {
 
   useEffect(() => {
     if (companyId) {
-      getDistributorGrn(true, 0, 15);
+      getAllOrders(true, 0, 20);
     }
   }, [companyId]);
 
+  const getAllOrders = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    // console.log("getAllOrders b ", customFrom, customTo);
 
-  const getDistributorGrn = async (reset = false, customFrom = from, customTo = to) => {
-    setLoading(true);
     if (loading || loadingMore) return;
-    reset ? setLoading(true) : setLoadingMore(true);
+    setLoading(reset);
 
-    const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_GRN_LL}/${customFrom}/${customTo}/${companyId}`;
-    console.log("getDistributorGrn List==> ", customFrom, customTo);
+    if (reset) {
+      setFrom(0); // Reset pagination
+      setTo(20);
+      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+    }
+
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_DISTRIBUTOR_GRN_LL
+    }/${customFrom}/${customTo}/${companyId}`;
+
+    console.log('getAllOrders A ', customFrom, customTo);
+
     try {
       const response = await axios.get(apiUrl, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
 
-      if (response.data.status.success) {
-        const newOrders = response.data.response.ordersList.filter(order => order !== null);
+      const newTasks = response.data.response.ordersList;
+      // console.log("response.data====>",response.data)
+      if (reset) {
+        setFilteredOrdersList(newTasks);
+      } else {
+        setFilteredOrdersList(prevTasks => [...(prevTasks || []), ...newTasks]);
+      }
 
-        if (reset) {
-          setFilteredOrdersList(newOrders);
-        } else {
-          setFilteredOrdersList(prevOrders => [...prevOrders, ...newOrders]);
-        }
-        setHasMoreOrders(newOrders?.length >= 15)
+      if (newTasks.length < 20) {
+        setHasMoreTasks(false);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -89,54 +105,224 @@ const DistributorGrn = () => {
     }
   };
 
-  const searchAPI = async (reset = false, customFrom = from, customTo = to) => {
+  const loadMoreTasks = async () => {
+    if (!hasMoreTasks || loadingMore) return;
+
+    setLoadingMore(true);
+    const newFrom = to + 1;
+    const newTo = to + 20;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    if (filterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getAllOrders(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
+    // getAllOrders(); // Call getAllOrders here to fetch new data
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(20);
+    setSearchKey(0);
+    setFilterFlag(false);
+
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    setSelectedSearchOption('');
+    setHasMoreTasks(true);
+
+    await getAllOrders(true, 0, 20);
+    setRefreshing(false);
+  };
+
+  // useEffect(() => {
+  //   if (companyId) {
+  //     getDistributorGrn(true, 0, 15);
+  //   }
+  // }, [companyId]);
+
+
+
+
+  // const getDistributorGrn = async (reset = false, customFrom = from, customTo = to) => {
+  //   setLoading(true);
+  //   if (loading || loadingMore) return;
+  //   reset ? setLoading(true) : setLoadingMore(true);
+
+  //   const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_GRN_LL}/${customFrom}/${customTo}/${companyId}`;
+  //   console.log("getDistributorGrn List==> ", customFrom, customTo);
+  //   try {
+  //     const response = await axios.get(apiUrl, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     });
+
+  //     if (response.data.status.success) {
+  //       const newOrders = response.data.response.ordersList.filter(order => order !== null);
+
+  //       if (reset) {
+  //         setFilteredOrdersList(newOrders);
+  //       } else {
+  //         setFilteredOrdersList(prevOrders => [...prevOrders, ...newOrders]);
+  //       }
+  //       setHasMoreOrders(newOrders?.length >= 15)
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   } finally {
+  //     setLoading(false);
+  //     setLoadingMore(false);
+  //   }
+  // };
+
+
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_DISTRIBUTOR_GRN}`;
-    let requestBody = {
+    const requestBody = {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
       from: customFrom,
       to: customTo,
       companyId: companyId
-    };
+    }
 
-    console.log("searchAPI===> ", apiUrl, requestBody);
+    console.log('gettasksearch==> ', customFrom, customTo);
 
     try {
-      setLoading(true);
-      const response = await axios.post(
-        apiUrl,
-        requestBody,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          },
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
-      );
-      console.log("response.data==> ", response?.data?.response?.ordersList);
-      if (response?.data?.response?.ordersList && response?.data?.response?.ordersList.length > 0) {
+      });
 
-        if (response?.data?.response?.ordersList.length === 1 && !response?.data?.response?.ordersList[0]) {
-          setFilteredOrdersList([]);
-        } else {
-          // const fetchedData = response?.data?.response?.ordersList || [];
-          const newOrders = response.data.response.ordersList.filter(order => order !== null);
+      if (response?.data?.response?.ordersList) {
+        // setOrders(response.data.response.ordersList);
 
-          setFilteredOrdersList((prevDetails) =>
-            reset ? newOrders : [...prevDetails, ...newOrders]
-          );
-          setHasMoreOrders(newOrders?.length >= 15)
-        }
+        const newOrders = response.data.response.ordersList.filter(order => order !== null);
+
+        setFilteredOrdersList(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
+        );
+        setHasMoreTasks(newOrders?.length >= 15);
+
+        // setHasMoreTasks(false);
       } else {
-        console.log("Setting 0");
         setFilteredOrdersList([]);
       }
     } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching tasks:', error);
     }
   };
+
+
+  const handleDropdownSelect = option => {
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
+  };
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit the function if no search key is selected
+    }
+
+    if (!searchQuery.trim()) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit if the search query is empty
+    }
+
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(20);
+
+    gettasksearch(true, 0, 20);
+  };
+
+  // const searchAPI = async (reset = false, customFrom = from, customTo = to) => {
+  //   const apiUrl = `${global?.userData?.productURL}${API.SEARCH_DISTRIBUTOR_GRN}`;
+  //   let requestBody = {
+  //     dropdownId: searchKey,
+  //     fieldvalue: searchQuery,
+  //     from: customFrom,
+  //     to: customTo,
+  //     companyId: companyId
+  //   };
+
+  //   console.log("searchAPI===> ", apiUrl, requestBody);
+
+  //   try {
+  //     setLoading(true);
+  //     const response = await axios.post(
+  //       apiUrl,
+  //       requestBody,
+  //       {
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //         },
+  //       },
+  //     );
+  //     console.log("response.data==> ", response?.data?.response?.ordersList);
+  //     if (response?.data?.response?.ordersList && response?.data?.response?.ordersList.length > 0) {
+
+  //       if (response?.data?.response?.ordersList.length === 1 && !response?.data?.response?.ordersList[0]) {
+  //         setFilteredOrdersList([]);
+  //       } else {
+  //         // const fetchedData = response?.data?.response?.ordersList || [];
+  //         const newOrders = response.data.response.ordersList.filter(order => order !== null);
+
+  //         setFilteredOrdersList((prevDetails) =>
+  //           reset ? newOrders : [...prevDetails, ...newOrders]
+  //         );
+  //         setHasMoreOrders(newOrders?.length >= 15)
+  //       }
+  //     } else {
+  //       console.log("Setting 0");
+  //       setFilteredOrdersList([]);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
 
   const gotoDistributorOrder = (orderId) => {
@@ -159,69 +345,20 @@ const DistributorGrn = () => {
 
 
 
-  const loadMoreOrders = async () => {
-
-    console.log("Inside load more ==> ", hasMoreOrders, loadingMore);
-    if (!hasMoreOrders || loadingMore) return;
-
-    const newFrom = to + 1;
-    const newTo = to + 15;
-
-    setLoadingMore(true);
-
-    console.log("Loading more orders from", newFrom, "to", newTo);
-
-    if (searchFilterFlag) {
-      try {
-        await searchAPI(false, newFrom, newTo);
-      } catch (error) {
-        console.error('Error while loading more orders:', error);
-      } finally {
-        setFrom(newFrom);
-        setTo(newTo);
-        setLoadingMore(false);
-      }
-    } else {
-      try {
-        await getDistributorGrn(false, newFrom, newTo);
-      } catch (error) {
-        console.error('Error while loading more orders:', error);
-      } finally {
-        setFrom(newFrom);
-        setTo(newTo);
-        setLoadingMore(false);
-      }
-    }
-
-  };
 
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setFrom(0);
-    setTo(15);
-    setHasMoreOrders(true);
-    setsearchFilterFlag(false);
-    console.log("Refreshed");
-    const newFrom = 0;
-    const newTo = 15;
-    setSearchQuery('')
-    setSearchKey(0);
-    setSelectedSearchOption('');
-    await getDistributorGrn(true, newFrom, newTo);
-    setRefreshing(false);
-  };
 
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
 
-  const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
-    setSearchKey(option.value);
-    setDropdownVisible(false);
-    console.log("handleDropdownSelect")
-  };
+  // const toggleDropdown = () => {
+  //   setDropdownVisible(!dropdownVisible);
+  // };
+
+  // const handleDropdownSelect = option => {
+  //   setSelectedSearchOption(option.label);
+  //   setSearchKey(option.value);
+  //   setDropdownVisible(false);
+  //   console.log("handleDropdownSelect")
+  // };
 
   const searchOption = [
     // { label: 'Select', value: 0 },
@@ -234,20 +371,20 @@ const DistributorGrn = () => {
 
 
 
-  const handleSearch = () => {
-    setsearchFilterFlag(true);
-    if (searchKey === 0) {
-      Alert.alert('Please select an option from the dropdown before searching.');
-      return;
-    }
+  // const handleSearch = () => {
+  //   setsearchFilterFlag(true);
+  //   if (searchKey === 0) {
+  //     Alert.alert('Please select an option from the dropdown before searching.');
+  //     return;
+  //   }
    
-    if (searchQuery.trim().length > 0 && searchKey > 0) {
-      searchAPI(true, 0, 15);
-      setFrom(0);
-      setTo(15);
-    }
+  //   if (searchQuery.trim().length > 0 && searchKey > 0) {
+  //     searchAPI(true, 0, 15);
+  //     setFrom(0);
+  //     setTo(15);
+  //   }
 
-  };
+  // };
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
@@ -325,20 +462,35 @@ const DistributorGrn = () => {
       ) : filteredOrdersList.length === 0 ? (
         <Text style={styles.noResultsText}>Sorry, no results found!</Text>
       ) : (
+        // <FlatList
+        //   data={filteredOrdersList}
+        //   renderItem={renderOrderItem}
+        //   // keyExtractor={(item, index) => item ? item.orderId.toString() : index.toString()}
+        //   keyExtractor={(item, index) =>
+        //     item ? `${item.orderId.toString()}_${Date.now()}` : `${index.toString()}_${Date.now()}`
+        //   }
+        //   refreshControl={
+        //     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        //   }
+        //   onEndReached={loadMoreOrders}
+        //   onEndReachedThreshold={0.2}
+        //   ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
+        // />
         <FlatList
-          data={filteredOrdersList}
-          renderItem={renderOrderItem}
-          // keyExtractor={(item, index) => item ? item.orderId.toString() : index.toString()}
-          keyExtractor={(item, index) =>
-            item ? `${item.orderId.toString()}_${Date.now()}` : `${index.toString()}_${Date.now()}`
-          }
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          onEndReached={loadMoreOrders}
-          onEndReachedThreshold={0.2}
-          ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
-        />
+        data={filteredOrdersList}
+        renderItem={renderOrderItem}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        onEndReached={loadMoreTasks} // Load more when scrolled to the end
+        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator size="small" color="#0000ff" />
+          ) : null
+        }
+      />
       )}
     </View>
   );

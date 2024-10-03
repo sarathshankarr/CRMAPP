@@ -113,9 +113,11 @@ const PackageDetail = ({route}) => {
 
       if (parseInt(inputValue, 10) > 0) {
         const itemBaseDetails = {
+          packageId:item.packageId,
           styleId: item.styleId,
           styleName: item.styleName,
           colorName: item.colorName,
+          colorId:item.colorId,
           sizeDesc: item.size,
           quantity: inputValue,
           dealerPrice: modalData?.dealerPrice,

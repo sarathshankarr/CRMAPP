@@ -141,7 +141,7 @@ const HomeAllProducts = ({ navigation }) => {
   }, [companyId]);
 
   const onRefresh = async () => {
-    console.log("Prod refreshing.valueOf........")
+    console.log("Refreshing in prod ..........")
     setRefreshing(true);
     setPageNo(1);
     setSearchKey(0);
@@ -149,20 +149,47 @@ const HomeAllProducts = ({ navigation }) => {
     setSelectedSearchOption('');
     setSearchFilterFlag(false);
     if (companyId) {
-      await getAllProducts(companyId, true, 0);
+      await getAllProducts(companyId, true);
     }
     setRefreshing(false);
   };
 
 
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     // setShowSearchInput(false);
+  //     console.log("navigation in prod")
+  //     onRefresh();
+  //   });
+  //   return unsubscribe;
+  // }, [navigation]);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      // setShowSearchInput(false);
-      onRefresh();
+      setSearchQuery('');
+      setShowSearchInput(false);
+      setSelectedSearchOption(null);
+      setDropdownVisible(false);
+      setPageNo(1); 
+      setIsLoading(true); // Ensure loading state is set before fetching
+      
+      if (companyId) {
+        getAllProducts(companyId, true, 0).finally(() => {
+          setIsLoading(false); // Set loading to false after fetch completes
+        });
+      }
+  
+      setSearchFilterFlag(false);
+      
+      // Scroll to the top when coming back to this screen
+      if (flatListRef.current) {
+        flatListRef.current.scrollToOffset({ offset: 0, animated: false });
+      }
     });
     return unsubscribe;
-  }, [navigation]);
-
+  }, [navigation, companyId]);
+  
+  
 
   const searchAPI = async (reset = false, page = 1) => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCTS}`;
@@ -174,22 +201,18 @@ const HomeAllProducts = ({ navigation }) => {
       "searchKey": searchKey,
       "searchValue": searchQuery,
     }
-
+  
     console.log("searchAPI===> ", apiUrl, requestBody);
-
+  
     try {
       setIsLoading(true);
-      const response = await axios.post(
-        apiUrl,
-        requestBody,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          },
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
-      );
-
+      });
+  
       console.log("response data==> ", response?.data);
       const fetchedData = response?.data?.content || [];
       setSelectedDetails((prevDetails) =>
@@ -200,10 +223,10 @@ const HomeAllProducts = ({ navigation }) => {
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
-      // setHasMoreOrders(false);
+      setStopLoad(true);  // Stop loading once the search is completed
     }
   };
-
+  
   const getAllProducts = async (companyId, reset = false, page = 1) => {
     setIsLoading(true);
     setStopLoad(false);
@@ -220,7 +243,7 @@ const HomeAllProducts = ({ navigation }) => {
         companyId: companyId,
       };
 
-      console.log("fetch products ==> ", requestData.pageNo);
+      console.log("fetch products ==> ", requestData?.pageNo);
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -275,7 +298,7 @@ const HomeAllProducts = ({ navigation }) => {
 
   const handleEndReached = () => {
     if (stopLoad || isFetching) return;
-    console.log("handleEndReached", pageNo, totalPages)
+    console.log("handleEndReached", pageNo, totalPages);
     if (searchFilterFlag) {
       if (pageNo < totalPages) {
         searchAPI(false, pageNo + 1 );
@@ -290,20 +313,20 @@ const HomeAllProducts = ({ navigation }) => {
   };
 
   const handleSearch = () => {
-
-    if(searchKey === 0){
+    if (searchKey === 0) {
       Alert.alert('Please select an option from the dropdown before searching.');
       return;
     }
     if (searchQuery?.trim()?.length === 0) {
-      console.log("empty String");
       return;
     }
+  
     setSearchFilterFlag(true);
     setPageNo(1);
+    setStopLoad(false);  // Start loading
     searchAPI(true, 1);
   };
-
+  
   const handleScroll = event => {
     setScrollPosition(event.nativeEvent.contentOffset.y);
   };
@@ -314,11 +337,11 @@ const HomeAllProducts = ({ navigation }) => {
     { label: 'Style Name', value: 1 },
     { label: 'Color', value: 2 },
     { label: 'Price', value: 3 },
-    { label: 'realMrp', value: 4 },
-    { label: 'sizes', value: 5 },
-    { label: 'type', value: 6 },
-    { label: 'fabricQuality', value:  7},
-    { label: 'gsm', value:  8},
+    { label: 'Mrp', value: 4 },
+    { label: 'Size', value: 5 },
+    { label: 'Type', value: 6 },
+    { label: 'Fabric Quality', value:  7},
+    { label: 'GSM', value:  8},
 
   ];
 
@@ -326,7 +349,7 @@ const HomeAllProducts = ({ navigation }) => {
     setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
-    console.log("handleDropdownSelect")
+    // console.log("handleDropdownSelect");
   };
 
   const toggleDropdown = () => {
@@ -381,7 +404,7 @@ const HomeAllProducts = ({ navigation }) => {
         </View>
       )}
 
-      {isLoading ? (
+      {isLoading && selectedDetails?.length === 0 ? (
         <ActivityIndicator
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
           size="large"
@@ -425,6 +448,11 @@ const HomeAllProducts = ({ navigation }) => {
               onRefresh={onRefresh}
               colors={['#000', '#689F38']}
             />
+          }
+          ListFooterComponent={
+            !stopLoad ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
           }
         />
       )}

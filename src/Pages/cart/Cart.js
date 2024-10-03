@@ -772,6 +772,10 @@ const Cart = () => {
     setIsSubmitting(true);
 
     const d_pkg_flag = cartItems.some(item => item.sourceScreen === 'PackageDetail') ? 1 : 0;
+    const pkg_id= cartItems.some(item => item.sourceScreen === 'PackageDetail')
+    const colorId = cartItems.some(item => item.sourceScreen === 'PackageDetail') 
+    ? cartItems.find(item => item.sourceScreen === 'PackageDetail').colorId 
+    : cartItems[0]?.colorId || null; // Fallback to null if cartItems is empty
 
     // if (!loggedInUser || !userRole) {
     //   // Redirect to login screen or handle not logged in scenario
@@ -845,7 +849,7 @@ const Cart = () => {
       orderLineItems: cartItems.map(item => ({
         qty: item.quantity.toString(),
         styleId: item.styleId,
-        colorId: item.colorId,
+        colorId: colorId,
         gscodeMapId: 42,
         sizeDesc: item.sizeDesc,
         gsCode: '8907536002462',
@@ -863,7 +867,7 @@ const Cart = () => {
         pcqty: '0',
         pack_qty: 0,
         sizeId: item.sizeId,
-        packageId: 0,
+        packageId: item.sourceScreen === 'PackageDetail' ? (item.packageId ? Number(item.packageId) : 0) : 0,
         cedgeFlag: '0',
         cedgeStyleId: 0,
         discountPercentageSec: 0,

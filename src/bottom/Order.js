@@ -690,6 +690,7 @@ const Order = () => {
       // Reset search query and visibility of search input
       setSearchQuery('');
       setShowSearchInput(false);
+      setDropdownVisible(false);
       setSelectedSearchOption(null);
       // Reset orders and fetch new data
       setFrom(0); // Reset the starting index
