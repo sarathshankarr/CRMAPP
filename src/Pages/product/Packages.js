@@ -10,12 +10,14 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
+  Modal,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import {debounce} from 'lodash';
+import ImageSlider from '../../components/ImageSlider';
 
 const Packages = ({navigation}) => {
   const selectedCompany = useSelector(state => state.selectedCompany);
@@ -26,7 +28,6 @@ const Packages = ({navigation}) => {
   const [searchOptions, setSearchOptions] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
-
 
   const [refreshing, setRefreshing] = useState(false);
   const [from, setFrom] = useState(0);
@@ -39,6 +40,10 @@ const Packages = ({navigation}) => {
   const [searchKey, setSearchKey] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [filterFlag, setFilterFlag] = useState(false);
+
+  const [imageUrls, setImageUrls] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
 
   const companyId = selectedCompany
     ? selectedCompany.id
@@ -62,6 +67,45 @@ const Packages = ({navigation}) => {
     fetchInitialSelectedCompany();
   }, []);
 
+  const getAllImages = packageId => {
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_ALL_IMAGES_PACKAGE
+    }/${packageId}/${0}`;
+    console.log('apiUrl=====>', apiUrl);
+    setImageLoading(true); // Set loading to true before API call
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        const images =
+          response.data?.response?.packagesList?.[0]?.imageUrls || [];
+        console.log(
+          'response.data?.imageUrls=====>',
+          response.data?.response?.packagesList,
+        );
+        setImageUrls(images);
+        setIsModalVisible(true); // Show modal after getting images
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setImageLoading(false); // Set loading to false after API call completes
+      });
+  };
+
+  const renderImage = ({item}) => {
+    return (
+      <Image
+        source={{uri: item}}
+        style={styles.imageInModal}
+        resizeMode="contain"
+      />
+    );
+  };
 
   useEffect(() => {
     if (companyId) {
@@ -85,9 +129,7 @@ const Packages = ({navigation}) => {
       setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
     }
 
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_PACKAGES
-    }/${customFrom}/${customTo}/${companyId}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_PACKAGES}/${customFrom}/${customTo}/${companyId}`;
 
     console.log('getAllOrders A ', customFrom, customTo);
 
@@ -99,7 +141,7 @@ const Packages = ({navigation}) => {
       });
 
       const newTasks = response.data?.response?.packagesList;
-      // console.log("response.data====>",response.data?.response?.packagesList)
+      console.log('response.data====>', response.data?.response?.packagesList);
       if (reset) {
         setStylesData(newTasks);
       } else {
@@ -166,8 +208,6 @@ const Packages = ({navigation}) => {
     setRefreshing(false);
   };
 
-
-
   const gettasksearch = async (
     reset = false,
     customFrom = from,
@@ -195,7 +235,9 @@ const Packages = ({navigation}) => {
       if (response.data.response.packagesList) {
         // setOrders(response.data.response.ordersList);
 
-        const newOrders = response.data.response.packagesList.filter(order => order !== null);
+        const newOrders = response.data.response.packagesList.filter(
+          order => order !== null,
+        );
 
         setStylesData(prevDetails =>
           reset ? newOrders : [...prevDetails, ...newOrders],
@@ -210,8 +252,6 @@ const Packages = ({navigation}) => {
       console.error('Error fetching tasks:', error);
     }
   };
-
-
 
   const handleDropdownSelect = option => {
     setSelectedSearchOption(option.label);
@@ -261,11 +301,13 @@ const Packages = ({navigation}) => {
     {label: 'MRP', value: 4},
   ];
 
-
-
   const renderProductItem = ({item}) => {
     const {packageName, imageUrls, packageId} = item;
-  
+    const handleViewImages = async () => {
+      setIsModalVisible(true); // Show modal immediately
+      // Fetch images in the background
+      await getAllImages(packageId);
+    };
     return (
       <TouchableOpacity
         style={styles.productItem}
@@ -290,24 +332,38 @@ const Packages = ({navigation}) => {
             <Text style={styles.packageNameText}>{packageName}</Text>
           </View>
         </View>
+        <TouchableOpacity onPress={handleViewImages}>
+          <View style={{flexDirection:"row",marginVertical:2}}>
+            <Text style={{color:"#000",fontWeight:"500"}}>View Images</Text>
+            <Image
+              style={{height:25, width: 25,marginHorizontal:5}}
+              source={require('../../../assets/view.png')}
+            />
+          </View>
+        </TouchableOpacity>
       </TouchableOpacity>
     );
   };
-  
 
   return (
     <View style={styles.container}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginVertical: 10 }}>
-
-      <View style={styles.searchContainer}>
-      <TextInput
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 10,
+          marginVertical: 10,
+        }}>
+        <View style={styles.searchContainer}>
+          <TextInput
             style={styles.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
             value={searchQuery}
             onChangeText={handleSearchInputChange}
           />
-        <TouchableOpacity
+          <TouchableOpacity
             style={styles.dropdownButton}
             onPress={toggleDropdown}>
             <Text style={{color: '#000'}}>
@@ -318,11 +374,11 @@ const Packages = ({navigation}) => {
               source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
-      </View>
-      <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+        </View>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
-        </View>
+      </View>
       {dropdownVisible && (
         <View style={styles.dropdownContent1}>
           <ScrollView>
@@ -337,29 +393,52 @@ const Packages = ({navigation}) => {
           </ScrollView>
         </View>
       )}
-       {loading ? (
+      {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : stylesData.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
-      <FlatList
-      data={stylesData}
-      renderItem={renderProductItem}
-      keyExtractor={(item, index) => `${item.packageId}-${index}`}
-      numColumns={2}
-      columnWrapperStyle={styles.row}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      onEndReached={loadMoreTasks} // Load more when scrolled to the end
-      onEndReachedThreshold={0.2} // Adjust this value to control when to load more
-      ListFooterComponent={
-        loadingMore ? (
-          <ActivityIndicator size="small" color="#0000ff" />
-        ) : null
-      }
-    />
+        <FlatList
+          data={stylesData}
+          renderItem={renderProductItem}
+          keyExtractor={(item, index) => `${item.packageId}-${index}`}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
+        />
       )}
+
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {imageLoading ? ( // Show ActivityIndicator while loading images
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : imageUrls.length > 0 ? ( // Check if imageUrls is not empty
+              <ImageSlider imageUrls={imageUrls} />
+            ) : (
+              <Image
+                style={{height: '90%'}}
+                resizeMode="contain"
+                source={require('../../../assets/NewNoImage.jpg')}
+              />
+            )}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setIsModalVisible(false)}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -417,7 +496,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingLeft: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 4,
@@ -479,6 +558,32 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+  },
+  modalContainer: {
+    marginVertical: 120,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+
+  modalContent: {
+    marginVertical: 50,
+  },
+  modalImage: {
+    width: 300,
+    height: 300,
+    marginHorizontal: 10,
+  },
+  closeButton: {
+    color: 'white',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  closeButtonText: {
+    color: 'white', // Close button text color
+    fontWeight: 'bold',
+    alignSelf: 'center',
   },
 });
 
