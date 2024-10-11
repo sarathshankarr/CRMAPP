@@ -337,7 +337,7 @@ const HomeAllProducts = ({ navigation }) => {
     { label: 'Style Name', value: 1 },
     { label: 'Color', value: 2 },
     { label: 'Price', value: 3 },
-    { label: 'Mrp', value: 4 },
+    { label: 'MRP', value: 4 },
     { label: 'Size', value: 5 },
     { label: 'Type', value: 6 },
     { label: 'Fabric Quality', value:  7},

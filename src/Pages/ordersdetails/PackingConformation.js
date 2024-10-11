@@ -256,6 +256,7 @@ const PackingConformation = ({route}) => {
     }
   }, [triggerUpdate]);
 
+  // console.log("Orders list ==> ",order)
   const updateDisOrder = () => {
     const requestData = {
       orderId: order?.orderId || 0,
@@ -268,6 +269,8 @@ const PackingConformation = ({route}) => {
       totalQty: order?.totalQty || 0,
       updateStatus: selectedStatus || '',
       appComments: comments,
+      customerLocation: order?.customerLocation,
+      d_pkg_flag: order.d_pkg_flag ? order.d_pkg_flag: 0,
       orderLineItems: order?.orderLineItems.map(item => {
         const isManuallyCanceled = item.statusFlag === 2;
         return {
@@ -284,6 +287,9 @@ const PackingConformation = ({route}) => {
           gstAmnt: item.gstAmnt,
           discountPercentageThird: item.discountPercentageThird,
           statusFlag: item.statusFlag,
+          styleId:item?.styleId,
+          size: item?.size,
+          poId:item?.poId ? item?.poId:0,
           sttsFlag: isManuallyCanceled
             ? false
             : selectedItems[item.orderLineitemId] || false,

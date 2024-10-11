@@ -44,6 +44,8 @@ const LocationInventory = () => {
 
 
   const selectedCompany = useSelector(state => state.selectedCompany);
+  const hold_flag = useSelector(state => state.selectedCompany.hold_qty_flag);
+  const comp_flag = useSelector(state => state.selectedCompany.comp_flag);
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -260,7 +262,7 @@ const LocationInventory = () => {
         <Text style={styles.itemText1}>{item.styleName}</Text>
         <Text style={styles.itemText2}>{item.sizeCode}</Text>
         <Text style={styles.itemText3}>{item.availQty}</Text>
-        {/* <Text style={styles.itemText4}>{item.holdQty}</Text> */}
+        {(comp_flag && hold_flag) ? (<Text style={styles.itemText4}>{item.holdQty}</Text>):null}
       </View>
       <View
         style={{ borderBottomWidth: 1, borderBottomColor: 'lightgray' }}></View>
@@ -321,7 +323,7 @@ const LocationInventory = () => {
         <Text style={styles.headerText1}>Style Name</Text>
         <Text style={styles.headerText2}>Size</Text>
         <Text style={styles.headerText3}>Avail Qty</Text>
-        {/* <Text style={styles.headerText4}>Hold Qty</Text> */}
+        {(comp_flag && hold_flag) ? (<Text style={styles.headerText4}>Hold Qty</Text>):null}
       </View>
       {loading && !inventoryData.length ? (
         <ActivityIndicator size="large" color="#000" />

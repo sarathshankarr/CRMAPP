@@ -109,7 +109,7 @@ const Details = ({ route }) => {
           <Text style={styles.detailValue}>{item.styleName}</Text>
         </View>
         <View style={styles.tagsContainer}>
-          <Text style={styles.detailLabel}>Mrp</Text>
+          <Text style={styles.detailLabel}>MRP</Text>
           <Text style={styles.detailValue}>{item.realMrp}</Text>
         </View>
         <View style={styles.tagsContainer}>

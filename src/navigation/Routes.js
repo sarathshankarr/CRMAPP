@@ -42,6 +42,9 @@ import DistributorInventory from '../Pages/inventory/DistributorInventory';
 import Attendence from '../Pages/attendence/Attendence';
 import Packages from '../Pages/product/Packages';
 import PackageDetail from '../Pages/product/PackageDetail';
+import MailConfirmation from '../Pages/forgetPassword/MailConfirmation';
+import ConfirmPassword from '../Pages/forgetPassword/ConfirmPassword';
+import EnterOtp from '../Pages/forgetPassword/EnterOtp';
 
 const Stack = createNativeStackNavigator();
 
@@ -307,6 +310,24 @@ const Routes = () => {
           headerBackVisible: true,
         })}
       />
+
+      <Stack.Screen
+        name="MailConfirmation"
+        component={MailConfirmation}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ConfirmPassword"
+        component={ConfirmPassword}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="EnterOtp"
+        component={EnterOtp}
+        options={{headerShown: false}}
+      />
+
+
     </Stack.Navigator>
   );
 };

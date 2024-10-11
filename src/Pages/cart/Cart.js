@@ -44,7 +44,7 @@ const Cart = () => {
 
   const [inputValuess, setInputValuess] = useState({});
   const cartItems = useSelector(state => state.cartItems);
-  console.log("cartItems=====>",cartItems)
+  console.log("cartItems=====>", cartItems)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
   const [modalVisible, setModalVisible] = useState(false);
@@ -772,10 +772,10 @@ const Cart = () => {
     setIsSubmitting(true);
 
     const d_pkg_flag = cartItems.some(item => item.sourceScreen === 'PackageDetail') ? 1 : 0;
-    const pkg_id= cartItems.some(item => item.sourceScreen === 'PackageDetail')
-    const colorId = cartItems.some(item => item.sourceScreen === 'PackageDetail') 
-    ? cartItems.find(item => item.sourceScreen === 'PackageDetail').colorId 
-    : cartItems[0]?.colorId || null; // Fallback to null if cartItems is empty
+    const pkg_id = cartItems.some(item => item.sourceScreen === 'PackageDetail')
+    const colorId = cartItems.some(item => item.sourceScreen === 'PackageDetail')
+      ? cartItems.find(item => item.sourceScreen === 'PackageDetail').colorId
+      : cartItems[0]?.colorId || null; // Fallback to null if cartItems is empty
 
     // if (!loggedInUser || !userRole) {
     //   // Redirect to login screen or handle not logged in scenario
@@ -822,9 +822,9 @@ const Cart = () => {
         : '';
 
     const selectedShipDate = shipDate || currentDate;
-    const gstRate = 5; // GST rate in percentage
+    const gstRate = 5;
     const totalGst = cartItems.reduce((acc, item) => {
-      const itemTotalPrice = parseFloat(item.price) * parseInt(item.quantity);
+      const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity);
       const itemGst = (itemTotalPrice * gstRate) / 100;
       return acc + itemGst;
     }, 0);
@@ -855,14 +855,14 @@ const Cart = () => {
         gsCode: '8907536002462',
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
-        // gross: (parseFloat(item.price) * parseInt(item.quantity)).toString(),
-        price: isEnabled ?item?.retailerPrice?.toString():item?.dealerPrice?.toString() ||item?.price?.toString(),
-        gross: (parseFloat(isEnabled ? item?.retailerPrice?.toString():item?.dealerPrice?.toString()) || (isEnabled ? item?.retailerPrice : item?.price?.toString()) * parseInt(item.quantity))?.toString(),
+        price: isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString(),
+        gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * 1.05) * parseInt(item?.quantity || 1)).toString(),
+        // gross: parseFloat((parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) + parseFloat(item.gst.toString())) * parseInt(item.quantity))?.toString(),
         // gross: (parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) || item?.price) * parseInt(item.quantity),
         discountPercentage: '0',
         discountAmount: '0',
         gst: 5,
-        total: (parseFloat(isEnabled ? item?.retailerPrice?.toString():item?.dealerPrice?.toString()) || item?.price?.toString() * parseInt(item.quantity))?.toString(),
+        total: (parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) || item?.price?.toString() * parseInt(item.quantity))?.toString(),
         itemStatus: 'OPEN',
         pcqty: '0',
         pack_qty: 0,
@@ -875,7 +875,7 @@ const Cart = () => {
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
-        
+
       })),
       comments: comments,
       customerType: customerType,
@@ -899,11 +899,13 @@ const Cart = () => {
       gTranspExp: 0,
       gOtherExp: 0,
       companyId: companyId,
-      d_pkg_flag:d_pkg_flag,
+      d_pkg_flag: d_pkg_flag,
       // companyLocId: selectedCompanyLocationId,
       linkType: 3,
-      currentCreditLimit:0.00
+      currentCreditLimit: 0.00
     };
+
+    console.log("Req body ===> ", requestData);
     // return;
 
     console.log("requestData:", JSON.stringify(requestData, null, 2));
@@ -1867,7 +1869,7 @@ const Cart = () => {
                       <View style={{ flex: 0.3, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
                         <TextInput
                           style={{ color: '#000', alignSelf: "center" }}
-                          value={isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()|| item?.price?.toString()}
+                          value={isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()}
                           // value={item.price}
                           onChangeText={text => handlePriceChange(index, text)}
                           keyboardType="numeric"
@@ -1876,7 +1878,7 @@ const Cart = () => {
                       <View style={{ flex: 0.3, marginLeft: 30 }}>
                         <Text style={{ color: '#000' }}>
                           {(
-                            Number(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()|| item?.price?.toString()) * Number(item.quantity)
+                            Number(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()) * Number(item.quantity)
                           ).toString()}
                         </Text>
                       </View>
